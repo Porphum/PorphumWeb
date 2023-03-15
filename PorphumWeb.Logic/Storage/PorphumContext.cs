@@ -9,7 +9,7 @@ namespace PorphumWeb.Logic.Storage;
 /// <summary xml:lang="ru">
 /// Контест базы данных.
 /// </summary>
-public sealed class PorphumContext : DbContext, IPorphumContext
+public sealed class PorphumContext : DbContext
 {
     /// <summary xml:lang="ru">
     /// Создаёт экземпляр класса <see cref="PorphumContext"/>.
