@@ -71,6 +71,13 @@ public sealed class PorphumContext : DbContext
         });
     }
 
+    /// <summary xml:lang="ru">
+    /// Роли пользовтелей.
+    /// </summary>
     public DbSet<Role> Roles { get; set; } = default!;
+    
+    /// <summary xml:lang="ru">
+    /// Пользовтели системы.
+    /// </summary>
     public DbSet<User> Users { get; set; } = default!;
 }

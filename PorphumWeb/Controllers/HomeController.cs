@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PorphumWeb.Logic.Storage;
 using PorphumWeb.Models;
 using System.Diagnostics;
@@ -18,7 +19,7 @@ namespace PorphumWeb.Controllers
 
         public IActionResult Index()
         {
-            var users = _context.Users.ToList();
+            var users = _context.Users.Include(x => x.Roles).ToList();
 
             return View();
         }
