@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PorphumReferenceBook.Logic.Storage.Models;
+namespace PorphumWeb.Logic.Storage.Models;
 
 public class Document
 {
