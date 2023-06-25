@@ -33,8 +33,6 @@ CREATE TABLE products(
 	FOREIGN KEY (group_id) REFERENCES products_groups(id) ON DELETE SET NULL
 );
 
-
-
 CREATE TABLE products_info(
 	product_id BIGINT NOT NULL PRIMARY KEY,
 	barcode VARCHAR(120) NULL,

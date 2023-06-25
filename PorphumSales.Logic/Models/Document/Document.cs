@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PorphumWeb.Logic.Storage.Models;
+namespace PorphumSales.Logic.Models.Document;
 
-public class DocumentRow
+public class Document
 {
 }

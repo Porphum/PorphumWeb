@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PorphumWeb.Logic.Storage.Models;
-
-public class Document
+namespace PorphumSales.Logic.Models.Document
 {
+    internal class DocumentHeader
+    {
+    }
 }

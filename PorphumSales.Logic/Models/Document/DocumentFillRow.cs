@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PorphumWeb.Logic.Models.Document;
+namespace PorphumSales.Logic.Models.Document;
 
 public class DocumentFillRow
 {
