@@ -16,7 +16,9 @@ public class Product
 
     public decimal Cost { get; set; }
 
+    public int? GroupId { get; set; }
+
     public virtual ProductGroup Group { get; set; } = null!;
 
-    public virtual ProductInfo ProductInfo { get; set; } = null!;
+    public virtual ProductExtraInfo Info { get; set; } = null!;
 }
