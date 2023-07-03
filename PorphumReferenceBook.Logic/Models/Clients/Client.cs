@@ -1,4 +1,4 @@
-﻿using General.Models;
+﻿using General.Abstractions.Models;
 
 namespace PorphumReferenceBook.Logic.Models.Client;
 
