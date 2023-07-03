@@ -12,6 +12,17 @@ namespace PorphumReferenceBook.Logic.Storage;
 
 public sealed class ReferenceBookContext : DbContext
 {
+    public ReferenceBookContext(DbContextOptions<ReferenceBookContext> optionsBuilder)
+        : base(optionsBuilder)
+    {
+
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+    }
+
     public DbSet<Product> Products { get; set; } = default!;
 
     public DbSet<Client> Clients { get; set; } = default!;

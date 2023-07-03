@@ -9,8 +9,19 @@ using System.Xml.Linq;
 
 namespace PorphumSales.Logic.Storage;
 
-public sealed class PorphumSalesContext : DbContext
+public sealed class SalesContext : DbContext
 {
+    public SalesContext(DbContextOptions<SalesContext> optionsBuilder)
+        : base(optionsBuilder)
+    {
+
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+    }
+
     public DbSet<Document> Documents { get; set; } = null!;
 
     public DbSet<DocumentsRow> DocumentsRows { get; set; } = null!;

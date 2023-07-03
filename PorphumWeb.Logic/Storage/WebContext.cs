@@ -9,13 +9,13 @@ namespace PorphumWeb.Logic.Storage;
 /// <summary xml:lang="ru">
 /// Контест базы данных.
 /// </summary>
-public sealed class PorphumWebContext : DbContext
+public sealed class WebContext : DbContext
 {
     /// <summary xml:lang="ru">
-    /// Создаёт экземпляр класса <see cref="PorphumWebContext"/>.
+    /// Создаёт экземпляр класса <see cref="WebContext"/>.
     /// </summary>
     /// <param name="optionsBuilder" xml:lang="ru">Парметры для контекста.</param>
-    public PorphumWebContext(DbContextOptions<PorphumWebContext> optionsBuilder)
+    public WebContext(DbContextOptions<WebContext> optionsBuilder)
         : base(optionsBuilder)
     {
 
