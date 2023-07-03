@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace General.Storage;
+namespace General.Abstractions.Storage;
 
 /// <summary xml:lang="ru">
 /// Описывает репозиторий сущностей.
