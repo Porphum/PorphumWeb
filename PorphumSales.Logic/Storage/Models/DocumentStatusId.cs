@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace PorphumSales.Logic.Storage.Models;
 
-public class DocumentRow
+public enum DocumentStatusId : short
 {
+    Unknown = 0,
+    Created = 1,
+    Filled = 2,
+    Complete = 3
 }
