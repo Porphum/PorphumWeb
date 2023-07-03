@@ -3,9 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PorphumWeb", "PorphumWeb\PorphumWeb.csproj", "{FB74038A-0E4C-4B8D-9262-B056066B3D76}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PorphumWeb", "PorphumWeb\PorphumWeb.csproj", "{FB74038A-0E4C-4B8D-9262-B056066B3D76}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PorphumWeb.Logic", "PorphumWeb.Logic\PorphumWeb.Logic.csproj", "{B5CD01A9-1579-43C1-B55B-35851683F870}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PorphumWeb.Logic", "PorphumWeb.Logic\PorphumWeb.Logic.csproj", "{B5CD01A9-1579-43C1-B55B-35851683F870}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PorphumReferenceBook.Logic", "PorphumReferenceBook.Logic\PorphumReferenceBook.Logic.csproj", "{206AF633-4752-4090-8AC0-0E4938301796}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "General", "General\General.csproj", "{22FB80AF-21E3-4D3E-9204-FF89625EB467}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PorphumSales.Logic", "PorphumSales.Logic\PorphumSales.Logic.csproj", "{34B56DCA-423F-48BE-A7D9-E68736BBC022}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +27,18 @@ Global
 		{B5CD01A9-1579-43C1-B55B-35851683F870}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5CD01A9-1579-43C1-B55B-35851683F870}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B5CD01A9-1579-43C1-B55B-35851683F870}.Release|Any CPU.Build.0 = Release|Any CPU
+		{206AF633-4752-4090-8AC0-0E4938301796}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{206AF633-4752-4090-8AC0-0E4938301796}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{206AF633-4752-4090-8AC0-0E4938301796}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{206AF633-4752-4090-8AC0-0E4938301796}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22FB80AF-21E3-4D3E-9204-FF89625EB467}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22FB80AF-21E3-4D3E-9204-FF89625EB467}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22FB80AF-21E3-4D3E-9204-FF89625EB467}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22FB80AF-21E3-4D3E-9204-FF89625EB467}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34B56DCA-423F-48BE-A7D9-E68736BBC022}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34B56DCA-423F-48BE-A7D9-E68736BBC022}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34B56DCA-423F-48BE-A7D9-E68736BBC022}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34B56DCA-423F-48BE-A7D9-E68736BBC022}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
