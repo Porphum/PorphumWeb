@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+
 using PorphumWeb.Logic.Storage.Models;
 using System;
 using System.Data;
@@ -8,13 +9,13 @@ namespace PorphumWeb.Logic.Storage;
 /// <summary xml:lang="ru">
 /// Контест базы данных.
 /// </summary>
-public sealed class PorphumContext : DbContext
+public sealed class WebContext : DbContext
 {
     /// <summary xml:lang="ru">
-    /// Создаёт экземпляр класса <see cref="PorphumContext"/>.
+    /// Создаёт экземпляр класса <see cref="WebContext"/>.
     /// </summary>
-    /// <param name="optionsBuilder">Парметры для контекста.</param>
-    public PorphumContext(DbContextOptions<PorphumContext> optionsBuilder)
+    /// <param name="optionsBuilder" xml:lang="ru">Парметры для контекста.</param>
+    public WebContext(DbContextOptions<WebContext> optionsBuilder)
         : base(optionsBuilder)
     {
 
