@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PorphumReferenceBook.Logic.Models.Clients;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +9,13 @@ namespace PorphumReferenceBook.Logic.Models.Client;
 
 public sealed class ClientIdentityInfo
 {
-    public string Number { get; }
+    public ClientIdentityInfo(Inn? inn = null, Adress? adress = null)
+    {
+        Inn = inn;
+        Adress = adress;
+    }
+
+    public Inn? Inn { get; set; }
+
+    public Adress? Adress { get; set; }
 }
