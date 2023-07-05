@@ -20,5 +20,5 @@ public class Product
 
     public virtual ProductGroup Group { get; set; } = null!;
 
-    public virtual ProductExtraInfo Info { get; set; } = null!;
+    public virtual ProductExtraInfo? Info { get; set; } = null!;
 }

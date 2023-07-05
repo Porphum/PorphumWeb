@@ -20,4 +20,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.15" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Abstractions\Storage\Repository\" />
+  </ItemGroup>
+
 </Project>
