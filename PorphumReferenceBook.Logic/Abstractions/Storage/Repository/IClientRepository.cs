@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 
+/// <summary>
+/// 
+/// </summary>
 public interface IClientRepository : IKeyableRepository<Client, long>, IKeyableRatialLoadRepository<Client, long>
 {
 }
