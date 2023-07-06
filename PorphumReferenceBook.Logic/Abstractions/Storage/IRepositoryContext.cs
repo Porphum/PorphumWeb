@@ -23,6 +23,11 @@ public interface IRepositoryContext
     /// </summary>
     public DbSet<Client> Clients { get; }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    public DbSet<ProductGroup> ProductGroups { get; }
+
     /// <summary xml:lang = "ru">
     /// Сохраняет текущие изменения.
     /// </summary>

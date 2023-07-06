@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 
-public interface IProductRepository : IKeyableRepository<Product, long>, IKeyableRatialLoadRepository<Product, long>
+public interface IProductRepository : IKeyableRepository<Product, long>, IKeyableRatialLoadRepository<Product, long>, IRepository<ProductGroup>
 {
+    public IEnumerable<ProductGroup> GetSubGroups(ProductGroup group);
 }

@@ -1,4 +1,5 @@
-﻿using General.Models;
+﻿using General.Abstractions.Models;
+using General.Models;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
