@@ -1,6 +1,6 @@
-﻿using General.Models;
+﻿using General.Abstractions.Models;
 
-namespace General.Storage;
+namespace General.Abstractions.Storage;
 
 /// <summary xml:lang = "ru">
 /// Описывает репозиторий сущностей <see cref="TEntity"/> с ключом <see cref="TKey"/>.

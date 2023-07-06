@@ -4,9 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace General.Models;
+namespace General;
 
-public interface IKeyable<TKey>
-{
-    public TKey Key { get; }
-}
+public record struct ID(long Value);
