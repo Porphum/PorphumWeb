@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PorphumReferenceBook.Logic.Models;
+namespace General;
 
 public abstract class BaseLoadableModel<TParam> : ILoadable<TParam>
 {
