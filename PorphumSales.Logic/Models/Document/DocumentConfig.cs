@@ -1,5 +1,4 @@
 ﻿using PorphumReferenceBook.Logic.Models.Client;
-using PorphumSales.Logic.Abstractions.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +7,12 @@ using System.Threading.Tasks;
 
 namespace PorphumSales.Logic.Models.Document;
 
-public class DocumentHeader
+public class DocumentConfig
 {
-    public IMappable<Client> Who { get; }
+    public DocumentConfig(Client master)
+    {
+        Master = master ?? throw new ArgumentNullException();
+    }
 
-    public IMappable<Client> With { get; }
+    public Client Master { get; }
 }
