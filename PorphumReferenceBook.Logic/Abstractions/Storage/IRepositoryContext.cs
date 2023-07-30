@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using General.Abstractions.Storage;
+using Microsoft.EntityFrameworkCore;
 using PorphumReferenceBook.Logic.Storage.Models;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace PorphumReferenceBook.Logic.Abstractions.Storage;
 /// <summary>
 /// Описывает контекст базы данных для репозитория.
 /// </summary>
-public interface IRepositoryContext
+public interface IRepositoryContext : IBaseRepositoryContext
 {
     /// <summary xml:lang="ru">
     /// Роли пользовтелей.
@@ -27,9 +28,4 @@ public interface IRepositoryContext
     /// 
     /// </summary>
     public DbSet<ProductGroup> ProductGroups { get; }
-
-    /// <summary xml:lang = "ru">
-    /// Сохраняет текущие изменения.
-    /// </summary>
-    public void SaveChanges();
 }

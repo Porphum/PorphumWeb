@@ -8,7 +8,7 @@ using TProductGroup = PorphumReferenceBook.Logic.Storage.Models.ProductGroup;
 using TClient = PorphumReferenceBook.Logic.Storage.Models.Client;
 using ProductExtraInfo = PorphumReferenceBook.Logic.Storage.Models.ProductExtraInfo;
 using ClientInfo = PorphumReferenceBook.Logic.Storage.Models.ClientInfo;
-
+using General;
 
 public static class ModelsConvertExtensions
 {

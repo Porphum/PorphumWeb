@@ -9,6 +9,7 @@ using System.Xml.Linq;
 
 namespace PorphumSales.Logic.Storage;
 
+//Scaffold-DbContext "Host=localhost;Port=5432;Database=porphum_sales;Username=postgres;Password=root" Npgsql.EntityFrameworkCore.PostgreSQL
 public sealed class SalesContext : DbContext
 {
     public SalesContext(DbContextOptions<SalesContext> optionsBuilder)
@@ -21,6 +22,8 @@ public sealed class SalesContext : DbContext
     {
         base.OnConfiguring(optionsBuilder);
     }
+
+    public DbSet<DocumentConfig> DocumentConfigs { get; set; } = null!;
 
     public DbSet<Document> Documents { get; set; } = null!;
 
@@ -73,6 +76,15 @@ public sealed class SalesContext : DbContext
                 .WithMany(p => p.DocumentsRows)
                 .HasForeignKey(d => d.DocumentId)
                 .HasConstraintName("documents_rows_document_id_fkey");
+        });
+
+        modelBuilder.Entity<DocumentConfig>(entity =>
+        {
+            entity.ToTable("document_config");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+
+            entity.Property(e => e.MasterId).HasColumnName("master_id");
         });
     }
 }

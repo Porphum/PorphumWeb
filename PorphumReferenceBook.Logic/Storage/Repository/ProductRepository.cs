@@ -1,4 +1,5 @@
-﻿using General.Abstractions.Storage;
+﻿using General;
+using General.Abstractions.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using PorphumReferenceBook.Logic.Abstractions.Storage;
@@ -20,29 +21,42 @@ public sealed class ProductRepository : IProductRepository
         _repositoryContext = repositoryContext ?? throw new ArgumentNullException(nameof(repositoryContext));
     }
 
-    public Product? GetByKey(long key)
+    private Product? GetWithModByKey(long key, bool isFullLoad)
     {
-        var find = _repositoryContext.Products
-            .Include(x => x.Group)
-            .Include(x => x.Info)
-            .SingleOrDefault(x => x.Id == key);
+        var products = _repositoryContext.Products.AsQueryable();
+
+        if (isFullLoad)
+        {
+            products = products.Include(x => x.Info);
+        }
+
+        var find = products.SingleOrDefault(x => x.Id == key);
 
         if (find is null)
         {
             return null;
         }
 
-        return find.ConvertToModel();
+        return find.ConvertToModel(isFullLoad);
     }
 
-    public IEnumerable<Product> GetEntities()
+    private IEnumerable<Product> GetWithModEntities(bool isFullLoad)
     {
-        return _repositoryContext.Products
-            .Include(x => x.Group)
-            .Include(x => x.Info)
+        var products = _repositoryContext.Products.AsQueryable();
+
+        if (isFullLoad)
+        {
+            products = products.Include(x => x.Info);
+        }
+
+        return products
             .AsEnumerable()
-            .Select(p => p.ConvertToModel());
+            .Select(p => p.ConvertToModel(isFullLoad));
     }
+
+    public Product? GetByKey(long key) => GetWithModByKey(key, true);
+
+    public IEnumerable<Product> GetEntities() => GetWithModEntities(true);
 
     public async Task<bool> ContainsAsync(Product entity, CancellationToken token = default)
     {
@@ -88,30 +102,6 @@ public sealed class ProductRepository : IProductRepository
     public void Save()
     {
         _repositoryContext.SaveChanges();
-    }
-
-    public Product? GetPartialByKey(long key)
-    {
-        var find = _repositoryContext.Products
-            .Include(x => x.Group)
-            .Include(x => x.Info)
-            .SingleOrDefault(x => x.Id == key);
-
-        if (find is null)
-        {
-            return null;
-        }
-
-        return find.ConvertToModel(isFullLoad: false);
-    }
-
-    public IEnumerable<Product> GetPartialEntities()
-    {
-        return _repositoryContext.Products
-            .Include(x => x.Group)
-            .Include(x => x.Info)
-            .AsEnumerable()
-            .Select(p => p.ConvertToModel(isFullLoad: false));
     }
 
     public IEnumerable<ProductGroup> GetSubGroups(ProductGroup group)
@@ -166,4 +156,19 @@ public sealed class ProductRepository : IProductRepository
 
         _repositoryContext.ProductGroups.Remove(storage);
     }
+
+    public Product? GetByKey(long key, LoadMod mod) => mod switch
+    {
+        LoadMod.Full => GetWithModByKey(key, true),
+        LoadMod.Partial => GetWithModByKey(key, true),
+        _ => throw new InvalidOperationException()
+    };
+
+
+    public IEnumerable<Product> GetEntities(LoadMod mod) => mod switch
+    {
+        LoadMod.Full => GetWithModEntities(true),
+        LoadMod.Partial => GetWithModEntities(false),
+        _ => throw new InvalidOperationException()
+    };
 }

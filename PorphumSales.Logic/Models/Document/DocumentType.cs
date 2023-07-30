@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PorphumWeb.Logic.Models.Document
+namespace PorphumSales.Logic.Models.Document;
+
+public enum DocumentType
 {
-    internal class DocumentHeader
-    {
-    }
+    None = 0,
+    Prihod = 1,
+    Rashod = 2
 }

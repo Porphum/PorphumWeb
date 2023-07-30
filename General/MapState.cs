@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PorphumWeb.Logic.Models.Document;
+namespace General;
 
-public class DocumentFill
+public enum MapState
 {
-    IReadOnlySet<DocumentFillRow> Rows { get; }
+    Init = 0,
+    MapError = 1,
+    Success = 2
 }

@@ -1,37 +1,38 @@
 ﻿using General;
+using General.Abstractions.Storage;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using PorphumReferenceBook.Logic.Abstractions.Storage;
 using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
-using PorphumReferenceBook.Logic.Models.Client;
-using PorphumReferenceBook.Logic.Models.Extensions;
+using PorphumSales.Logic.Abstractions.Storage;
+using PorphumSales.Logic.Abstractions.Storage.Repository;
+using PorphumSales.Logic.Models.Document;
+using PorphumSales.Logic.Models.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PorphumReferenceBook.Logic.Storage.Repository;
+namespace PorphumSales.Logic.Storage.Repository;
 
-public sealed class ClientRepository : IClientRepository
+public class DocumentRepository : IDocumentRepository
 {
     private readonly IRepositoryContext _repositoryContext;
 
-    public ClientRepository(IRepositoryContext repositoryContext)
+    public DocumentRepository(IRepositoryContext repositoryContext)
     {
         _repositoryContext = repositoryContext ?? throw new ArgumentNullException(nameof(repositoryContext));
     }
 
-    private Client? GetWithModByKey(long key, bool isFullLoad)
+    private Document? GetWithModByKey(long key, bool isFullLoad)
     {
-        var clients = _repositoryContext.Clients.AsQueryable();
+        var documents = _repositoryContext.Documents.AsQueryable();
 
         if (isFullLoad)
         {
-            clients = clients.Include(x => x.Info);
+            documents = documents.Include(x => x.DocumentsRows);
         }
 
-        var find = clients.SingleOrDefault(x => x.Id == key);
+        var find = documents.SingleOrDefault(x => x.Id == key);
 
         if (find is null)
         {
@@ -41,25 +42,25 @@ public sealed class ClientRepository : IClientRepository
         return find.ConvertToModel(isFullLoad);
     }
 
-    private IEnumerable<Client> GetWithModEntities(bool isFullLoad)
+    private IEnumerable<Document> GetWithModEntities(bool isFullLoad)
     {
-        var clients = _repositoryContext.Clients.AsQueryable();
+        var products = _repositoryContext.Documents.AsQueryable();
 
         if (isFullLoad)
         {
-            clients = clients.Include(x => x.Info);
+            products = products.Include(x => x.DocumentsRows);
         }
 
-        return clients
+        return products
             .AsEnumerable()
             .Select(p => p.ConvertToModel(isFullLoad));
     }
 
-    public Client? GetByKey(long key) => GetWithModByKey(key, true);
+    public Document? GetByKey(long key) => GetWithModByKey(key, true);
 
-    public IEnumerable<Client> GetEntities() => GetWithModEntities(true);
+    public IEnumerable<Document> GetEntities() => GetWithModEntities(true);
 
-    public async Task<bool> ContainsAsync(Client entity, CancellationToken token = default)
+    public async Task<bool> ContainsAsync(Document entity, CancellationToken token = default)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
@@ -67,13 +68,13 @@ public sealed class ClientRepository : IClientRepository
 
         var storage = entity.ConvertToStorage();
 
-        return await _repositoryContext.Clients
+        return await _repositoryContext.Documents
             /*.AsNoTrackingWithIdentityResolution()*/
             .ContainsAsync(storage, token)
             .ConfigureAwait(false);
     }
 
-    public async Task AddAsync(Client entity, CancellationToken token = default)
+    public async Task AddAsync(Document entity, CancellationToken token = default)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
@@ -81,23 +82,23 @@ public sealed class ClientRepository : IClientRepository
 
         var storage = entity.ConvertToStorage();
 
-        await _repositoryContext.Clients
+        await _repositoryContext.Documents
             .AddAsync(storage, token)
             .ConfigureAwait(false);
     }
 
-    public void Delete(Client entity)
+    public void Delete(Document entity)
     {
         var storage = entity.ConvertToStorage();
 
         ArgumentNullException.ThrowIfNull(entity);
 
-        if (_repositoryContext.Products.SingleOrDefault(x => x.Id == storage.Id) is null)
+        if (_repositoryContext.Documents.SingleOrDefault(x => x.Id == storage.Id) is null)
         {
             throw new ArgumentException("Given entity not exsist in context");
         }
 
-        _repositoryContext.Clients.Remove(storage);
+        _repositoryContext.Documents.Remove(storage);
     }
 
     public void Save()
@@ -105,7 +106,7 @@ public sealed class ClientRepository : IClientRepository
         _repositoryContext.SaveChanges();
     }
 
-    public Client? GetByKey(long key, LoadMod mod) => mod switch
+    public Document? GetByKey(long key, LoadMod mod) => mod switch
     {
         LoadMod.Full => GetWithModByKey(key, true),
         LoadMod.Partial => GetWithModByKey(key, true),
@@ -113,10 +114,15 @@ public sealed class ClientRepository : IClientRepository
     };
 
 
-    public IEnumerable<Client> GetEntities(LoadMod mod) => mod switch
+    public IEnumerable<Document> GetEntities(LoadMod mod) => mod switch
     {
         LoadMod.Full => GetWithModEntities(true),
         LoadMod.Partial => GetWithModEntities(false),
         _ => throw new InvalidOperationException()
     };
+
+    public DocumentConfig GetConfig()
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PorphumReferenceBook.Logic.Models.Product;
+namespace General;
 
 public record struct Money
 {

@@ -1,0 +1,76 @@
+<mxfile host="app.diagrams.net" modified="2023-07-11T13:52:06.676Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.67" etag="gd_KMv4GtSEPItPCcylv" version="21.6.1" type="device">
+  <diagram name="Страница 1" id="1sAhSNRK4nG6-0ZdGScW">
+    <mxGraphModel dx="989" dy="534" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="IH2-s5SpXXe-CwUuGRqT-1" value="" style="ellipse;html=1;shape=startState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="1">
+          <mxGeometry x="170" y="190" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="IH2-s5SpXXe-CwUuGRqT-2" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;rounded=0;" edge="1" source="IH2-s5SpXXe-CwUuGRqT-1" parent="1" target="IH2-s5SpXXe-CwUuGRqT-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="185" y="280" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="IH2-s5SpXXe-CwUuGRqT-3" value="" style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="1">
+          <mxGeometry x="170" y="640" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="IH2-s5SpXXe-CwUuGRqT-4" value="Создан" style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000000;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1">
+          <mxGeometry x="125" y="270" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IH2-s5SpXXe-CwUuGRqT-5" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;rounded=0;" edge="1" source="IH2-s5SpXXe-CwUuGRqT-4" parent="1" target="IH2-s5SpXXe-CwUuGRqT-6">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="185" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="IH2-s5SpXXe-CwUuGRqT-6" value="Заполнение заголовка" style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000000;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1">
+          <mxGeometry x="125" y="360" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IH2-s5SpXXe-CwUuGRqT-7" value="Заполнение позиций" style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000000;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1">
+          <mxGeometry x="125" y="450" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IH2-s5SpXXe-CwUuGRqT-9" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;rounded=0;" edge="1" parent="1" source="IH2-s5SpXXe-CwUuGRqT-6" target="IH2-s5SpXXe-CwUuGRqT-7">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="195" y="390" as="targetPoint" />
+            <mxPoint x="195" y="320" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="IH2-s5SpXXe-CwUuGRqT-10" value="Проведён" style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000000;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1">
+          <mxGeometry x="125" y="550" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IH2-s5SpXXe-CwUuGRqT-11" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;rounded=0;" edge="1" parent="1" source="IH2-s5SpXXe-CwUuGRqT-7" target="IH2-s5SpXXe-CwUuGRqT-10">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="195" y="480" as="targetPoint" />
+            <mxPoint x="195" y="430" as="sourcePoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="IH2-s5SpXXe-CwUuGRqT-12" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;rounded=0;" edge="1" parent="1" source="IH2-s5SpXXe-CwUuGRqT-10" target="IH2-s5SpXXe-CwUuGRqT-3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="195" y="580" as="targetPoint" />
+            <mxPoint x="195" y="520" as="sourcePoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="IH2-s5SpXXe-CwUuGRqT-13" value="Ошибка" style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000000;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1">
+          <mxGeometry x="354" y="410" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IH2-s5SpXXe-CwUuGRqT-14" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;rounded=0;" edge="1" parent="1" source="IH2-s5SpXXe-CwUuGRqT-6" target="IH2-s5SpXXe-CwUuGRqT-13">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="195" y="460" as="targetPoint" />
+            <mxPoint x="195" y="410" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="IH2-s5SpXXe-CwUuGRqT-15" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;rounded=0;" edge="1" parent="1" source="IH2-s5SpXXe-CwUuGRqT-7" target="IH2-s5SpXXe-CwUuGRqT-13">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="420" y="420" as="targetPoint" />
+            <mxPoint x="255" y="390" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="410" y="470" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
