@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PorphumWeb.Logic.Models.Document;
+namespace PorphumSales.Logic.Abstractions.Models;
 
-public class Document
+public interface IMapper<TEntity>
 {
+    public TEntity Map(TEntity entity);
 }

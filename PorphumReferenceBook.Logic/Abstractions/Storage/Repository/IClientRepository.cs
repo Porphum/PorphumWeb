@@ -1,4 +1,5 @@
-﻿using General.Abstractions.Storage;
+﻿using General.Abstractions.Models;
+using General.Abstractions.Storage;
 using PorphumReferenceBook.Logic.Models.Client;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,8 @@ namespace PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 /// <summary>
 /// 
 /// </summary>
-public interface IClientRepository : IKeyableRepository<Client, long>, IKeyableRatialLoadRepository<Client, long>
+public interface IClientRepository : 
+    IKeyableRepository<Client, long>, 
+    IKeyableRepositoryWithModifiableLoad<Client, ClientIdentityInfo, long>
 {
 }

@@ -1,4 +1,5 @@
-﻿using PorphumReferenceBook.Logic.Models.Product;
+﻿using General.Abstractions.Models;
+using PorphumReferenceBook.Logic.Models.Product;
 using PorphumSales.Logic.Abstractions.Models;
 using System;
 using System.Collections.Generic;
@@ -10,13 +11,13 @@ namespace PorphumSales.Logic.Models;
 
 public class StorehouseProduct
 {
-    public StorehouseProduct(IMappable<Product> product, int quantity)
+    public StorehouseProduct(IMappableModel<Product, long> product, int quantity)
     {
         Product = product ?? throw new ArgumentNullException();
         Quantity = quantity;
     }
 
-    public IMappable<Product> Product { get; }
+    public IMappableModel<Product, long> Product { get; }
 
     public int Quantity { get; }
 }

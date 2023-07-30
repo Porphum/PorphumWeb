@@ -1,4 +1,5 @@
-﻿using PorphumReferenceBook.Logic.Models.Client;
+﻿using General.Abstractions.Models;
+using PorphumReferenceBook.Logic.Models.Client;
 using PorphumSales.Logic.Abstractions.Models;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,19 @@ namespace PorphumSales.Logic.Models.Document;
 
 public class DocumentHeader
 {
-    public IMappable<Client> Who { get; }
+    public DocumentHeader(int number, DateTime date, IMappableModel<Client, long> who, IMappableModel<Client, long> with)
+    {
+        Number = number;
+        Date = date;
+        Who = who;
+        With = with;
+    }
 
-    public IMappable<Client> With { get; }
+    public int Number { get; }
+
+    public DateTime Date { get; }
+
+    public IMappableModel<Client, long> Who { get; }
+
+    public IMappableModel<Client, long> With { get; }
 }

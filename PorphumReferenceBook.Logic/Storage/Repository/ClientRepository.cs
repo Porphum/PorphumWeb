@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using General;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using PorphumReferenceBook.Logic.Abstractions.Storage;
 using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 using PorphumReferenceBook.Logic.Models.Client;
@@ -20,27 +22,42 @@ public sealed class ClientRepository : IClientRepository
         _repositoryContext = repositoryContext ?? throw new ArgumentNullException(nameof(repositoryContext));
     }
 
-    public Client? GetByKey(long key)
+    private Client? GetWithModByKey(long key, bool isFullLoad)
     {
-        var find = _repositoryContext.Clients
-            .Include(x => x.Info)
-            .SingleOrDefault(x => x.Id == key);
+        var clients = _repositoryContext.Clients.AsQueryable();
+
+        if (isFullLoad)
+        {
+            clients = clients.Include(x => x.Info);
+        }
+
+        var find = clients.SingleOrDefault(x => x.Id == key);
 
         if (find is null)
         {
             return null;
         }
 
-        return find.ConvertToModel();
+        return find.ConvertToModel(isFullLoad);
     }
 
-    public IEnumerable<Client> GetEntities()
+    private IEnumerable<Client> GetWithModEntities(bool isFullLoad)
     {
-        return _repositoryContext.Clients
-            .Include(x => x.Info)
+        var clients = _repositoryContext.Clients.AsQueryable();
+
+        if (isFullLoad)
+        {
+            clients = clients.Include(x => x.Info);
+        }
+
+        return clients
             .AsEnumerable()
-            .Select(p => p.ConvertToModel());
+            .Select(p => p.ConvertToModel(isFullLoad));
     }
+
+    public Client? GetByKey(long key) => GetWithModByKey(key, true);
+
+    public IEnumerable<Client> GetEntities() => GetWithModEntities(true);
 
     public async Task<bool> ContainsAsync(Client entity, CancellationToken token = default)
     {
@@ -88,25 +105,18 @@ public sealed class ClientRepository : IClientRepository
         _repositoryContext.SaveChanges();
     }
 
-    public Client? GetPartialByKey(long key)
+    public Client? GetByKey(long key, LoadMod mod) => mod switch
     {
-        var find = _repositoryContext.Clients
-            .Include(x => x.Info)
-            .SingleOrDefault(x => x.Id == key);
+        LoadMod.Full => GetWithModByKey(key, true),
+        LoadMod.Partial => GetWithModByKey(key, true),
+        _ => throw new InvalidOperationException()
+    };
 
-        if (find is null)
-        {
-            return null;
-        }
 
-        return find.ConvertToModel(isFullLoad: false);
-    }
-
-    public IEnumerable<Client> GetPartialEntities()
+    public IEnumerable<Client> GetEntities(LoadMod mod) => mod switch
     {
-        return _repositoryContext.Clients
-            .Include(x => x.Info)
-            .AsEnumerable()
-            .Select(p => p.ConvertToModel(isFullLoad: false));
-    }
+        LoadMod.Full => GetWithModEntities(true),
+        LoadMod.Partial => GetWithModEntities(false),
+        _ => throw new InvalidOperationException()
+    };
 }

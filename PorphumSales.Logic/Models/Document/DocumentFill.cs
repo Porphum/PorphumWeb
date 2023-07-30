@@ -23,7 +23,7 @@ public class DocumentFill
         _rows = new HashSet<DocumentFillRow>();
     }
 
-    IReadOnlySet<DocumentFillRow> Rows => _rows;
+    public IReadOnlySet<DocumentFillRow> Rows => _rows;
 
     public void Add(Product product)
     {

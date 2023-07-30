@@ -1,4 +1,5 @@
 ﻿using General;
+using General.Abstractions.Models;
 using PorphumReferenceBook.Logic.Models.Product;
 using PorphumSales.Logic.Abstractions.Models;
 using System;
@@ -11,7 +12,7 @@ namespace PorphumSales.Logic.Models.Document;
 
 public class DocumentFillRow
 {
-    public DocumentFillRow(IMappable<Product> product, Money cost, int qunatity = 1)
+    public DocumentFillRow(IMappableModel<Product, long> product, Money cost, int qunatity = 1)
     {
         Product = product ?? throw new ArgumentException();
 
@@ -24,11 +25,12 @@ public class DocumentFillRow
         Qunatity = qunatity;
     }
 
-    public IMappable<Product> Product { get; }
+    public IMappableModel<Product, long> Product { get; }
 
     public int Qunatity { get; set; }
 
     public Money Cost { get; set; }
+
 
     public void ChangeQuantity(int deltaQuantity)
     {

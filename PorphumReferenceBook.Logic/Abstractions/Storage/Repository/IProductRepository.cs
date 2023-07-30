@@ -1,4 +1,5 @@
-﻿using General.Abstractions.Storage;
+﻿using General.Abstractions.Models;
+using General.Abstractions.Storage;
 using PorphumReferenceBook.Logic.Models.Product;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,10 @@ namespace PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 /// <summary>
 /// 
 /// </summary>
-public interface IProductRepository : IKeyableRepository<Product, long>, IKeyableRatialLoadRepository<Product, long>, IRepository<ProductGroup>
+public interface IProductRepository : 
+    IKeyableRepository<Product, long>, 
+    IKeyableRepositoryWithModifiableLoad<Product, ProductInfo, long>, 
+    IRepository<ProductGroup>
 {
     public IEnumerable<ProductGroup> GetSubGroups(ProductGroup group);
 }

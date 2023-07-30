@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PorphumWeb.Logic.Models.Document
+namespace General;
+
+public enum LoadMod
 {
-    internal class DocumentHeader
-    {
-    }
+    Full = 0,
+    Partial = 1
 }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace PorphumSales.Logic.Abstractions.Storage.Repository;
 
-public interface IDocumentRepository : IKeyableRepository<Document, long>, IKeyableRatialLoadRepository<Document, long>
+public interface IDocumentRepository : IKeyableRepository<Document, long>, IKeyableRepositoryWithModifiableLoad<Document, DocumentFill, long>
 {
     public DocumentConfig GetConfig();
 }
