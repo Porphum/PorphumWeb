@@ -1,43 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Abstractions\**" />
-    <EmbeddedResource Remove="Abstractions\**" />
-    <None Remove="Abstractions\**" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Abstractions\**" />
+		<EmbeddedResource Remove="Abstractions\**" />
+		<None Remove="Abstractions\**" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.21" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.21">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-<<<<<<<< HEAD:src/PorphumWeb.Logic/PorphumWeb.Logic.csproj
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="6.0.15" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.15" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.8" />
-========
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="6.0.21" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.21" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.21" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.21">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration" Version="6.0.16" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.16" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.8" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Abstractions\Storage\Repository\" />
->>>>>>>> 4ca9f49015691963b68981133ee4ba4d643f40db:src/PorphumReferenceBook.Logic/PorphumReferenceBook.Logic.csproj
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.15" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.15">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="6.0.15" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.15" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.8" />
+	</ItemGroup>
 
 </Project>
