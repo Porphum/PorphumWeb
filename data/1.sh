@@ -12,7 +12,7 @@
 set -e
 
 echo "start"
-find /docker-entrypoint-initdb.d -mindepth 2 -type f -print0 | while read -d $'\0' f; do
+for f in /docker-entrypoint-initdb.d/*/*/*; do 
   echo "debug $f"
   case "$f" in
     # *.sh)
