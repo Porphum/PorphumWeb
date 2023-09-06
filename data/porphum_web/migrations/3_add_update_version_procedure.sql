@@ -13,6 +13,6 @@ BEGIN
 
 END; $$;
 
-CALL sp_update_db_version(3);
+CALL sp_update_db_version(2);
 
 COMMIT;

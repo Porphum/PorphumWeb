@@ -25,7 +25,7 @@ CREATE TABLE user_roles_map(
     FOREIGN KEY(role_id) REFERENCES roles(Id) ON DELETE CASCADE
 );
 
-UPDATE db_version SET version = 2 WHERE TRUE; 
+UPDATE db_version SET version = 3 WHERE TRUE; 
 
 INSERT INTO roles(Id, Name) VALUES
 (1, 'Admin'),
