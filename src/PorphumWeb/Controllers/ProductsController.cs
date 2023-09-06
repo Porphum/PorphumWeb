@@ -7,21 +7,25 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PorphumReferenceBook.Logic.Storage;
 using PorphumReferenceBook.Logic.Storage.Models;
+using PorphumSales.Logic.Storage;
 
 namespace PorphumWeb.Controllers
 {
     public class ProductsController : Controller
     {
         private readonly ReferenceBookContext _context;
+        private readonly SalesContext _salesContext;
 
-        public ProductsController(ReferenceBookContext context)
+        public ProductsController(ReferenceBookContext context, SalesContext salesContext)
         {
             _context = context;
+            _salesContext = salesContext;
         }
 
         // GET: Products
         public async Task<IActionResult> Index()
         {
+            var docs = _salesContext.Documents.ToList();
             var referenceBookContext = _context.Products.Include(p => p.Group);
             return View(await referenceBookContext.ToListAsync());
         }

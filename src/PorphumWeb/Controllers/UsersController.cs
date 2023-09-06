@@ -22,6 +22,8 @@ namespace PorphumWeb.Controllers
         // GET: Users
         public async Task<IActionResult> Index()
         {
+
+
             return _context.Users != null ?
                         View(await _context.Users.ToListAsync()) :
                         Problem("Entity set 'WebContext.Users'  is null.");

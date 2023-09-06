@@ -21,13 +21,41 @@ public sealed class WebContext : DbContext
 
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        base.OnConfiguring(optionsBuilder);
-    }
+    /// <summary xml:lang="ru">
+    /// Роли пользовтелей.
+    /// </summary>
+    public DbSet<Role> Roles { get; set; } = default!;
+
+    /// <summary xml:lang="ru">
+    /// Пользовтели системы.
+    /// </summary>
+    public DbSet<User> Users { get; set; } = default!;
+    
+    /// <summary>
+    /// Доступные подключения.
+    /// </summary>
+    public DbSet<Connection> Connections { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Connection>(entity =>
+        {
+            entity.HasKey(e => e.KeyId)
+                .HasName("connections_pkey");
+
+            entity.ToTable("connections");
+
+            entity.Property(e => e.KeyId)
+                .HasMaxLength(10)
+                .HasColumnName("key_id");
+
+            entity.Property(e => e.DbName)
+                .HasMaxLength(20)
+                .HasColumnName("db_name");
+
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
+        });
+
         modelBuilder.Entity<Role>(entity =>
         {
             entity.ToTable("roles");
@@ -71,14 +99,4 @@ public sealed class WebContext : DbContext
                     });
         });
     }
-
-    /// <summary xml:lang="ru">
-    /// Роли пользовтелей.
-    /// </summary>
-    public DbSet<Role> Roles { get; set; } = default!;
-    
-    /// <summary xml:lang="ru">
-    /// Пользовтели системы.
-    /// </summary>
-    public DbSet<User> Users { get; set; } = default!;
 }
