@@ -3,10 +3,7 @@ name: test_app
 services:
   apache:
     container_name: apache_container
-    image: web-server
-    # container_name: my-apache-app
-    # stdin_open: true # docker run -i
-    # tty: true # docker run -t     
+    image: web-server  
     build:
       context: ../web
       dockerfile: ../docker/apache.Dockerfile
@@ -14,15 +11,7 @@ services:
     - '8080:80'
     networks:
       - postgres
-  # apache:
-  #   image: httpd:latest
-  #   container_name: my-apache-app
-  #   ports:
-  #   - '8080:80'
-  #   volumes:
-  #   - ../web/helloapp.conf:/usr/local/apache2/sites-enabled/helloapp.conf
-  #   networks:
-  #     - postgres
+
   postgres:
     container_name: postgres_container
     image: postgres:14
@@ -62,8 +51,6 @@ services:
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
       - ../../data/:/docker-entrypoint-initdb.d/
-      # - /script.sh:/usr/local/bin/custom-entrypoint.sh
-      # - ../datPorphumSales/Migrations/a/init.sh:/docker-entrypoint-initdb.d/initdb.sh
       - habrdb-data:/var/lib/postgresql/data
     # ports:
     #   - "5432:5432"
@@ -84,9 +71,6 @@ services:
   app:
    container_name: app_container
    image: wi1sp/porphum_web:master
-   environment:
-     - REGISTRY_USERNAME=wi1sp
-     - REGISTRY_PASSWORD=dckr_pat_T3-JNWXWL44kl74FN2J--DLWhic
    ports:
      - 5000:80
    depends_on:
