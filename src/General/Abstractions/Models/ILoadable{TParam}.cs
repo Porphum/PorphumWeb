@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace General.Models;
 
-namespace General.Models;
-
-public interface ILoadable<TParam>
+/// <summary xml:lang = "ru">
+/// Контракт для сущности, которая может быть не полностью загружена.
+/// </summary>
+public interface ILoadable
 {
+    /// <summary xml:lang = "ru">
+    /// Флаг - была ли полностью произведена загрузка.
+    /// </summary>
     public bool IsLoaded { get; }
-
-    public void Load(TParam param);
 }

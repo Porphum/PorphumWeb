@@ -1,15 +1,16 @@
-﻿using General.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using General.Abstractions.Models;
+using General.Models;
 
 namespace General.Abstractions.Storage;
 
-public interface IKeyableRepositoryWithModifiableLoad<TEntity, TParam, TKey> : 
-    IRepositoryWithModifiableLoad<TEntity, TParam> 
-    where TEntity: ILoadable<TParam>
+/// <summary xml:lang = "ru">
+/// Репозиторий с возможностью неполной загрузки по ключу.
+/// </summary>
+/// <typeparam name="TEntity">Тип сущности репозитория.</typeparam>
+/// <typeparam name="TKey">Тип ключа.</typeparam>
+public interface IKeyableRepositoryWithModifiableLoad<TEntity, TKey> : 
+    IRepositoryWithModifiableLoad<TEntity> 
+    where TEntity: ILoadable, IKeyable<TKey>
 {
     public TEntity? GetByKey(TKey key, LoadMod mod);
 }
