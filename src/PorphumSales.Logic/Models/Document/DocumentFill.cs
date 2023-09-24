@@ -1,47 +1,33 @@
 ﻿using Castle.Core.Internal;
 using PorphumReferenceBook.Logic.Models.Product;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.Immutable;
 
 namespace PorphumSales.Logic.Models.Document;
 
+/// <summary xml:lang="ru">
+/// Класс содержания документа.
+/// </summary>
 public class DocumentFill
 {
-    private HashSet<DocumentFillRow> _rows;
+    private HashSet<SaleProduct> _rows;
 
-    public DocumentFill(HashSet<DocumentFillRow>? rows)
+    /// <summary xml:lang="ru">
+    /// Создаёт экземпляр класса <see cref="DocumentFill"/>.
+    /// </summary>
+    /// <param name="rows" xml:lang="ru">Позиции в документе.</param>
+    public DocumentFill(HashSet<SaleProduct>? rows)
     {
         if (!rows.IsNullOrEmpty())
         {
-            _rows = new HashSet<DocumentFillRow>(rows!);
+            _rows = new HashSet<SaleProduct>(rows!);
             return;
         }
 
-        _rows = new HashSet<DocumentFillRow>();
+        _rows = new HashSet<SaleProduct>();
     }
 
-    public IReadOnlySet<DocumentFillRow> Rows => _rows;
-
-    public void Add(Product product)
-    {
-        
-    }
-
-    public void Remove(Product product) 
-    { 
-    
-    }
-
-    public void Delete(Product product)
-    {
-
-    }
-
-    public void Clear() 
-    {
-       
-    }
+    /// <summary xml:lang="ru">
+    /// Позиции в документе.
+    /// </summary>
+    public IReadOnlySet<SaleProduct> Rows => _rows;
 }

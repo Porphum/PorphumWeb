@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PorphumSales.Logic.Storage.Models;
+namespace PorphumSales.Logic.Models.Document;
 
-public enum DocumentStatusId : short
+/// <summary xml:lang="ru">
+/// Состояние для документов.
+/// </summary>
+public enum DocumentState
 {
     Unknown = 0,
     Created = 1,

@@ -1,17 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PorphumSales.Logic.Storage.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace PorphumSales.Logic.Storage;
 
 //Scaffold-DbContext "Host=localhost;Port=5432;Database=porphum_sales;Username=postgres;Password=root" Npgsql.EntityFrameworkCore.PostgreSQL
+/// <summary xml:lang="ru">
+/// Контекст базы данных для документов.
+/// </summary>
 public sealed class SalesContext : DbContext
 {
+    /// <summary xml:lang="ru">
+    /// Создаёт экземпляр класса <see cref="SalesContext"/>.
+    /// </summary>
+    /// <param name="optionsBuilder" xml:lang="ru">Параметры для контекста.</param>
     public SalesContext(DbContextOptions<SalesContext> optionsBuilder)
         : base(optionsBuilder)
     {
@@ -23,10 +24,19 @@ public sealed class SalesContext : DbContext
         base.OnConfiguring(optionsBuilder);
     }
 
+    /// <summary>
+    /// Конфиги для документов.
+    /// </summary>
     public DbSet<DocumentConfig> DocumentConfigs { get; set; } = null!;
 
+    /// <summary>
+    /// Документы.
+    /// </summary>
     public DbSet<Document> Documents { get; set; } = null!;
 
+    /// <summary>
+    /// Содержания документов.
+    /// </summary>
     public DbSet<DocumentsRow> DocumentsRows { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

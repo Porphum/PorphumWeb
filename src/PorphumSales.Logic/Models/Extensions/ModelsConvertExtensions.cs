@@ -1,45 +1,60 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PorphumSales.Logic.Models.Mapper;
+using PorphumReferenceBook.Logic.Models.Client;
 
 namespace PorphumSales.Logic.Models.Extensions;
 
 using PorphumSales.Logic.Models.Document;
-
-using TDocument = PorphumSales.Logic.Storage.Models.Document;
-using TDocumentsRow = PorphumSales.Logic.Storage.Models.DocumentsRow;
-using DocumentStatusId = PorphumSales.Logic.Storage.Models.DocumentStatusId;
-using DocumentTypeId = PorphumSales.Logic.Storage.Models.DocumentTypeId;
-using System.Runtime.CompilerServices;
-using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
-using PorphumSales.Logic.Models.Mapper;
+using TDocument = Storage.Models.Document;
+using TDocumentsRow = Storage.Models.DocumentsRow;
+using DocumentStateId = Storage.Models.DocumentStateId;
+using DocumentTypeId = Storage.Models.DocumentTypeId;
+using PorphumReferenceBook.Logic.Models.Product;
+using PorphumReferenceBook.Logic.Abstractions;
 
 public static class ModelsConvertExtensions
 {
-    public static Document ConvertToModel(this TDocument storage, bool isFullLoad = true)
-    {
-        var model = new Document(
+    /// <summary xml:lang="ru">
+    /// Конвертирует модель хранилища <see cref="TDocument"/> в доменную модель <see cref="Document"/>.
+    /// </summary>
+    /// <param name="storage" xml:lang="ru">Модель хранилища.</param>
+    /// <param name="mapper" xml:lang="ru">Загрузчик для сущностей справочника.</param>
+    /// <param name="isFullLoad" xml:lang="ru">Флаг полной загрузки модели.</param>
+    /// <returns xml:lang="ru">Доменная модель.</returns>
+    public static Document ConvertToModel(this TDocument storage, IReferenceBookMapper mapper, bool isFullLoad = true) => 
+        isFullLoad
+            ? new Document(
             storage.Id,
             new DocumentHeader(
                 storage.Number,
                 storage.Date,
-                new MappableClient(new ProxyClient(storage.ClientWhoId)),
-                new MappableClient(new ProxyClient(storage.ClientWithId))),
+                mapper.MapEntity(new MappableModel<Client, long>(storage.ClientWhoId)),
+                mapper.MapEntity(new MappableModel<Client, long>(storage.ClientWhoId))
+            ),
             (DocumentType)storage.TypeId,
-            (DocumentStatus)storage.StatusId);
+            (DocumentState)storage.StatusId
+        )
+            : new Document(
+            storage.Id,
+            new DocumentHeader(
+                storage.Number,
+                storage.Date,
+                new MappableModel<Client, long>(storage.ClientWhoId),
+                new MappableModel<Client, long>(storage.ClientWhoId)
+            ),
+            (DocumentType)storage.TypeId,
+            (DocumentState)storage.StatusId,
+            new DocumentFill(
+                storage.DocumentsRows
+                    .Select(x => x.ConvertToModel(mapper))
+                    .ToHashSet()
+            )
+        );
 
-        if (isFullLoad)
-        {
-            model.Load(new DocumentFill(storage.DocumentsRows
-                .Select(x => x.ConvertToModel())
-                .ToHashSet()));
-        }
-
-        return model;
-    }
-
+    /// <summary xml:lang="ru">
+    /// Конвертирует доменную модель <see cref="Document"/> в модель хранилища <see cref="TDocument"/>.
+    /// </summary>
+    /// <param name="model" xml:lang="ru">Доменная модель.</param>
+    /// <returns xml:lang="ru">Модель хранилища.</returns>
     public static TDocument ConvertToStorage(this Document model)
     {
         var storage = new TDocument();
@@ -50,7 +65,7 @@ public static class ModelsConvertExtensions
         storage.ClientWhoId = model.Header.Who.MapKey;
         storage.ClientWithId = model.Header.With.MapKey;
         storage.TypeId = (DocumentTypeId)model.Type;
-        storage.StatusId = (DocumentStatusId)model.Status;
+        storage.StatusId = (DocumentStateId)model.State;
         storage.DocumentsRows = model.Fill.Rows
             .Select(x => x.ConvertToStorage())
             .Select(x => { x.DocumentId = storage.Id; return x; })
@@ -59,21 +74,31 @@ public static class ModelsConvertExtensions
         return storage;
     }
 
-    public static DocumentFillRow ConvertToModel(this TDocumentsRow storage)
+    /// <summary xml:lang="ru">
+    /// Конвертирует модель хранилища <see cref="TDocumentsRow"/> в доменную модель <see cref="SaleProduct"/>.
+    /// </summary>
+    /// <param name="storage" xml:lang="ru">Модель хранилища.</param>
+    /// <returns xml:lang="ru">Доменная модель.</returns>
+    public static SaleProduct ConvertToModel(this TDocumentsRow storage, IReferenceBookMapper mapper)
     {
-        return new DocumentFillRow(
-            new MappableProduct(
-                new ProxyProduct(storage.ProductId)), 
+        return new SaleProduct(
+            mapper.MapEntity(new MappableModel<Product, long>(storage.ProductId)), 
             new General.Money(storage.Cost),
-            storage.Quantity);
+            storage.Quantity
+        );
     }
 
-    public static TDocumentsRow ConvertToStorage(this DocumentFillRow model)
+    /// <summary xml:lang="ru">
+    /// Конвертирует доменную модель <see cref="SaleProduct"/> в модель хранилища <see cref="TDocumentsRow"/>.
+    /// </summary>
+    /// <param name="model" xml:lang="ru">Доменная модель.</param>
+    /// <returns xml:lang="ru">Модель хранилища.</returns>
+    public static TDocumentsRow ConvertToStorage(this SaleProduct model)
     {
         var storage = new TDocumentsRow();
 
         storage.ProductId = model.Product.MapKey;
-        storage.Quantity = model.Qunatity;
+        storage.Quantity = model.Quantity;
         storage.Cost = model.Cost.Value;
 
         return storage;
