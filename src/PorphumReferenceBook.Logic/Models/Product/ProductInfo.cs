@@ -1,32 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace PorphumReferenceBook.Logic.Models.Product;
 
-namespace PorphumReferenceBook.Logic.Models.Product;
-
+/// <summary xml:lang="ru">
+/// Класс с информацией о продукте.
+/// </summary>
 public sealed class ProductInfo
 {
-    private string? _description;
-
+    /// <summary xml:lang="ru">
+    /// Создаёт экземпляр класса <see cref="ProductInfo"/>.
+    /// </summary>
+    /// <param name="barCode" xml:lang="ru">Штрих-код продукта.</param>
+    /// <param name="description" xml:lang="ru">Описание продукта.</param>
+    /// <exception cref="ArgumentException">Если <paramref name="description"/> - не советует формату.</exception>
     public ProductInfo(BarCode? barCode = null, string? description = null)
     {
         BarCode = barCode;
+
+        if (string.IsNullOrWhiteSpace(description) && description is not null)
+        {
+            throw new ArgumentException(
+                $"Given {nameof(Description)} of {nameof(ProductInfo)} " +
+                $"does not match with required pattern.",
+                nameof(description)
+            );
+        }
+
         Description = description;
     }
 
-    public BarCode? BarCode { get; set; }
+    /// <summary xml:lang="ru">
+    /// Штрих-код продукта.
+    /// </summary>
+    public BarCode? BarCode { get; }
 
-    public string? Description
-    {
-        get => _description;
-        set
-        {
-            if (string.IsNullOrWhiteSpace(value) && value is not null)
-                throw new ArgumentException();
-
-            _description = value;
-        }
-    }
+    /// <summary xml:lang="ru">
+    /// Описание продукта.
+    /// </summary>
+    public string? Description { get; }
 }

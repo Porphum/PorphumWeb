@@ -30,4 +30,12 @@ public interface IMappableModel<TEntity, TMapKey> where TEntity : class
     /// Ключ, по которому происходит загрузка сущности.
     /// </summary>
     public TMapKey MapKey { get; }
+
+    /// <summary xml:lang="ru">
+    /// Производит загрузку сущности <typeparamref name="TEntity"/>.
+    /// Если <paramref name="entity"/> равен <see langword="null"/>,
+    /// то <see cref="MapState"/> будет присвоено значение <see cref="MapState.MapError"/>.
+    /// </summary>
+    /// <param name="entity" xml:lang="ru">Сущность для загрузки.</param>
+    public void Map(TEntity? entity);
 }

@@ -1,16 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 
 namespace PorphumReferenceBook.Logic.Models.Clients;
 
-public sealed record class Inn
+/// <summary xml:lang="ru">
+/// Класс хранящий и проверяющий инн клиентов.
+/// </summary>
+public record class Inn
 {
+    /// <summary xml:lang="ru">
+    /// Шаблон для проверки инн.
+    /// </summary>
     public static readonly string INN_PATTERN = @".*";
 
+    /// <summary xml:lang="ru">
+    /// Создаёт экземпляр класса <see cref="Inn"/>.
+    /// </summary>
+    /// <param name="value">Значение ИНН.</param>
+    /// <exception cref="ArgumentException">
+    /// Если <paramref name="value"/> - не соответствует формату.
+    /// </exception>
     public Inn(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -22,5 +30,8 @@ public sealed record class Inn
         Value = value;
     }
 
+    /// <summary>
+    /// Значение.
+    /// </summary>
     public string Value { get; }
 }
