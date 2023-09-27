@@ -13,20 +13,12 @@ public sealed class DocumentValidator
     /// </summary>
     /// <param name="entity">Модель для проверки.</param>
     /// <returns>Результат проверки.</returns>
-    /// <exception cref="ArgumentException">
-    /// Если <paramref name="entity"/> неполностью загружен.
-    /// </exception>
     public ValidationMessage Validate(Document entity)
     {
         if (entity.Header.With.MapState != General.MapState.Success ||
             entity.Header.Who.MapState != General.MapState.Success)
         {
             return new ValidationMessage(DocumentValidationMessageResultType.DocumentHeaderMapError);
-        }
-
-        if (!entity.IsLoaded)
-        {
-            throw new ArgumentException("Can't validate not full load document.");
         }
 
         if (!entity.Fill.Rows.Any())
