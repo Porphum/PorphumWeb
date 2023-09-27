@@ -11,8 +11,13 @@ namespace PorphumSales.Logic.Models.Document;
 /// </summary>
 public enum DocumentState
 {
-    Unknown = 0,
-    Created = 1,
-    Filled = 2,
-    Complete = 3
+    /// <summary xml:lang="ru">
+    /// Документ заполняется.
+    /// </summary>
+    Fill = 0,
+
+    /// <summary xml:lang="ru">
+    /// Документ проведён.
+    /// </summary>
+    Complete = 1,
 }

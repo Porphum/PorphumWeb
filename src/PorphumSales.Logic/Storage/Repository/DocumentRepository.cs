@@ -142,6 +142,22 @@ public class DocumentRepository : IDocumentRepository
     /// <inheritdoc/>
     public DocumentConfig GetConfig()
     {
-        throw new NotImplementedException();
+        var storage = _repositoryContext.Configs
+            .AsNoTrackingWithIdentityResolution()
+            .FirstOrDefault();
+
+        if (storage is null)
+        {
+            throw new InvalidOperationException("No configs was found");
+        }
+
+        var config = storage.ConvertToModel(_referenceBookMapper);
+
+        if (config.Master.MapState == MapState.MapError)
+        {
+            throw new InvalidOperationException("Can't load config correctly");
+        }
+
+        return config;
     }
 }

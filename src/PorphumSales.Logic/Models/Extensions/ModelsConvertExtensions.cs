@@ -6,6 +6,7 @@ namespace PorphumSales.Logic.Models.Extensions;
 using PorphumSales.Logic.Models.Document;
 using TDocument = Storage.Models.Document;
 using TDocumentsRow = Storage.Models.DocumentsRow;
+using TDocumentConfig = Storage.Models.DocumentConfig;
 using DocumentStateId = Storage.Models.DocumentStateId;
 using DocumentTypeId = Storage.Models.DocumentTypeId;
 using PorphumReferenceBook.Logic.Models.Product;
@@ -78,6 +79,7 @@ public static class ModelsConvertExtensions
     /// Конвертирует модель хранилища <see cref="TDocumentsRow"/> в доменную модель <see cref="SaleProduct"/>.
     /// </summary>
     /// <param name="storage" xml:lang="ru">Модель хранилища.</param>
+    /// <param name="mapper" xml:lang="ru">Загрузчик для сущностей справочника.</param>
     /// <returns xml:lang="ru">Доменная модель.</returns>
     public static SaleProduct ConvertToModel(this TDocumentsRow storage, IReferenceBookMapper mapper)
     {
@@ -101,6 +103,35 @@ public static class ModelsConvertExtensions
         storage.Quantity = model.Quantity;
         storage.Cost = model.Cost.Value;
 
+        return storage;
+    }
+
+    /// <summary xml:lang="ru">
+    /// Конвертирует модель хранилища <see cref="TDocumentConfig"/> в доменную модель <see cref="DocumentConfig"/>.
+    /// </summary>
+    /// <param name="storage" xml:lang="ru">Модель хранилища.</param>
+    /// <param name="mapper" xml:lang="ru">Загрузчик для сущностей справочника.</param>
+    /// <returns xml:lang="ru">Доменная модель.</returns>
+    public static DocumentConfig ConvertToModel(this TDocumentConfig storage, IReferenceBookMapper mapper)
+    {
+        return new DocumentConfig(
+            storage.Id,
+            mapper.MapEntity(new MappableModel<Client, long>(storage.MasterId))
+        );
+    }
+
+    /// <summary xml:lang="ru">
+    /// Конвертирует доменную модель <see cref="SaleProduct"/> в модель хранилища <see cref="TDocumentConfig"/>.
+    /// </summary>
+    /// <param name="model" xml:lang="ru">Доменная модель.</param>
+    /// <returns xml:lang="ru">Модель хранилища.</returns>
+    public static TDocumentConfig ConvertToStorage(this DocumentConfig model)
+    {
+        var storage = new TDocumentConfig();
+
+        storage.Id = model.Key;
+        storage.MasterId = model.Master.MapKey;
+        
         return storage;
     }
 }

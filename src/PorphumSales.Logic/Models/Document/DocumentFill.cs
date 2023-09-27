@@ -15,7 +15,7 @@ public class DocumentFill
     /// Создаёт экземпляр класса <see cref="DocumentFill"/>.
     /// </summary>
     /// <param name="rows" xml:lang="ru">Позиции в документе.</param>
-    public DocumentFill(HashSet<SaleProduct>? rows)
+    public DocumentFill(HashSet<SaleProduct>? rows = null)
     {
         if (!rows.IsNullOrEmpty())
         {

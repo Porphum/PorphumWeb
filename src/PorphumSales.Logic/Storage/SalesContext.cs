@@ -24,17 +24,17 @@ public sealed class SalesContext : DbContext
         base.OnConfiguring(optionsBuilder);
     }
 
-    /// <summary>
+    /// <summary xml:lang="ru">
     /// Конфиги для документов.
     /// </summary>
     public DbSet<DocumentConfig> DocumentConfigs { get; set; } = null!;
 
-    /// <summary>
+    /// <summary xml:lang="ru">
     /// Документы.
     /// </summary>
     public DbSet<Document> Documents { get; set; } = null!;
 
-    /// <summary>
+    /// <summary xml:lang="ru">
     /// Содержания документов.
     /// </summary>
     public DbSet<DocumentsRow> DocumentsRows { get; set; } = null!;

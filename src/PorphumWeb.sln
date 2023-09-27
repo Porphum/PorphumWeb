@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PorphumReferenceBook.Logic"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "General", "General\General.csproj", "{22FB80AF-21E3-4D3E-9204-FF89625EB467}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PorphumSales.Logic", "PorphumSales.Logic\PorphumSales.Logic.csproj", "{34B56DCA-423F-48BE-A7D9-E68736BBC022}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PorphumSales.Logic", "PorphumSales.Logic\PorphumSales.Logic.csproj", "{34B56DCA-423F-48BE-A7D9-E68736BBC022}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

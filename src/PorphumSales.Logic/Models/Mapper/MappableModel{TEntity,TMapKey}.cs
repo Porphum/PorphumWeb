@@ -17,16 +17,33 @@ public class MappableModel<TEntity, TMapKey> : IMappableModel<TEntity, TMapKey> 
     public MappableModel(TMapKey mapKey)
     {
         MapKey = mapKey;
+        MappedEntity = null!;
+        MapState = MapState.Init;
+    }
+
+    /// <summary xml:lang="ru">
+    ///  Создаёт экземпляр класса <see cref="MappableModel{TEntity, TMapKey}"/> с уже загруженной сущностью.
+    /// </summary>
+    /// <param name="mapKey" xml:lang="ru">Ключ для загрузки.</param>
+    /// <param name="mapEntity" xml:lang="ru">Загруженная сущность.</param>
+    /// <exception cref="ArgumentNullException" xml:lang="ru">
+    /// Если <paramref name="mapEntity"/> - <see langword="null"/>.
+    /// </exception>
+    public MappableModel(TMapKey mapKey, TEntity mapEntity)
+    {
+        MappedEntity = mapEntity ?? throw new ArgumentNullException(nameof(mapEntity));
+        MapKey = mapKey;
+        MapState = MapState.Success;
     }
 
     /// <inheritdoc/>
     public TMapKey MapKey { get; }
 
     /// <inheritdoc/>
-    public TEntity MappedEntity { get; private set; } = null!;
+    public TEntity MappedEntity { get; private set; }
 
     /// <inheritdoc/>
-    public MapState MapState { get; private set; } = MapState.Init;
+    public MapState MapState { get; private set; }
 
     /// <inheritdoc/>
     public void Map(TEntity? entity)
