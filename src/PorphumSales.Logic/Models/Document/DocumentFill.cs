@@ -1,5 +1,6 @@
 ﻿using Castle.Core.Internal;
 using PorphumReferenceBook.Logic.Models.Product;
+using PorphumSales.Logic.Models.Mapper;
 using System.Collections.Immutable;
 
 namespace PorphumSales.Logic.Models.Document;
@@ -9,7 +10,7 @@ namespace PorphumSales.Logic.Models.Document;
 /// </summary>
 public class DocumentFill
 {
-    private HashSet<SaleProduct> _rows;
+    private List<SaleProduct> _rows; // todo better use set i think
 
     /// <summary xml:lang="ru">
     /// Создаёт экземпляр класса <see cref="DocumentFill"/>.
@@ -19,15 +20,52 @@ public class DocumentFill
     {
         if (!rows.IsNullOrEmpty())
         {
-            _rows = new HashSet<SaleProduct>(rows!);
+            _rows = new List<SaleProduct>(rows!);
             return;
         }
 
-        _rows = new HashSet<SaleProduct>();
+        _rows = new List<SaleProduct>();
     }
 
     /// <summary xml:lang="ru">
     /// Позиции в документе.
     /// </summary>
-    public IReadOnlySet<SaleProduct> Rows => _rows;
+    public IReadOnlyList<SaleProduct> Rows => _rows;
+
+    /// <summary xml:lang="ru">
+    /// Добавляет продукт в содержание.
+    /// </summary>
+    /// <param name="product" xml:lang="ru">Продукт для добавления.</param>
+    /// <param name="quantity">Добавляемое количество.</param>
+    /// <exception cref="ArgumentNullException" xml:lang="ru">
+    /// Если <paramref name="product"/> - <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException" xml:lang="ru">
+    /// Если <paramref name="quantity"/> меньше либо равно 0.
+    /// </exception>
+    public void AddProduct(Product product, int quantity = 1)
+    {
+        ArgumentNullException.ThrowIfNull(product, nameof(product));
+
+        if (quantity <= 0)
+        {
+            throw new ArgumentException("Can add only positive quantity of products.");
+        }
+
+        var newProduct = new MappableModel<Product, long>(product.Key, product);
+
+        var productRow = _rows.FirstOrDefault(x => x.Product.MapKey == newProduct.MapKey);
+
+        if (productRow is null)
+        {
+            _rows.Add(new SaleProduct(newProduct, quantity));
+            return;
+        }
+
+        var newRow = new SaleProduct(newProduct, quantity + productRow.Quantity);
+
+        _rows.RemoveAll(x => x.Product.MapKey == product.Key);
+
+        _rows.Add(newRow);
+    }
 }

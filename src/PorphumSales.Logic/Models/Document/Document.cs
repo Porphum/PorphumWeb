@@ -8,6 +8,8 @@ namespace PorphumSales.Logic.Models.Document;
 /// </summary>
 public class Document : ILoadable, IKeyable<long>
 {
+    private DocumentFill _fill;
+
     /// <summary xml:lang="ru">
     /// Создаёт неполностью загруженный экземпляр класса <see cref="Document"/>.
     /// </summary>
@@ -51,7 +53,7 @@ public class Document : ILoadable, IKeyable<long>
         State = state;
         
         IsLoaded = false;
-        Fill = null!;
+        _fill = null!;
     }
 
     /// <summary xml:lang="ru">
@@ -101,7 +103,7 @@ public class Document : ILoadable, IKeyable<long>
         State = state;
 
         IsLoaded = false;
-        Fill = fill ?? throw new ArgumentNullException(nameof(fill));
+        _fill = fill ?? throw new ArgumentNullException(nameof(fill));
     }
 
     /// <summary xml:lang="ru">
@@ -117,7 +119,21 @@ public class Document : ILoadable, IKeyable<long>
     /// <summary xml:lang="ru">
     /// Содержание документа.
     /// </summary>
-    public DocumentFill Fill { get; private set; }
+    public DocumentFill Fill
+    {
+        get
+        {
+            if (!IsLoaded)
+            {
+                throw new InvalidOperationException(
+                    $"Can't access to {nameof(DocumentFill)} " +
+                    $"for not full loaded {nameof(Fill)}"
+                );
+            }
+
+            return _fill;
+        }
+    }
 
     /// <summary xml:lang="ru">
     /// Состояние документа.

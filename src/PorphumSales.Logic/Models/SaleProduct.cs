@@ -21,17 +21,16 @@ public class SaleProduct
     /// <exception cref="ArgumentException" xml:lang="ru">
     /// Если <paramref name="qunatity"/> меньше либо равно 0.
     /// </exception>
-    public SaleProduct(IMappableModel<Product, long> product, Money cost, int qunatity = 1)
+    public SaleProduct(IMappableModel<Product, long> product, int quantity = 1)
     {
         Product = product ?? throw new ArgumentNullException(nameof(product));
 
-        if (qunatity < 1)
+        if (quantity < 1)
         {
-            throw new ArgumentException($"{nameof(Cost)} of {nameof(Product)} can only have values greater than zero.");
+            throw new ArgumentException($"{nameof(Quantity)} of {nameof(Product)} can only have values greater than zero.");
         }
 
-        Cost = cost;
-        Quantity = qunatity;
+        Quantity = quantity;
     }
 
     /// <summary xml:lang="ru">
@@ -44,8 +43,8 @@ public class SaleProduct
     /// </summary>
     public int Quantity { get; }
 
-    /// <summary xml:lang="ru">
+/*    /// <summary xml:lang="ru">
     /// Стоимость.
     /// </summary>
-    public Money Cost { get; }
+    public Money Cost { get; }*/
 }
