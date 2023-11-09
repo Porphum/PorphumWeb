@@ -126,7 +126,7 @@ public static class ModelsConvertExtensions
     /// <param name="isFullLoad" xml:lang="ru">Флаг полной загрузки модели.</param>
     /// <returns xml:lang="ru">Доменная модель.</returns>
     public static Client ConvertToModel(this TClient storage, bool isFullLoad = true) => 
-        isFullLoad
+        !isFullLoad
             ? new Client(storage.Id, storage.Name)
             : new Client(storage.Id, storage.Name, storage.Info.ConvertToModel());
 

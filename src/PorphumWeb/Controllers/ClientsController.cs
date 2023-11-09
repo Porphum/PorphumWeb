@@ -4,27 +4,32 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.EntityFrameworkCore;
+using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+using PorphumReferenceBook.Logic.Models.Client;
+using PorphumReferenceBook.Logic.Models.Clients;
 using PorphumReferenceBook.Logic.Storage;
-using PorphumReferenceBook.Logic.Storage.Models;
+using PorphumWeb.Models.ReferenceBook.Clients;
 
 namespace PorphumWeb.Controllers
 {
     public class ClientsController : Controller
     {
         private readonly ReferenceBookContext _context;
+        private readonly IClientRepository _clientRepository;
 
-        public ClientsController(ReferenceBookContext context)
+        public ClientsController(IClientRepository clientRepository)
         {
-            _context = context;
+            _clientRepository = clientRepository ?? throw new ArgumentNullException();
         }
 
         // GET: Clients
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-              return _context.Clients != null ? 
-                          View(await _context.Clients.ToListAsync()) :
-                          Problem("Entity set 'ReferenceBookContext.Clients'  is null.");
+            var clients = _clientRepository.GetEntities(General.LoadMod.Partial).AsEnumerable();
+
+            return View(clients);
         }
 
         // GET: Clients/Details/5
@@ -56,15 +61,21 @@ namespace PorphumWeb.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Client client)
+        public async Task<IActionResult> Create([Bind("Id,Name,Inn,Address")] ClientViewModel client)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(client);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return View(client);
             }
-            return View(client);
+
+            var newClient = new Client(client.Id, client.Name, new ClientIdentityInfo(new Inn(client.Inn), new Address(client.Address)));
+
+            await _clientRepository.AddAsync(newClient);
+
+
+            _context.Add(client);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Clients/Edit/5
