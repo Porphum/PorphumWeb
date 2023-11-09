@@ -3,42 +3,55 @@
 using PorphumReferenceBook.Logic.Models.Client;
 using PorphumReferenceBook.Logic.Models.Product;
 
-using TProduct = PorphumReferenceBook.Logic.Storage.Models.Product;
-using TProductGroup = PorphumReferenceBook.Logic.Storage.Models.ProductGroup;
-using TClient = PorphumReferenceBook.Logic.Storage.Models.Client;
-using ProductExtraInfo = PorphumReferenceBook.Logic.Storage.Models.ProductExtraInfo;
-using ClientInfo = PorphumReferenceBook.Logic.Storage.Models.ClientInfo;
+using TProduct = Storage.Models.Product;
+using TProductGroup = Storage.Models.ProductGroup;
+using TClient = Storage.Models.Client;
+using ProductExtraInfo = Storage.Models.ProductExtraInfo;
+using ClientInfo = Storage.Models.ClientInfo;
 using General;
+
 
 public static class ModelsConvertExtensions
 {
     #region Product
 
-    public static Product ConvertToModel(this TProduct product, bool isFullLoad = true)
-    {
-        var model = new Product(
-            product.Id, 
-            product.Name,
-            product.Group.ConvertToModel(),
-            new Money(product.Cost));
-        
-        if (isFullLoad)
-        {
-            // todo
-            model.Load(product.Info is null
-                ? null
-                : product.Info.ConvertToModel());
-        }
+    /// <summary xml:lang="ru">
+    /// Конвертирует модель хранилища <see cref="TProduct"/> в доменную модель <see cref="Product"/>.
+    /// </summary>
+    /// <param name="product" xml:lang="ru">Модель хранилища.</param>
+    /// <param name="isFullLoad" xml:lang="ru">Флаг полной загрузки модели.</param>
+    /// <returns xml:lang="ru">Доменная модель.</returns>
+    public static Product ConvertToModel(this TProduct product, bool isFullLoad = true) => 
+        isFullLoad 
+            ? new Product(
+                product.Id,
+                product.Name,
+                product.Group.ConvertToModel(),
+                new Money(product.Cost),
+                product.Info.ConvertToModel()
+            ) 
+            : new Product(
+                product.Id,
+                product.Name,
+                product.Group.ConvertToModel(),
+                new Money(product.Cost)
+            );
 
-
-        return model;   
-    }
-
+    /// <summary xml:lang="ru">
+    /// Конвертирует модель хранилища <see cref="TProductGroup"/> в доменную модель <see cref="ProductGroup"/>.
+    /// </summary>
+    /// <param name="group" xml:lang="ru">Модель хранилища.</param>
+    /// <returns xml:lang="ru">Доменная модель.</returns>
     public static ProductGroup ConvertToModel(this TProductGroup group)
     {
         return new ProductGroup(group.Id, group.Name);
     }
 
+    /// <summary xml:lang="ru">
+    /// Конвертирует модель хранилища <see cref="ProductExtraInfo"/> в доменную модель <see cref="ProductInfo"/>.
+    /// </summary>
+    /// <param name="info" xml:lang="ru">Модель хранилища.</param>
+    /// <returns xml:lang="ru">Доменная модель.</returns>
     public static ProductInfo ConvertToModel(this ProductExtraInfo info)
     {
         var model = new ProductInfo(
@@ -50,6 +63,11 @@ public static class ModelsConvertExtensions
         return model;
     }
 
+    /// <summary xml:lang="ru">
+    /// Конвертирует доменную модель <see cref="Product"/> в модель хранилища <see cref="TProduct"/>.
+    /// </summary>
+    /// <param name="product" xml:lang="ru">Доменная модель.</param>
+    /// <returns xml:lang="ru">Модель хранилища.</returns>
     public static TProduct ConvertToStorage(this Product product)
     {
         var storage = new TProduct();
@@ -61,13 +79,16 @@ public static class ModelsConvertExtensions
         storage.GroupId = product.Group.Key;
         storage.Group = product.Group.ConvertToStorage();
 
-        storage.Info = product.Info is null 
-            ? null
-            : product.Info.ConvertToStorage();
+        storage.Info = product.Info.ConvertToStorage();
 
         return storage;
     }
 
+    /// <summary xml:lang="ru">
+    /// Конвертирует доменную модель <see cref="ProductGroup"/> в модель хранилища <see cref="TProductGroup"/>.
+    /// </summary>
+    /// <param name="group" xml:lang="ru">Доменная модель.</param>
+    /// <returns xml:lang="ru">Модель хранилища.</returns>
     public static TProductGroup ConvertToStorage(this ProductGroup group)
     {
         var storage = new TProductGroup();
@@ -78,6 +99,11 @@ public static class ModelsConvertExtensions
         return storage;
     }
 
+    /// <summary xml:lang="ru">
+    /// Конвертирует доменную модель <see cref="ProductInfo"/> в модель хранилища <see cref="ProductExtraInfo"/>.
+    /// </summary>
+    /// <param name="group" xml:lang="ru">Доменная модель.</param>
+    /// <returns xml:lang="ru">Модель хранилища.</returns>
     public static ProductExtraInfo ConvertToStorage(this ProductInfo info)
     {
         var storage = new ProductExtraInfo();
@@ -93,51 +119,61 @@ public static class ModelsConvertExtensions
 
     #region Client
 
-    public static Client ConvertToModel(this TClient storage, bool isFullLoad = true)
-    {
-        var model = new Client(
-            storage.Id,
-            storage.Name);
+    /// <summary xml:lang="ru">
+    /// Конвертирует модель хранилища <see cref="TClient"/> в доменную модель <see cref="Clie"/>.
+    /// </summary>
+    /// <param name="storage" xml:lang="ru">Модель хранилища.</param>
+    /// <param name="isFullLoad" xml:lang="ru">Флаг полной загрузки модели.</param>
+    /// <returns xml:lang="ru">Доменная модель.</returns>
+    public static Client ConvertToModel(this TClient storage, bool isFullLoad = true) => 
+        !isFullLoad
+            ? new Client(storage.Id, storage.Name)
+            : new Client(storage.Id, storage.Name, storage.Info.ConvertToModel());
 
-        if (isFullLoad)
-        {
-            model.Load(storage.Info is null
-                ? null
-                : storage.Info.ConvertToModel()); 
-        }
-
-        return model;
-    }
-
+    /// <summary xml:lang="ru">
+    /// Конвертирует доменную модель <see cref="Client"/> в модель хранилища <see cref="TClient"/>.
+    /// </summary>
+    /// <param name="model" xml:lang="ru">Доменная модель.</param>
+    /// <returns xml:lang="ru">Модель хранилища.</returns>
     public static TClient ConvertToStorage(this Client model)
     {
-        var storage = new TClient();
-
-        storage.Name = model.Name;
-        storage.Id = model.Key;
-
-        if (model.IdentityInfo is not null)
+        if (!model.IsLoaded)
         {
-            storage.Info = model.IdentityInfo.ConvertToStorage();
+            throw new InvalidOperationException($"Can't convert to storage not full loaded {nameof(Client)}");
         }
 
-        return storage;
+        var storage = new TClient();
+        
+        storage.Name = model.Name;
+        storage.Id = model.Key;
+        storage.Info = model.IdentityInfo.ConvertToStorage();
 
+        return storage;
     }
 
+    /// <summary xml:lang="ru">
+    /// Конвертирует модель хранилища <see cref="ClientInfo"/> в доменную модель <see cref="ClientIdentityInfo"/>.
+    /// </summary>
+    /// <param name="storage" xml:lang="ru">Модель хранилища.</param>
+    /// <returns xml:lang="ru">Доменная модель.</returns>
     public static ClientIdentityInfo ConvertToModel(this ClientInfo storage)
     {
         var model = new ClientIdentityInfo(
             storage.Inn is not null 
                 ? new Clients.Inn(storage.Inn)
                 : null,
-            storage.Adress is not null
-                ? new Clients.Adress(storage.Adress)
+            storage.Address is not null
+                ? new Clients.Address(storage.Address)
                 : null);
 
         return model;
     }
 
+    /// <summary xml:lang="ru">
+    /// Конвертирует доменную модель <see cref="ClientIdentityInfo"/> в модель хранилища <see cref="ClientInfo"/>.
+    /// </summary>
+    /// <param name="model" xml:lang="ru">Доменная модель.</param>
+    /// <returns xml:lang="ru">Модель хранилища.</returns>
     public static ClientInfo ConvertToStorage(this ClientIdentityInfo model)
     {
         var storage = new ClientInfo();
@@ -147,9 +183,9 @@ public static class ModelsConvertExtensions
             storage.Inn = model.Inn.Value;
         }
 
-        if (model.Adress is not null)
+        if (model.Address is not null)
         {
-            storage.Adress = model.Adress.Street;
+            storage.Address = model.Address.Value;
         }
 
         return storage;

@@ -1,16 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace PorphumReferenceBook.Logic.Storage.Models;
 
-namespace PorphumReferenceBook.Logic.Storage.Models;
-
+/// <summary xml:lang="ru">
+/// Класс модели клиента для хранилища.
+/// </summary>
 public class Client
 {
+    /// <summary>
+    /// Идентификатор клиента.
+    /// </summary>
     public long Id { get; set; }
 
+    /// <summary xml:lang="ru">
+    /// Название клиента.
+    /// </summary>
     public string Name { get; set; } = null!;
 
-    public virtual ClientInfo? Info { get; set; }
+    /// <summary xml:lang="ru">
+    /// Информация о клиенте.
+    /// </summary>
+    public virtual ClientInfo Info { get; set; } = null!;
 }

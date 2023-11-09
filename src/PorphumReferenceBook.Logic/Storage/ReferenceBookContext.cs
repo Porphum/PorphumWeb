@@ -1,17 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using PorphumReferenceBook.Logic.Abstractions.Storage;
 using PorphumReferenceBook.Logic.Storage.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PorphumReferenceBook.Logic.Storage;
 
+/// <summary xml:lang="ru">
+/// Контекст базы данных справочника.
+/// </summary>
 public sealed class ReferenceBookContext : DbContext
 {
+    /// <summary xml:lang="ru">
+    /// Создаёт экземпляр класса <see cref="ReferenceBookContext"/>.
+    /// </summary>
+    /// <param name="optionsBuilder">Параметры для контекста.</param>
     public ReferenceBookContext(DbContextOptions<ReferenceBookContext> optionsBuilder)
         : base(optionsBuilder)
     {
@@ -23,9 +23,20 @@ public sealed class ReferenceBookContext : DbContext
         base.OnConfiguring(optionsBuilder);
     }
 
+    /// <summary xml:lang="ru">
+    /// Продукты.
+    /// </summary>
     public DbSet<Product> Products { get; set; } = default!;
 
+    /// <summary xml:lang="ru">
+    /// Клиенты.
+    /// </summary>
     public DbSet<Client> Clients { get; set; } = default!;
+
+    /// <summary xml:lang="ru">
+    /// Группы продуктов.
+    /// </summary>
+    public DbSet<ProductGroup> ProductsGroups { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -52,7 +63,7 @@ public sealed class ReferenceBookContext : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("client_id");
 
-            entity.Property(e => e.Adress)
+            entity.Property(e => e.Address)
                 .HasMaxLength(80)
                 .HasColumnName("adress");
 
@@ -99,7 +110,7 @@ public sealed class ReferenceBookContext : DbContext
                 .HasMaxLength(80)
                 .HasColumnName("name");
 
-            entity.Property(e => e.ParentId).HasColumnName("parent_id");
+            //entity.Property(e => e.ParentId).HasColumnName("parent_id");
         });
 
         modelBuilder.Entity<ProductExtraInfo>(entity =>

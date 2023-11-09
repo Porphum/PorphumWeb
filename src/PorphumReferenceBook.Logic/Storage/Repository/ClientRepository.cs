@@ -1,22 +1,26 @@
 ﻿using General;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using PorphumReferenceBook.Logic.Abstractions.Storage;
 using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 using PorphumReferenceBook.Logic.Models.Client;
 using PorphumReferenceBook.Logic.Models.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PorphumReferenceBook.Logic.Storage.Repository;
 
+/// <summary xml:lang="ru">
+/// Репозиторий <see cref="Client"/>.
+/// </summary>
 public sealed class ClientRepository : IClientRepository
 {
     private readonly IRepositoryContext _repositoryContext;
 
+    /// <summary xml:lang="ru">
+    /// Создаёт экземпляр класса <see cref="ClientRepository"/>.
+    /// </summary>
+    /// <param name="repositoryContext" xml:lang="ru">Контекст репозитория.</param>
+    /// <exception cref="ArgumentNullException" xml:lang="ru">
+    /// Если один из параметров равен <see langword="null"/>.
+    /// </exception>
     public ClientRepository(IRepositoryContext repositoryContext)
     {
         _repositoryContext = repositoryContext ?? throw new ArgumentNullException(nameof(repositoryContext));
@@ -24,7 +28,9 @@ public sealed class ClientRepository : IClientRepository
 
     private Client? GetWithModByKey(long key, bool isFullLoad)
     {
-        var clients = _repositoryContext.Clients.AsQueryable();
+        var clients = _repositoryContext.Clients
+            .AsNoTrackingWithIdentityResolution()
+            .AsQueryable();
 
         if (isFullLoad)
         {
@@ -43,7 +49,9 @@ public sealed class ClientRepository : IClientRepository
 
     private IEnumerable<Client> GetWithModEntities(bool isFullLoad)
     {
-        var clients = _repositoryContext.Clients.AsQueryable();
+        var clients = _repositoryContext.Clients
+            .AsNoTrackingWithIdentityResolution()
+            .AsQueryable();
 
         if (isFullLoad)
         {
@@ -55,10 +63,13 @@ public sealed class ClientRepository : IClientRepository
             .Select(p => p.ConvertToModel(isFullLoad));
     }
 
+    /// <inheritdoc/>
     public Client? GetByKey(long key) => GetWithModByKey(key, true);
 
+    /// <inheritdoc/>
     public IEnumerable<Client> GetEntities() => GetWithModEntities(true);
 
+    /// <inheritdoc/>
     public async Task<bool> ContainsAsync(Client entity, CancellationToken token = default)
     {
         ArgumentNullException.ThrowIfNull(entity);
@@ -68,11 +79,12 @@ public sealed class ClientRepository : IClientRepository
         var storage = entity.ConvertToStorage();
 
         return await _repositoryContext.Clients
-            /*.AsNoTrackingWithIdentityResolution()*/
+            .AsNoTracking()
             .ContainsAsync(storage, token)
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public async Task AddAsync(Client entity, CancellationToken token = default)
     {
         ArgumentNullException.ThrowIfNull(entity);
@@ -86,25 +98,28 @@ public sealed class ClientRepository : IClientRepository
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public void Delete(Client entity)
     {
         var storage = entity.ConvertToStorage();
 
         ArgumentNullException.ThrowIfNull(entity);
 
-        if (_repositoryContext.Products.SingleOrDefault(x => x.Id == storage.Id) is null)
+        if (_repositoryContext.Clients.AsNoTracking().SingleOrDefault(x => x.Id == storage.Id) is null)
         {
-            throw new ArgumentException("Given entity not exsist in context");
+            throw new ArgumentException("Given entity not exist in context");
         }
 
         _repositoryContext.Clients.Remove(storage);
     }
 
+    /// <inheritdoc/>
     public void Save()
     {
         _repositoryContext.SaveChanges();
     }
 
+    /// <inheritdoc/>
     public Client? GetByKey(long key, LoadMod mod) => mod switch
     {
         LoadMod.Full => GetWithModByKey(key, true),
@@ -113,6 +128,7 @@ public sealed class ClientRepository : IClientRepository
     };
 
 
+    /// <inheritdoc/>
     public IEnumerable<Client> GetEntities(LoadMod mod) => mod switch
     {
         LoadMod.Full => GetWithModEntities(true),

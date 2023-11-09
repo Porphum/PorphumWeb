@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using PorphumReferenceBook.Logic.Storage;
 using PorphumSales.Logic.Storage;
+using PorphumWeb;
 using PorphumWeb.Logic.Storage;
 using System.Net;
-
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,6 +55,9 @@ builder.Services.AddDbContext<SalesContext>((serviceProvider, optionBuilder) =>
 
     optionBuilder.UseNpgsql(connectionString.Replace(salesConnectionDBName, findConnection.DbName));
 });
+
+builder.Services.AddReferenceBookServices(builder.Configuration);
+builder.Services.AddSalesServices(builder.Configuration);
 
 var app = builder.Build();
 

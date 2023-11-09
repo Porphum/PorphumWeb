@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PorphumReferenceBook.Logic"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "General", "General\General.csproj", "{22FB80AF-21E3-4D3E-9204-FF89625EB467}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PorphumSales.Logic", "PorphumSales.Logic\PorphumSales.Logic.csproj", "{34B56DCA-423F-48BE-A7D9-E68736BBC022}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PorphumSales.Logic", "PorphumSales.Logic\PorphumSales.Logic.csproj", "{34B56DCA-423F-48BE-A7D9-E68736BBC022}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PorphumWeb.Blazor", "PorphumWeb.Blazor\PorphumWeb.Blazor.csproj", "{E6167ECD-E60C-4322-B7CD-3F720C44EC3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{34B56DCA-423F-48BE-A7D9-E68736BBC022}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34B56DCA-423F-48BE-A7D9-E68736BBC022}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34B56DCA-423F-48BE-A7D9-E68736BBC022}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6167ECD-E60C-4322-B7CD-3F720C44EC3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6167ECD-E60C-4322-B7CD-3F720C44EC3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6167ECD-E60C-4322-B7CD-3F720C44EC3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6167ECD-E60C-4322-B7CD-3F720C44EC3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
