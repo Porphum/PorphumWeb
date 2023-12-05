@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager MyNavigationManager  
 
 <PageTitle>PorphumWeb.Blazor</PageTitle>
 
@@ -8,10 +9,18 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
-
+        @if (MyNavigationManager.Uri.Contains("refbook"))  
+        {
+            <div class="top-row px-4">
+                <RefBookTopNavMenu />
+            </div>
+        }  
+        else  
+        {
+            <div class="top-row px-4">
+                <DefaultTopNavMenu />
+            </div>
+        }  
         <article class="content px-4">
             @Body
         </article>

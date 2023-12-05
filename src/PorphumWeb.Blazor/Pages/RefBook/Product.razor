@@ -1,0 +1,114 @@
+﻿@page "/product/{type}/{ProductId}"
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+@using PorphumReferenceBook.Logic.Models.Product;
+@inject IProductRepository productRepository;
+@inject IProductGroupRepository productGroupRepository;
+@using DProduct = PorphumReferenceBook.Logic.Models.Product.Product;
+
+<PageTitle>@Title</PageTitle>
+
+<div class="row">
+    <EditForm EditContext="_editContext" OnSubmit="Submit">
+        <input type="hidden" @bind-value="_viewModel.isEdit" />
+        @if (_viewModel.isEdit)
+        {
+            <p>
+                Id:<br />
+                <InputNumber id="name" @bind-Value="_viewModel.Key" readonly="readonly"/>
+            </p>
+        }
+        <p>
+            Name:<br />
+            <InputText id="name" @bind-Value="_viewModel.Name" />
+        </p>
+        <p>
+            Group: <br />
+            <InputSelect @bind-Value="_viewModel.GroupId" class="form-control">
+                @if (_groups.Any())
+                {
+                    @foreach (var group in _groups)
+                    {
+                        <option value="@group.Key">@group.Name</option>
+                    }
+                }
+            </InputSelect>
+        </p>
+        <button type="submit">Submit</button>
+    </EditForm>
+</div>
+
+@code {
+    public string Title { get; set; } = "Default tittle";
+    [Parameter]
+    [EditorRequired]
+    public string Type { get; set; } = null!;
+
+    [Parameter]
+    public string ProductId { get; set; }
+
+    private EditContext? _editContext;
+    private ViewModel _viewModel = new();
+    private IEnumerable<ProductGroup> _groups = Enumerable.Empty<ProductGroup>();
+
+    protected override void OnInitialized()
+    {
+        _groups = productGroupRepository.GetEntities();
+
+        if (Type == "creaete")
+        {
+            Title = "Add new Product";
+        }
+        else if (Type == "edit")
+        {
+            Title = "Edit Product";
+
+            var product = productRepository.GetByKey(long.Parse(ProductId)) ?? throw new InvalidOperationException();
+
+            _viewModel = new()
+            {
+                isEdit = true,
+                Key = product.Key,
+                Name = product.Name,
+                GroupId = product.Group.Key
+            };
+        }
+        else
+        {
+            throw new InvalidOperationException();
+        }
+
+        _editContext = new(_viewModel);
+    }
+
+    private void Submit()
+    {
+        if (_viewModel.isEdit)
+        {
+            var product = productRepository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
+            var group = productGroupRepository.GetByKey(_viewModel.GroupId) ?? throw new InvalidOperationException();
+
+
+
+            var newProduct = new DProduct(
+                product.Key,
+                _viewModel.Name ?? throw new InvalidOperationException(),
+                group,
+                product.Price,
+                product.Info
+            );
+
+            
+        }
+    }
+
+    public class ViewModel
+    {
+        public bool isEdit { get; set; } = false;
+
+        public long Key { get; set; }
+
+        public string? Name { get; set; }
+
+        public int GroupId { get; set; }
+    }
+}

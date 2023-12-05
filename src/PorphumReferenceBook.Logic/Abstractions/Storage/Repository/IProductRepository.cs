@@ -8,7 +8,7 @@ namespace PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 /// </summary>
 public interface IProductRepository : 
     IKeyableRepository<Product, long>, 
-    IKeyableRepositoryWithModifiableLoad<Product, long>, 
+    IKeyableRepositoryWithModifiableLoad<Product, long>,
     IProductGroupRepository
 {
     

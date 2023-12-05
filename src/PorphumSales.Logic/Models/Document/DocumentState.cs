@@ -15,9 +15,16 @@ public enum DocumentState
     /// Документ заполняется.
     /// </summary>
     Fill = 0,
-
+    
     /// <summary xml:lang="ru">
     /// Документ проведён.
     /// </summary>
     Complete = 1,
+
+    /// <summary xml:lang="ru">
+    /// Ошибка загрузки.
+    /// </summary>
+    MapError = 2,
+
+
 }

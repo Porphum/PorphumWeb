@@ -1,0 +1,40 @@
+﻿@page "/refbook/products"
+
+<PageTitle>Product</PageTitle>
+
+<div class="row">
+    <EditForm EditContext="_editContext" OnSubmit="Submit">
+        <p>
+            SearchString:<br />
+            <InputText id="search-string" @bind-Value="_filter.SearchString" />
+        </p>
+        <button type="submit">Submit</button>
+    </EditForm>
+</div>
+
+<ProductsTable NameLike=@SearchString/>
+
+
+@code {
+    public string? SearchString { get; set; } = null!;
+
+    private Filter _filter = new();
+    private EditContext? _editContext;
+
+    private RenderFragment<ProductsTable> table { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        _editContext = new(_filter);
+    }
+
+    public void Submit()
+    {
+        SearchString = _filter.SearchString;
+    }
+
+    public class Filter
+    {
+        public string? SearchString { get; set; } = null!;
+    }
+}

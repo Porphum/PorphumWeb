@@ -1,5 +1,7 @@
 ﻿using General;
 using General.Abstractions.Storage;
+using General.Abstractions.Storage.Query;
+using General.Models.Query;
 using Microsoft.EntityFrameworkCore;
 using PorphumReferenceBook.Logic.Abstractions.Storage;
 using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
@@ -7,6 +9,8 @@ using PorphumReferenceBook.Logic.Models.Extensions;
 using PorphumReferenceBook.Logic.Models.Product;
 
 namespace PorphumReferenceBook.Logic.Storage.Repository;
+
+using TProduct = Models.Product;
 
 /// <summary xml:lang="ru">
 /// Репозиторий продуктов и их групп.
@@ -31,6 +35,7 @@ public sealed class ProductRepository : IProductRepository
     {
         var products = _repositoryContext.Products
             .AsNoTrackingWithIdentityResolution()
+            .Include(x => x.Group)
             .AsQueryable();
 
         if (isFullLoad)
@@ -50,8 +55,8 @@ public sealed class ProductRepository : IProductRepository
 
     private IEnumerable<Product> GetWithModEntities(bool isFullLoad)
     {
-        var products = _repositoryContext.Products.
-            AsNoTrackingWithIdentityResolution()
+        var products = _repositoryContext.Products
+            .AsNoTrackingWithIdentityResolution()
             .AsQueryable();
 
         if (isFullLoad)
@@ -60,6 +65,7 @@ public sealed class ProductRepository : IProductRepository
         }
 
         return products
+            .Include(x => x.Group)
             .AsEnumerable()
             .Select(p => p.ConvertToModel(isFullLoad));
     }
@@ -187,4 +193,19 @@ public sealed class ProductRepository : IProductRepository
         LoadMod.Partial => GetWithModEntities(false),
         _ => throw new InvalidOperationException()
     };
+
+    /// <inheritdoc/>
+    public ProductGroup? GetByKey(int key)
+    {
+        var find = _repositoryContext.ProductGroups
+            .AsNoTrackingWithIdentityResolution()
+            .SingleOrDefault(x => x.Id == key);
+
+        if (find is null)
+        {
+            return null;
+        }
+
+        return find.ConvertToModel();
+    }
 }

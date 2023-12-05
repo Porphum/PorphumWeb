@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "General", "General\General.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PorphumSales.Logic", "PorphumSales.Logic\PorphumSales.Logic.csproj", "{34B56DCA-423F-48BE-A7D9-E68736BBC022}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PorphumWeb.Blazor", "PorphumWeb.Blazor\PorphumWeb.Blazor.csproj", "{E6167ECD-E60C-4322-B7CD-3F720C44EC3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PorphumWeb.Blazor", "PorphumWeb.Blazor\PorphumWeb.Blazor.csproj", "{E6167ECD-E60C-4322-B7CD-3F720C44EC3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

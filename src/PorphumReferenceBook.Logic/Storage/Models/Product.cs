@@ -23,7 +23,7 @@ public class Product
     /// <summary xml:lang="ru">
     /// Идентификатор группы продукта.
     /// </summary>
-    public int? GroupId { get; set; }
+    public int GroupId { get; set; }
 
     /// <summary xml:lang="ru">
     /// Группа продукта.
