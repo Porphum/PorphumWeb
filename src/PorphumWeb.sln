@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PorphumWeb", "PorphumWeb\PorphumWeb.csproj", "{FB74038A-0E4C-4B8D-9262-B056066B3D76}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PorphumWeb.Logic", "PorphumWeb.Logic\PorphumWeb.Logic.csproj", "{B5CD01A9-1579-43C1-B55B-35851683F870}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PorphumReferenceBook.Logic", "PorphumReferenceBook.Logic\PorphumReferenceBook.Logic.csproj", "{206AF633-4752-4090-8AC0-0E4938301796}"
@@ -21,10 +19,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FB74038A-0E4C-4B8D-9262-B056066B3D76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FB74038A-0E4C-4B8D-9262-B056066B3D76}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FB74038A-0E4C-4B8D-9262-B056066B3D76}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FB74038A-0E4C-4B8D-9262-B056066B3D76}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B5CD01A9-1579-43C1-B55B-35851683F870}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B5CD01A9-1579-43C1-B55B-35851683F870}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5CD01A9-1579-43C1-B55B-35851683F870}.Release|Any CPU.ActiveCfg = Release|Any CPU
