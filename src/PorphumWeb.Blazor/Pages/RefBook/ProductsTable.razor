@@ -1,0 +1,128 @@
+﻿@using General.Abstractions.Storage;
+@using General.Abstractions.Storage.Query;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
+@using PorphumReferenceBook.Logic.Models.Product;
+@using PorphumReferenceBook.Logic.Storage.Repository.Query;
+
+@using TProduct = PorphumReferenceBook.Logic.Storage.Models.Product;
+@using DProduct = PorphumReferenceBook.Logic.Models.Product.Product;
+
+@inject IProductsQueryRepository productRepository;
+@inject IRefBookQueryParamFactory paramFactory;
+@inject NavigationManager Navigation
+@inject LinkGenerator LinkGenerator
+
+<p>
+    <h2>
+        Products:
+    </h2>
+    <button @onclick="@(()=>Navigation.NavigateTo("refbook/product/create"))">Add</button>
+</p>
+<br />
+@if (products == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Group</th>
+                <th>Description</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in products)
+            {
+                <tr>
+                    <td>@product.Key</td>
+                    <td>@product.Name</td>
+                    <td>@product.Group.Name</td>
+                    <td>@product.Info.Description</td>
+                    <td><button @onclick="@(()=>Navigation.NavigateTo($"refbook/product/edit/{product.Key}"))">Show</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<p role="status">
+    <button class="btn btn-primary" @onclick="DecrementCount">Prev</button>
+    @(_skipCount+1)
+    <button class="btn btn-primary" @onclick="IncrementCount">Next</button>
+</p>
+
+@code {
+    private readonly int PAGE_SIZE = 5;
+
+    private int _skipCount = 0;
+
+    private DProduct[]? products;
+
+    [Parameter]
+    public string? NameLike { get; set; } = null;
+
+    [Parameter]
+    public List<int>? GroupsKeys { get; set; } = null;
+
+    [Parameter]
+    public int IncrementAmount { get; set; } = 1;
+
+    private void UpdateProducts()
+    {
+        var query = (paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).InitQuery();
+
+        var config = new ProductsParamConfig()
+        {
+            NameLike = NameLike,
+            Skip = _skipCount * PAGE_SIZE,
+            Limit = PAGE_SIZE,
+            GroupsKeys = (GroupsKeys ?? new()).ToHashSet()
+        };
+
+        if (NameLike is not null)
+        {
+            query.Append((paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).CreateParam(ProductsParamType.NameLike, config));
+        }
+
+        if (GroupsKeys is not null)
+        {
+            query.Append((paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).CreateParam(ProductsParamType.OfInGroupKey, config));
+        }
+
+        query.Append((paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).CreateParam(ProductsParamType.Skip, config));
+        query.Append((paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).CreateParam(ProductsParamType.Limit, config));
+
+        products = productRepository.GetByQuery(query).ToArray();
+    }
+
+    protected override void OnParametersSet()
+    {
+        UpdateProducts();
+    }
+
+    private void IncrementCount()
+    {
+        _skipCount += IncrementAmount;
+
+        UpdateProducts();
+    }
+
+    private void DecrementCount()
+    {
+        if (_skipCount == 0)
+        {
+            return;
+        }
+        _skipCount -= IncrementAmount;
+
+        UpdateProducts();
+    }
+
+    protected override void OnInitialized() => UpdateProducts();
+}

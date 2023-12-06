@@ -1,21 +1,15 @@
-﻿using General.Abstractions.Models;
-using General.Abstractions.Storage;
+﻿using General.Abstractions.Storage;
 using PorphumReferenceBook.Logic.Models.Product;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 
-/// <summary>
-/// 
+/// <summary xml:lang = "ru">
+/// Репозиторий продуктов справочника.
 /// </summary>
 public interface IProductRepository : 
     IKeyableRepository<Product, long>, 
-    IKeyableRepositoryWithModifiableLoad<Product, ProductInfo, long>, 
-    IRepository<ProductGroup>
+    IKeyableRepositoryWithModifiableLoad<Product, long>,
+    IProductGroupRepository
 {
-    public IEnumerable<ProductGroup> GetSubGroups(ProductGroup group);
+    
 }

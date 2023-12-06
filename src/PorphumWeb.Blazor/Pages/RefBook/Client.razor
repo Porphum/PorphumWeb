@@ -1,0 +1,169 @@
+﻿@page "/refbook/client/{type}/{ClientId:long?}"
+@using General.Abstractions.Storage;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+@using PorphumReferenceBook.Logic.Models.Client;
+@using PorphumReferenceBook.Logic.Models.Product;
+
+@inject IClientRepository productGroupRepository;
+@inject NavigationManager Navigation
+
+@using DProduct = PorphumReferenceBook.Logic.Models.Client.Client;
+
+<PageTitle>@Title</PageTitle>
+
+<div class="row">
+    <h2>
+        <p>
+            Main Info
+        </p>
+        @if (_viewModel.isEdit)
+        {
+            <button type="submit" class="btn btn-primary" @onclick="@(() => Delete(_editContext))">Delete</button>
+        }
+    </h2>
+    <EditForm EditContext="_editContext">
+        <input type="hidden" @bind-value="_viewModel.isEdit" />
+        @if (_viewModel.isEdit)
+        {
+            <p>
+                Id:<br />
+                <InputNumber id="name" @bind-Value="_viewModel.Key" readonly="readonly" />
+            </p>
+        }
+        <p>
+            Name:<br />
+            <InputText id="name" @bind-Value="_viewModel.Name" />
+        </p>
+        <h2>
+            <p>
+                Extra Info
+            </p>
+        </h2>
+        <hr />
+        <p>
+            Inn:<br />
+            <InputText id="inn" @bind-Value="_viewModel.Inn" />
+        </p>
+        <p>
+            Adress:<br />
+            <InputTextArea id="adress" @bind-Value="_viewModel.Adress" />
+        </p>
+        <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Save</button>
+    </EditForm>
+</div>
+
+@code {
+    public string Title { get; set; } = "Default tittle";
+    [Parameter]
+    [EditorRequired]
+    public string Type { get; set; } = null!;
+
+    [Parameter]
+    public long? ClientId { get; set; } = null!;
+
+    private EditContext? _editContext;
+    private ViewModel _viewModel = new();
+
+    protected override void OnInitialized()
+    {
+        if (Type == "create")
+        {
+            Title = "Add new Client";
+        }
+        else if (Type == "edit")
+        {
+            Title = "Edit Client";
+
+            var product = productGroupRepository.GetByKey(ClientId ?? throw new InvalidOperationException()) ?? throw new InvalidOperationException();
+
+            _viewModel = new()
+                {
+                    isEdit = true,
+                    Key = product.Key,
+                    Name = product.Name,
+                    Inn = product.IdentityInfo.Inn is not null
+                            ? product.IdentityInfo.Inn.Value
+                            : null,
+                    Adress = product.IdentityInfo.Address is not null
+                                ? product.IdentityInfo.Address.Value
+                            : null
+                };
+        }
+        else
+        {
+            throw new InvalidOperationException();
+        }
+
+        _editContext = new(_viewModel);
+    }
+
+    private void Delete(EditContext formContext)
+    {
+        if (_viewModel.isEdit)
+        {
+            var product = productGroupRepository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
+
+            productGroupRepository.Delete(product);
+
+            Navigation.NavigateTo("refbook/clients");
+            return;
+        }
+
+        throw new InvalidOperationException();
+    }
+
+    private void Submit(EditContext formContext)
+    {
+        if (_viewModel.isEdit)
+        {
+            var product = productGroupRepository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
+
+            var newProduct = new DProduct(
+                product.Key,
+                _viewModel.Name ?? throw new InvalidOperationException(),
+                new ClientIdentityInfo(
+                    _viewModel.Inn is null
+                        ? null
+                        : new PorphumReferenceBook.Logic.Models.Clients.Inn(_viewModel.Inn),
+                    _viewModel.Adress is null
+                        ? null
+                        : new PorphumReferenceBook.Logic.Models.Clients.Address(_viewModel.Adress)
+                )
+            );
+
+            productGroupRepository.Update(newProduct);
+        }
+        else
+        {
+            var newProduct = new DProduct(
+                0,
+                _viewModel.Name ?? throw new InvalidOperationException(),
+                new ClientIdentityInfo(
+                    _viewModel.Inn is null
+                        ? null
+                        : new PorphumReferenceBook.Logic.Models.Clients.Inn(_viewModel.Inn),
+                    _viewModel.Adress is null
+                        ? null
+                        : new PorphumReferenceBook.Logic.Models.Clients.Address(_viewModel.Adress)
+                )
+            );
+
+            productGroupRepository.Add(newProduct);
+        }
+
+        Navigation.NavigateTo("refbook/clients");
+    }
+
+    public class ViewModel
+    {
+        public bool isEdit { get; set; } = false;
+
+        public long Key { get; set; }
+
+        public string? Name { get; set; }
+
+        public string? Inn { get; set; }
+
+        public string? Adress { get; set; }
+    }
+}

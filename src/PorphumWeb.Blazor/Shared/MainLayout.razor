@@ -1,0 +1,28 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager MyNavigationManager  
+
+<PageTitle>PorphumWeb v0.0.0</PageTitle>
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        @if (MyNavigationManager.Uri.Contains("refbook"))  
+        {
+            <div class="top-row px-4">
+                <RefBookTopNavMenu />
+            </div>
+        }  
+        else  
+        {
+            <div class="top-row px-4">
+                <DefaultTopNavMenu />
+            </div>
+        }  
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
