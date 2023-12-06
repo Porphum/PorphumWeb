@@ -1,4 +1,8 @@
-﻿@page "/refbook/products"
+﻿@page "/refbook/products/{GroupId:int?}"
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+@using PorphumReferenceBook.Logic.Models.Product;
+
+@inject IProductGroupRepository productGroupRepository;
 
 <PageTitle>Product</PageTitle>
 
@@ -8,33 +12,79 @@
             SearchString:<br />
             <InputText id="search-string" @bind-Value="_filter.SearchString" />
         </p>
+        <p>
+            Group: <br />
+            <InputSelect @bind-Value="_filter.GroupId" class="form-control">
+                <option value="0">None</option>
+                @if (_groups.Any())
+                {
+                    @foreach (var group in _groups)
+                    {
+                        <option value="@group.Key">@group.Name</option>
+                    }
+                }
+            </InputSelect>
+        </p>
         <button type="submit">Submit</button>
     </EditForm>
 </div>
 
-<ProductsTable NameLike=@SearchString/>
+<br />
+
+<ProductsTable NameLike=@SearchString GroupsKeys="@Groups"/>
 
 
 @code {
     public string? SearchString { get; set; } = null!;
+    public List<int>? Groups { get; set; } = null;
 
     private Filter _filter = new();
     private EditContext? _editContext;
 
-    private RenderFragment<ProductsTable> table { get; set; } = default!;
+    private IEnumerable<ProductGroup> _groups = Enumerable.Empty<ProductGroup>();
+
+    [Parameter]
+    public int? GroupId { get; set; }
 
     protected override void OnInitialized()
     {
+        if (GroupId is not null && productGroupRepository.GetByKey(GroupId.Value) is null)
+        {
+            GroupId = null;
+        }
+        _filter.GroupId = 0;
+        if (GroupId is not null)
+        {
+            Groups = new List<int>();
+            Groups.Add(GroupId.Value);
+
+            _filter.GroupId = GroupId;
+        }
+        _groups = productGroupRepository.GetEntities();
+
         _editContext = new(_filter);
     }
 
     public void Submit()
     {
         SearchString = _filter.SearchString;
+
+        if (_filter.GroupId is not null && _filter.GroupId != 0)
+        {
+            GroupId = _filter.GroupId;
+            Groups = new List<int>();
+            Groups.Add(GroupId.Value);
+        }
+        if (_filter.GroupId == 0)
+        {
+            Groups = null;
+        }
     }
 
     public class Filter
     {
         public string? SearchString { get; set; } = null!;
+
+        public int? GroupId { get; set; } = null!;
     }
 }

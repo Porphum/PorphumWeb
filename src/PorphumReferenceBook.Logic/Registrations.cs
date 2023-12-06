@@ -23,6 +23,7 @@ public static class Registrations
             .AddScoped<IClientRepository, ClientRepository>()
             .AddScoped<IProductsQueryRepository, ProductsQueryRepository>()
             .AddScoped<IProductsGroupsQueryRepository, ProductsGroupsQueryRepository>()
+            .AddScoped<IClientsQueryRepository, ClientsQueryRepository>()
             .AddScoped<IRefBookQueryParamFactory, RefBookQueryParamFactory>();
 
     public static IServiceCollection AddReferenceBookMapper(this IServiceCollection services) =>

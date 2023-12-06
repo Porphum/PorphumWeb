@@ -89,17 +89,13 @@ public class DocumentRepository : IDocumentRepository
     }
 
     /// <inheritdoc/>
-    public async Task AddAsync(Document entity, CancellationToken token = default)
+    public void Add(Document entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        token.ThrowIfCancellationRequested();
-
         var storage = entity.ConvertToStorage();
 
-        await _repositoryContext.Documents
-            .AddAsync(storage, token)
-            .ConfigureAwait(false);
+        _repositoryContext.Documents.AddAsync(storage);
     }
 
     /// <inheritdoc/>
@@ -160,4 +156,7 @@ public class DocumentRepository : IDocumentRepository
 
         return config;
     }
+
+    /// <inheritdoc/>
+    public void Update(Document entity) => throw new NotImplementedException();
 }

@@ -1,4 +1,5 @@
 ﻿using General.Models.Query;
+using Microsoft.EntityFrameworkCore;
 using PorphumReferenceBook.Logic.Abstractions.Storage;
 using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 using PorphumReferenceBook.Logic.Models.Extensions;
@@ -19,5 +20,5 @@ public class ProductsGroupsQueryRepository : BaseQueryRepository<ProductGroup, T
 
     protected override ProductGroup ConvertFromStorage(TProductGroup storage) => storage.ConvertToModel();
 
-    protected override IQueryable<TProductGroup> GetInitQuery() => _context.ProductGroups;
+    protected override IQueryable<TProductGroup> GetInitQuery() => _context.ProductGroups.AsNoTracking().OrderBy(x => x.Id);
 }

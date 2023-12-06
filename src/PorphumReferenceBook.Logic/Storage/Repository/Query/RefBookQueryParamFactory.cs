@@ -16,7 +16,14 @@ public class RefBookQueryParamFactory : IRefBookQueryParamFactory
         ProductsGroupsParamType.NameLike => new NameLikeProductsGroupsParam(config.NameLike ?? throw new ArgumentNullException(nameof(config.NameLike))),
         _ => throw new NotImplementedException()
     };
-    public IQuery<IQueryParam<Product>, Product> InitQuery() => new BaseQuery<IQueryParam<Product>, Product>();
+
+    public IQueryParam<Client> CreateParam(ClientsParamType key, ClientsParamConfig config) => key switch
+    {
+        ClientsParamType.Limit => new LimitQueryParam<Client>(config.Limit ?? throw new ArgumentNullException(nameof(config.Limit))),
+        ClientsParamType.Skip => new SkipQueryParam<Client>(config.Skip ?? throw new ArgumentNullException(nameof(config.Skip))),
+        ClientsParamType.NameLike => new NameLikeClientsParam(config.NameLike ?? throw new ArgumentNullException(nameof(config.NameLike))),
+        _ => throw new NotImplementedException()
+    };
 
     IQueryParam<Product> IQueryParamsFactory<ProductsParamType, ProductsParamConfig, Product>.CreateParam(ProductsParamType key, ProductsParamConfig config) => key switch
     {
@@ -26,6 +33,12 @@ public class RefBookQueryParamFactory : IRefBookQueryParamFactory
         ProductsParamType.OfInGroupKey => new OfInGroupKeyProductsParam(config.GroupsKeys ?? throw new ArgumentNullException(nameof(config.GroupsKeys))),
         _ => throw new NotImplementedException()
     };
+
+    public IQuery<IQueryParam<Product>, Product> InitQuery() => new BaseQuery<IQueryParam<Product>, Product>();
+
     IQuery<IQueryParam<ProductGroup>, ProductGroup> IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, ProductGroup>.InitQuery() =>
         new BaseQuery<IQueryParam<ProductGroup>, ProductGroup>();
+
+    IQuery<IQueryParam<Client>, Client> IQueryParamsFactory<ClientsParamType, ClientsParamConfig, Client>.InitQuery() =>
+        new BaseQuery<IQueryParam<Client>, Client>();
 }

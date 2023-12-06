@@ -2,27 +2,31 @@
 using Microsoft.EntityFrameworkCore;
 using PorphumReferenceBook.Logic.Abstractions.Storage;
 using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+using PorphumReferenceBook.Logic.Models.Client;
 using PorphumReferenceBook.Logic.Models.Extensions;
-using PorphumReferenceBook.Logic.Models.Product;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace PorphumReferenceBook.Logic.Storage.Repository;
 
-using TProduct = Models.Product;
+using TClient = Models.Client;
 
-public class ProductsQueryRepository : BaseQueryRepository<Product, TProduct>, IProductsQueryRepository
+public sealed class ClientsQueryRepository : BaseQueryRepository<Client, TClient>, IClientsQueryRepository
 {
     private readonly IRepositoryContext _context;
 
-    public ProductsQueryRepository(IRepositoryContext context)
+    public ClientsQueryRepository(IRepositoryContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
-    protected override Product ConvertFromStorage(TProduct storage) => storage.ConvertToModel();
+    protected override Client ConvertFromStorage(TClient storage) => storage.ConvertToModel();
 
-    protected override IQueryable<TProduct> GetInitQuery() => _context.Products
+    protected override IQueryable<TClient> GetInitQuery() => _context.Clients
         .OrderBy(x => x.Id)
         .AsNoTrackingWithIdentityResolution()
-        .Include(x => x.Group)
         .Include(x => x.Info);
 }

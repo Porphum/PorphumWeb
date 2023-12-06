@@ -6,11 +6,11 @@ namespace PorphumReferenceBook.Logic.Storage.Repository.Query.Params;
 
 public class OfInGroupKeyProductsParam : IQueryParam<Product>
 {
-    private readonly IReadOnlySet<int> _groupId;
+    private readonly int[] _groupId;
 
     public OfInGroupKeyProductsParam(IReadOnlySet<int> groupId)
     {
-        _groupId = groupId;
+        _groupId = groupId.ToArray();
     }
 
     public IQueryable<Product> ApplyParam(IQueryable<Product> data) => data.Where(x => _groupId.Contains(x.GroupId)).AsQueryable();

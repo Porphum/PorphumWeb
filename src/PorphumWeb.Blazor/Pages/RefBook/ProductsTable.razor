@@ -10,7 +10,16 @@
 
 @inject IProductsQueryRepository productRepository;
 @inject IRefBookQueryParamFactory paramFactory;
+@inject NavigationManager Navigation
+@inject LinkGenerator LinkGenerator
 
+<p>
+    <h2>
+        Products:
+    </h2>
+    <button @onclick="@(()=>Navigation.NavigateTo("refbook/product/create"))">Add</button>
+</p>
+<br />
 @if (products == null)
 {
     <p><em>Loading...</em></p>
@@ -20,33 +29,36 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Group</th>
+                <th>Description</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in products)
+            @foreach (var product in products)
             {
                 <tr>
-                    <td>@forecast.Key</td>
-                    <td>@forecast.Name</td>
-                    <td>@forecast.Price</td>
-                    <td>@forecast.Group.Name</td>
+                    <td>@product.Key</td>
+                    <td>@product.Name</td>
+                    <td>@product.Group.Name</td>
+                    <td>@product.Info.Description</td>
+                    <td><button @onclick="@(()=>Navigation.NavigateTo($"refbook/product/edit/{product.Key}"))">Show</button></td>
                 </tr>
             }
         </tbody>
     </table>
 }
 
-<p role="status">Current count: @_skipCount</p>
-
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
-
+<p role="status">
+    <button class="btn btn-primary" @onclick="DecrementCount">Prev</button>
+    @(_skipCount+1)
+    <button class="btn btn-primary" @onclick="IncrementCount">Next</button>
+</p>
 
 @code {
-    private readonly int PAGE_SIZE = 10;
+    private readonly int PAGE_SIZE = 5;
 
     private int _skipCount = 0;
 
@@ -97,6 +109,17 @@ else
     private void IncrementCount()
     {
         _skipCount += IncrementAmount;
+
+        UpdateProducts();
+    }
+
+    private void DecrementCount()
+    {
+        if (_skipCount == 0)
+        {
+            return;
+        }
+        _skipCount -= IncrementAmount;
 
         UpdateProducts();
     }
