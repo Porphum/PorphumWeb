@@ -1,0 +1,189 @@
+﻿@page "/refbook/product/{type}/{ProductId:long?}"
+@using General.Abstractions.Storage;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+@using PorphumReferenceBook.Logic.Models.Product;
+
+@inject IProductRepository productRepository;
+@inject IProductGroupRepository productGroupRepository;
+@inject NavigationManager Navigation
+
+@using DProduct = PorphumReferenceBook.Logic.Models.Product.Product;
+
+<PageTitle>@Title</PageTitle>
+
+<div class="row">
+    <h2>
+        <p>
+            Main Info
+        </p>
+        @if(_viewModel.isEdit)
+        {
+            <button type="submit" class="btn btn-primary" @onclick="@(() => Delete(_editContext))">Delete</button>
+        }
+    </h2>
+    <EditForm EditContext="_editContext">
+        <input type="hidden" @bind-value="_viewModel.isEdit" />
+        @if (_viewModel.isEdit)
+        {
+            <p>
+                Id:<br />
+                <InputNumber id="name" @bind-Value="_viewModel.Key" readonly="readonly"/>
+            </p>
+        }
+        <p>
+            Name:<br />
+            <InputText id="name" @bind-Value="_viewModel.Name" />
+        </p>
+        <p>
+            Group: <br />
+            <InputSelect @bind-Value="_viewModel.GroupId" class="form-control">
+                @if (_groups.Any())
+                {
+                    @foreach (var group in _groups)
+                    {
+                        <option value="@group.Key">@group.Name</option>
+                    }
+                }
+            </InputSelect>
+        </p>
+        
+        <h2>
+            <p>
+                Extra Info
+            </p>
+        </h2>
+        <hr />
+        <p>
+            Barcode:<br />
+            <InputText id="barcode" @bind-Value="_viewModel.Barcode" />
+        </p>
+        <p>
+            Description:<br />
+            <InputTextArea id="description" @bind-Value="_viewModel.Description" />
+        </p>
+        <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Save</button>
+    </EditForm>
+</div>
+
+@code {
+    public string Title { get; set; } = "Default tittle";
+    [Parameter]
+    [EditorRequired]
+    public string Type { get; set; } = null!;
+
+    [Parameter]
+    public long? ProductId { get; set; } = null!; 
+
+    private EditContext? _editContext;
+    private ViewModel _viewModel = new();
+    private IEnumerable<ProductGroup> _groups = Enumerable.Empty<ProductGroup>();
+
+    protected override void OnInitialized()
+    {
+        _groups = productGroupRepository.GetEntities();
+
+        if (Type == "create")
+        {
+            Title = "Add new Product";
+        }
+        else if (Type == "edit")
+        {
+            Title = "Edit Product";
+
+            var product = productRepository.GetByKey(ProductId ?? throw new InvalidOperationException()) ?? throw new InvalidOperationException();
+
+            _viewModel = new()
+            {
+                isEdit = true,
+                Key = product.Key,
+                Name = product.Name,
+                GroupId = product.Group.Key,
+                Description = product.Info.Description
+            };
+
+            if (product.Info.BarCode is not null)
+            {
+                _viewModel.Barcode = product.Info.BarCode.Value;
+            }
+        }
+        else
+        {
+            throw new InvalidOperationException();
+        }
+
+        _editContext = new(_viewModel);
+    }
+
+    private void Delete(EditContext formContext)
+    {
+        if (_viewModel.isEdit)
+        {
+            var product = productRepository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
+
+            productRepository.Delete(product);
+
+            Navigation.NavigateTo("refbook/products");
+            return;
+        }
+        
+        throw new InvalidOperationException();
+    }
+
+    private void Submit(EditContext formContext)
+    {
+        var group = productGroupRepository.GetByKey(_viewModel.GroupId) ?? throw new InvalidOperationException();
+
+
+        if (_viewModel.isEdit)
+        {
+            var product = productRepository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
+
+            var newProduct = new DProduct(
+                product.Key,
+                _viewModel.Name ?? throw new InvalidOperationException(),
+                group,
+                product.Price,
+                new ProductInfo(
+                    _viewModel.Barcode is not null
+                        ? new BarCode(_viewModel.Barcode)
+                        : null,
+                    _viewModel.Description
+                )
+            );
+
+            productRepository.Update(newProduct);
+        }
+        else
+        {
+            var newProduct = new DProduct(
+                0,
+                _viewModel.Name ?? throw new InvalidOperationException(),
+                group,
+                new General.Money(1234),
+                new ProductInfo(
+                    _viewModel.Barcode is not null
+                        ? new BarCode(_viewModel.Barcode)
+                        : null,
+                    _viewModel.Description
+                )
+            );
+
+            productRepository.Add(newProduct);
+        }
+
+        Navigation.NavigateTo("refbook/products");
+    }
+
+    public class ViewModel
+    {
+        public bool isEdit { get; set; } = false;
+
+        public long Key { get; set; }
+
+        public string? Name { get; set; }
+        public string? Barcode { get; set; }
+        public string? Description { get; set; }
+
+        public int GroupId { get; set; }
+    }
+}

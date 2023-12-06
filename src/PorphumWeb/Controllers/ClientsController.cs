@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.EntityFrameworkCore;
 using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
@@ -101,7 +96,7 @@ namespace PorphumWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(long id, [Bind("Id,Name")] Client client)
         {
-            if (id != client.Id)
+            if (id != client.Key)
             {
                 return NotFound();
             }
@@ -115,7 +110,7 @@ namespace PorphumWeb.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ClientExists(client.Id))
+                    if (!ClientExists(client.Key))
                     {
                         return NotFound();
                     }

@@ -1,0 +1,128 @@
+﻿@page "/refbook/group/{type}/{ProductId:int?}"
+@using General.Abstractions.Storage;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+@using PorphumReferenceBook.Logic.Models.Product;
+
+@inject IProductGroupRepository productGroupRepository;
+@inject NavigationManager Navigation
+
+@using DProduct = PorphumReferenceBook.Logic.Models.Product.ProductGroup;
+
+<PageTitle>@Title</PageTitle>
+
+<div class="row">
+    <h2>
+        <p>
+            Main Info
+        </p>
+        @if (_viewModel.isEdit)
+        {
+            <button type="submit" class="btn btn-primary" @onclick="@(() => Delete(_editContext))">Delete</button>
+        }
+    </h2>
+    <EditForm EditContext="_editContext">
+        <input type="hidden" @bind-value="_viewModel.isEdit" />
+        @if (_viewModel.isEdit)
+        {
+            <p>
+                Id:<br />
+                <InputNumber id="name" @bind-Value="_viewModel.Key" readonly="readonly" />
+            </p>
+        }
+        <p>
+            Name:<br />
+            <InputText id="name" @bind-Value="_viewModel.Name" />
+        </p>
+        <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Save</button>
+    </EditForm>
+</div>
+
+@code {
+    public string Title { get; set; } = "Default tittle";
+    [Parameter]
+    [EditorRequired]
+    public string Type { get; set; } = null!;
+
+    [Parameter]
+    public int? ProductId { get; set; } = null!;
+
+    private EditContext? _editContext;
+    private ViewModel _viewModel = new();
+    
+    protected override void OnInitialized()
+    {
+        if (Type == "create")
+        {
+            Title = "Add new Group";
+        }
+        else if (Type == "edit")
+        {
+            Title = "Edit Group";
+
+            var product = productGroupRepository.GetByKey(ProductId ?? throw new InvalidOperationException()) ?? throw new InvalidOperationException();
+
+            _viewModel = new()
+                {
+                    isEdit = true,
+                    Key = product.Key,
+                    Name = product.Name
+                };
+        }
+        else
+        {
+            throw new InvalidOperationException();
+        }
+
+        _editContext = new(_viewModel);
+    }
+
+    private void Delete(EditContext formContext)
+    {
+        if (_viewModel.isEdit)
+        {
+            var product = productGroupRepository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
+
+            productGroupRepository.Delete(product);
+
+            Navigation.NavigateTo("refbook/groups");
+            return;
+        }
+
+        throw new InvalidOperationException();
+    }
+
+    private void Submit(EditContext formContext)
+    {
+        if (_viewModel.isEdit)
+        {
+            var product = productGroupRepository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
+
+            var newProduct = new DProduct(
+                product.Key,
+                _viewModel.Name ?? throw new InvalidOperationException()
+            );
+
+            productGroupRepository.Update(newProduct);
+        }
+        else
+        {
+            var newProduct = new DProduct(
+                0,
+                _viewModel.Name ?? throw new InvalidOperationException()
+            );
+
+            productGroupRepository.Add(newProduct);
+        }
+
+        Navigation.NavigateTo("refbook/groups");
+    }
+
+    public class ViewModel
+    {
+        public bool isEdit { get; set; } = false;
+
+        public int Key { get; set; }
+
+        public string? Name { get; set; }
+    }
+}

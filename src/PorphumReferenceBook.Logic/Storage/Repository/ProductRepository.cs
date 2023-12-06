@@ -1,5 +1,7 @@
 ﻿using General;
 using General.Abstractions.Storage;
+using General.Abstractions.Storage.Query;
+using General.Models.Query;
 using Microsoft.EntityFrameworkCore;
 using PorphumReferenceBook.Logic.Abstractions.Storage;
 using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
@@ -7,6 +9,8 @@ using PorphumReferenceBook.Logic.Models.Extensions;
 using PorphumReferenceBook.Logic.Models.Product;
 
 namespace PorphumReferenceBook.Logic.Storage.Repository;
+
+using TProduct = Models.Product;
 
 /// <summary xml:lang="ru">
 /// Репозиторий продуктов и их групп.
@@ -31,6 +35,7 @@ public sealed class ProductRepository : IProductRepository
     {
         var products = _repositoryContext.Products
             .AsNoTrackingWithIdentityResolution()
+            .Include(x => x.Group)
             .AsQueryable();
 
         if (isFullLoad)
@@ -50,8 +55,8 @@ public sealed class ProductRepository : IProductRepository
 
     private IEnumerable<Product> GetWithModEntities(bool isFullLoad)
     {
-        var products = _repositoryContext.Products.
-            AsNoTrackingWithIdentityResolution()
+        var products = _repositoryContext.Products
+            .AsNoTrackingWithIdentityResolution()
             .AsQueryable();
 
         if (isFullLoad)
@@ -60,6 +65,7 @@ public sealed class ProductRepository : IProductRepository
         }
 
         return products
+            .Include(x => x.Group)
             .AsEnumerable()
             .Select(p => p.ConvertToModel(isFullLoad));
     }
@@ -86,32 +92,31 @@ public sealed class ProductRepository : IProductRepository
     }
 
     /// <inheritdoc/>
-    public async Task AddAsync(Product entity, CancellationToken token = default)
+    public void Add(Product entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        token.ThrowIfCancellationRequested();
-
         var storage = entity.ConvertToStorage();
 
-        await _repositoryContext.Products
-            .AddAsync(storage, token)
-            .ConfigureAwait(false);
+        var group = _repositoryContext.ProductGroups.SingleOrDefault(x => x.Id == storage.GroupId) ?? throw new InvalidOperationException();
+
+        storage.Group = group;
+
+        _repositoryContext.Products.Add(storage);
+
+        Save();
     }
 
     /// <inheritdoc/>
     public void Delete(Product entity)
     {
-        var storage = entity.ConvertToStorage();
-
         ArgumentNullException.ThrowIfNull(entity);
 
-        if (_repositoryContext.Products.AsNoTracking().SingleOrDefault(x => x.Id == storage.Id) is null)
-        {
-            throw new ArgumentException("Given entity not exsist in context");
-        }
+        var storage = _repositoryContext.Products.SingleOrDefault(x => x.Id == entity.Key) ?? throw new InvalidOperationException();
 
         _repositoryContext.Products.Remove(storage);
+
+        Save();
     }
 
     /// <inheritdoc/>
@@ -123,9 +128,10 @@ public sealed class ProductRepository : IProductRepository
     /// <inheritdoc/>
     IEnumerable<ProductGroup> IRepository<ProductGroup>.GetEntities()
     {
-        return _repositoryContext.ProductGroups.AsNoTracking()
-           .AsEnumerable()
-           .Select(p => p.ConvertToModel());
+        return _repositoryContext.ProductGroups
+            .AsNoTracking()
+            .AsEnumerable()
+            .Select(p => p.ConvertToModel());
     }
 
     /// <inheritdoc/>
@@ -144,32 +150,27 @@ public sealed class ProductRepository : IProductRepository
     }
 
     /// <inheritdoc/>
-    public async Task AddAsync(ProductGroup entity, CancellationToken token = default)
+    public void Add(ProductGroup entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        token.ThrowIfCancellationRequested();
-
         var storage = entity.ConvertToStorage();
 
-        await _repositoryContext.ProductGroups
-            .AddAsync(storage, token)
-            .ConfigureAwait(false);
+        _repositoryContext.ProductGroups.Add(storage);
+
+        Save();
     }
 
     /// <inheritdoc/>
     public void Delete(ProductGroup entity)
     {
-        var storage = entity.ConvertToStorage();
-
         ArgumentNullException.ThrowIfNull(entity);
 
-        if (_repositoryContext.ProductGroups.AsNoTracking().SingleOrDefault(x => x.Id == storage.Id) is null)
-        {
-            throw new ArgumentException("Given entity not exsist in context");
-        }
+        var storage = _repositoryContext.ProductGroups.SingleOrDefault(x => x.Id == entity.Key) ?? throw new InvalidOperationException();
 
         _repositoryContext.ProductGroups.Remove(storage);
+
+        Save();
     }
 
     /// <inheritdoc/>
@@ -187,4 +188,68 @@ public sealed class ProductRepository : IProductRepository
         LoadMod.Partial => GetWithModEntities(false),
         _ => throw new InvalidOperationException()
     };
+
+    /// <inheritdoc/>
+    public ProductGroup? GetByKey(int key)
+    {
+        var find = _repositoryContext.ProductGroups
+            .AsNoTracking()
+            .SingleOrDefault(x => x.Id == key);
+
+        if (find is null)
+        {
+            return null;
+        }
+
+        return find.ConvertToModel();
+    }
+
+    /// <inheritdoc/>
+    public void Update(Product entity)
+    {
+        var current = _repositoryContext.Products
+            .Include(x => x.Info)
+            .Include(x => x.Group)
+            .AsNoTracking()
+            .SingleOrDefault(x => x.Id == entity.Key);
+
+        if (current is null)
+        {
+            throw new ArgumentException();
+        }
+
+        var storage = entity.ConvertToStorage();
+        var group = _repositoryContext.ProductGroups.AsNoTracking().SingleOrDefault(x => x.Id == storage.GroupId) ?? throw new InvalidOperationException();
+        current.Group = group;
+        current.Name = storage.Name;
+        current.GroupId = storage.GroupId;
+        storage.Info.ProductId = current.Id;
+        current.Info = storage.Info;
+
+        _repositoryContext.Products.Update(current);
+
+        Save();
+    }
+
+    /// <inheritdoc/>
+    public void Update(ProductGroup entity)
+    {
+        
+        var current = _repositoryContext.ProductGroups
+            .AsNoTracking()
+            .SingleOrDefault(x => x.Id == entity.Key);
+
+        if (current is null)
+        {
+            throw new ArgumentException();
+        }
+
+        var storage = entity.ConvertToStorage();
+
+        current.Name = storage.Name;
+
+        _repositoryContext.ProductGroups.Update(current);
+
+        Save();
+    }
 }

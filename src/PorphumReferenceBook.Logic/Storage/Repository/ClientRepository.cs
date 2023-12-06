@@ -85,32 +85,32 @@ public sealed class ClientRepository : IClientRepository
     }
 
     /// <inheritdoc/>
-    public async Task AddAsync(Client entity, CancellationToken token = default)
+    public void Add(Client entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        token.ThrowIfCancellationRequested();
-
         var storage = entity.ConvertToStorage();
 
-        await _repositoryContext.Clients
-            .AddAsync(storage, token)
-            .ConfigureAwait(false);
+        _repositoryContext.Clients.Add(storage);
+
+        Save();
     }
 
     /// <inheritdoc/>
     public void Delete(Client entity)
     {
-        var storage = entity.ConvertToStorage();
-
         ArgumentNullException.ThrowIfNull(entity);
 
-        if (_repositoryContext.Clients.AsNoTracking().SingleOrDefault(x => x.Id == storage.Id) is null)
+        var storage = _repositoryContext.Clients.SingleOrDefault(x => x.Id == entity.Key);
+
+        if (storage is null)
         {
             throw new ArgumentException("Given entity not exist in context");
         }
 
         _repositoryContext.Clients.Remove(storage);
+
+        Save();
     }
 
     /// <inheritdoc/>
@@ -135,4 +135,26 @@ public sealed class ClientRepository : IClientRepository
         LoadMod.Partial => GetWithModEntities(false),
         _ => throw new InvalidOperationException()
     };
+
+    /// <inheritdoc/>
+    public void Update(Client entity)
+    {
+        var current = _repositoryContext.Clients
+            .Include(x => x.Info)
+            .SingleOrDefault(x => x.Id == entity.Key);
+
+        if (current is null)
+        {
+            throw new ArgumentException();
+        }
+
+        var storage = entity.ConvertToStorage();
+        current.Name = storage.Name;
+        storage.Info.ClientId = current.Id;
+        current.Info = storage.Info;
+
+        _repositoryContext.Clients.Update(current);
+
+        Save();
+    }
 }
