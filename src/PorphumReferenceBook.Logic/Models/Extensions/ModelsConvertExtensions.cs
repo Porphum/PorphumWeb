@@ -27,14 +27,12 @@ public static class ModelsConvertExtensions
                 product.Id,
                 product.Name,
                 product.Group.ConvertToModel(),
-                new Money(product.Cost),
                 product.Info.ConvertToModel()
             ) 
             : new Product(
                 product.Id,
                 product.Name,
-                product.Group.ConvertToModel(),
-                new Money(product.Cost)
+                product.Group.ConvertToModel()
             );
 
     /// <summary xml:lang="ru">
@@ -74,7 +72,6 @@ public static class ModelsConvertExtensions
 
         storage.Name = product.Name;
         storage.Id = product.Key;
-        storage.Cost = product.Price.Value;
 
         storage.GroupId = product.Group.Key;
         storage.Group = product.Group.ConvertToStorage();

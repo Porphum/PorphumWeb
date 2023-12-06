@@ -63,8 +63,6 @@ public class ReferenceBookMapper : IReferenceBookMapper
         MapEntityUsingRepository(
             mappable,
                 _productKeyableRepository,
-                loadMod: mappable.MappedEntity.IsLoaded
-                    ? LoadMod.Full
-                    : LoadMod.Partial
+                LoadMod.Full
         );
 }

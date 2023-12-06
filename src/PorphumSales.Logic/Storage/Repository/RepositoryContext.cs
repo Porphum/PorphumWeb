@@ -22,6 +22,12 @@ public sealed class RepositoryContext : IRepositoryContext
     /// <inheritdoc/>
     public DbSet<DocumentConfig> Configs => _salesContext.DocumentConfigs;
 
+    public DbSet<ProductCountHistory> ProductsCountHistories => _salesContext.ProductsCountHistories;
+
+    public DbSet<ProductPrice> ProductsPrices => _salesContext.ProductsPrices;
+
+    public DbSet<ProductStorage> ProductsStorages => _salesContext.ProductsStorages;
+
     /// <inheritdoc/>
     public void SaveChanges() => _salesContext.SaveChanges();
 }
