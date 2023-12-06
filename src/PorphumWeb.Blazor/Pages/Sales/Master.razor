@@ -1,5 +1,93 @@
-﻿<h3>Master</h3>
+﻿@page "/sales/master"
+@using BlazorBootstrap;
+@using General.Abstractions.Storage.Query;
+@using General;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+@using PorphumReferenceBook.Logic.Abstractions;
+@using PorphumReferenceBook.Logic.Storage.Repository.Query;
+@using PorphumSales.Logic.Abstractions.Storage.Repository;
+
+@using PorphumSales.Logic.Models.Mapper;
+@using TEntity = PorphumSales.Logic.Storage.Models.ProductPrice;
+@using DEntity = PorphumSales.Logic.Models.Document.DocumentConfig;
+@using DProduct = PorphumReferenceBook.Logic.Models.Client.Client;
+
+@inject IDocumentRepository repository;
+@inject IReferenceBookMapper _referenceBookMapper;
+
+
+
+<EditForm EditContext="_editContext">
+    <ClientsFinder ExternalMethod=Product ParntEditContext="_editContext" />
+    <p>
+        MasterId:<br />
+        <InputNumber id="produc-id" @bind-Value="_view.ClientId" readonly="readonly" />
+    </p>
+    <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Add price</button>
+</EditForm>
 
 @code {
+    private readonly int PAGE_SIZE = 5;
 
+    private int _skipCount = 0;
+
+    private DEntity[]? entities;
+
+    private EditContext? _editContext;
+
+    private ViewModel _view = new();
+
+    //private Collapse collapse = default!;
+    //private async Task ShowContentAsync() => await collapse.ShowAsync();
+    //private async Task HideContentAsync() => await collapse.HideAsync();
+    //private async Task ToggleContentAsync() => await collapse.ToggleAsync();
+
+    public string Input { get; set; } = string.Empty;
+    private void Product(long id, EditContext _context)
+    {
+        _view.ClientId = id;
+    }
+
+    private async Task Submit(EditContext _context)
+    {
+        var price = new DEntity(
+            0,
+            _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.ClientId))
+        );
+
+
+        repository.Config = price;
+    }
+
+    protected override void OnInitialized()
+    {
+        var config = repository.Config;
+
+        if (config is not null)
+        {
+            _view.ClientId = config.Master.MapKey;
+        }
+
+        _editContext = new(_view);
+    }
+
+    private void IncrementCount()
+    {
+        _skipCount += 1;
+    }
+
+    private void DecrementCount()
+    {
+        if (_skipCount == 0)
+        {
+            return;
+        }
+        _skipCount -= 1;
+    }
+
+    public class ViewModel
+    {
+        public long ClientId { get; set; }
+    }
 }

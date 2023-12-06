@@ -14,5 +14,5 @@ public interface IDocumentRepository :
     /// Возвращает текущую активную конфигурацию для составления документов.
     /// </summary>
     /// <returns>Текущая активная конфигурация.</returns>
-    public DocumentConfig GetConfig();
+    public DocumentConfig Config { get; set; }
 }

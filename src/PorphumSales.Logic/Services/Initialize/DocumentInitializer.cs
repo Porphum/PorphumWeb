@@ -50,7 +50,7 @@ public sealed class DocumentInitializer
             throw new ArgumentException();
         }
 
-        var config = _documentRepository.GetConfig();
+        var config = _documentRepository.Config;
 
         var mappable = new MappableModel<Client, long>(client.Key, client);
 
