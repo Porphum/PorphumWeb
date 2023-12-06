@@ -20,7 +20,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 
 
-
+builder.Services.AddBlazorBootstrap();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();

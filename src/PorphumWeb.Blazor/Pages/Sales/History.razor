@@ -1,0 +1,141 @@
+﻿@using General.Abstractions.Storage;
+@using General.Abstractions.Storage.Query;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
+@using PorphumReferenceBook.Logic.Abstractions;
+@using PorphumReferenceBook.Logic.Models.Product;
+@using PorphumReferenceBook.Logic.Storage.Repository.Query;
+@using PorphumSales.Logic.Abstractions.Storage.Repository;
+@using PorphumSales.Logic.Models.Mapper;
+@using PorphumSales.Logic.Models.Sales;
+@using PorphumSales.Logic.Storage.Models;
+
+@inject IStorageRepository repository;
+@inject ISalesQueryParamFactory paramFactory;
+@inject IReferenceBookMapper _referenceBookMapper;
+@inject NavigationManager Navigation
+
+@page "/sales/history/{ProductId:long}"
++
+<PageTitle>Storage</PageTitle>
+
+<EditForm EditContext="_editContext">
+    <p>
+        Delta:<br />
+        <InputNumber id="delta" @bind-Value="_view.Delta" />
+    </p>
+    <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Add</button>
+</EditForm>
+@if (products == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Delta</th>
+                <th>DateTime</th>
+                <th>Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in products)
+            {
+                <tr>
+                    <td>@($"{product.Product.MappedEntity.Group.Name} - {product.Product.MappedEntity.Name}")</td>
+                    <td>@product.Delta</td>
+                    <td>@product.AccurDate</td>
+                    <td>@product.Type</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p role="status">
+        <button class="btn btn-primary" @onclick="DecrementCount">Prev</button>
+        @(_skipCount + 1)
+        <button class="btn btn-primary" @onclick="IncrementCount">Next</button>
+    </p>
+}
+
+
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public long ProductId { get; set; }
+
+    private EditContext? _editContext;
+
+    private ViewModel _view = new();
+
+    private readonly int PAGE_SIZE = 5;
+
+    private int _skipCount = 0;
+
+    private ProductHistory[]? products;
+
+    private void UpdateProducts()
+    {
+        var query = (paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).InitQuery();
+
+        var config = new ProductsHistoriesParamConfig()
+            {
+                OfProductId = ProductId,
+                Skip = _skipCount * PAGE_SIZE,
+                Limit = PAGE_SIZE
+            };
+
+        query.Append((paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).CreateParam(ProductsHistoriesParamType.OfProductId, config));
+
+        query.Append((paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).CreateParam(ProductsHistoriesParamType.Skip, config));
+        query.Append((paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).CreateParam(ProductsHistoriesParamType.Limit, config));
+
+        products = repository.GetByQuery(query).ToArray();
+    }
+
+    private void IncrementCount()
+    {
+        _skipCount += 1;
+
+        UpdateProducts();
+    }
+
+    private void DecrementCount()
+    {
+        if (_skipCount == 0)
+        {
+            return;
+        }
+        _skipCount -= 1;
+
+        UpdateProducts();
+    }
+
+    protected override void OnInitialized()
+    {
+        _editContext = new(_view);
+        UpdateProducts();
+    }
+
+    public void Submit(EditContext? editContext)
+    {
+        var delta = new ProductHistory(
+            _referenceBookMapper.MapEntity(new MappableModel<Product, long>(ProductId)),
+            _view.Delta,
+            DateTime.Now
+        );
+
+        repository.ManualWrite(delta);
+
+        Navigation.NavigateTo($"sales/storage");
+        return;
+    }
+
+    public class ViewModel
+    {
+        public int Delta { get; set; } = 0;
+    }
+}

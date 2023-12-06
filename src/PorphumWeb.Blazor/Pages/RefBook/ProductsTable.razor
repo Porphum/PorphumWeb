@@ -49,13 +49,12 @@ else
             }
         </tbody>
     </table>
+    <p role="status">
+        <button class="btn btn-primary" @onclick="DecrementCount">Prev</button>
+        @(_skipCount + 1)
+        <button class="btn btn-primary" @onclick="IncrementCount">Next</button>
+    </p>
 }
-
-<p role="status">
-    <button class="btn btn-primary" @onclick="DecrementCount">Prev</button>
-    @(_skipCount+1)
-    <button class="btn btn-primary" @onclick="IncrementCount">Next</button>
-</p>
 
 @code {
     private readonly int PAGE_SIZE = 5;

@@ -83,9 +83,9 @@ public sealed class ReferenceBookContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
 
-            entity.Property(e => e.Cost)
+            /*entity.Property(e => e.Cost)
                 .HasPrecision(20, 2)
-                .HasColumnName("cost");
+                .HasColumnName("cost");*/
 
             entity.Property(e => e.GroupId).HasColumnName("group_id");
 

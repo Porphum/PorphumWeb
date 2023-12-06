@@ -12,4 +12,9 @@ public interface IRepositoryContext : IBaseRepositoryContext
     public DbSet<Document> Documents { get; }
 
     public DbSet<DocumentConfig> Configs { get; }
+
+    public DbSet<ProductCountHistory> ProductsCountHistories { get; }
+    public DbSet<ProductPrice> ProductsPrices { get; } 
+
+    public DbSet<ProductStorage> ProductsStorages { get; }
 }

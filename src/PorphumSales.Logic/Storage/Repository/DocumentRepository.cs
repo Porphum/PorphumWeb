@@ -159,4 +159,52 @@ public class DocumentRepository : IDocumentRepository
 
     /// <inheritdoc/>
     public void Update(Document entity) => throw new NotImplementedException();
+
+    public DocumentConfig? Config 
+    { 
+        get
+        {
+            var storage = _repositoryContext.Configs
+            .AsNoTrackingWithIdentityResolution()
+            .FirstOrDefault();
+
+            if (storage is null)
+            {
+                return null;
+            }
+
+            var config = storage.ConvertToModel(_referenceBookMapper);
+
+            if (config.Master.MapState == MapState.MapError)
+            {
+                throw new InvalidOperationException("Can't load config correctly");
+            }
+
+            return config;
+        }
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            if (value.Master.MapState != MapState.Success)
+            {
+                throw new InvalidOperationException();
+            }
+
+            var storage = _repositoryContext.Configs.FirstOrDefault();
+            var newStorage = value.ConvertToStorage();
+
+            if (storage is null)
+            {
+                _repositoryContext.Configs.Add(newStorage);
+                Save();
+                return;
+            }
+
+            storage.MasterId = newStorage.MasterId;
+
+            _repositoryContext.Configs.Add(storage);
+            Save();
+        }
+    }
 }

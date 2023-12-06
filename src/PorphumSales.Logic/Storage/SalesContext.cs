@@ -39,6 +39,11 @@ public sealed class SalesContext : DbContext
     /// </summary>
     public DbSet<DocumentsRow> DocumentsRows { get; set; } = null!;
 
+    public DbSet<ProductCountHistory> ProductsCountHistories { get; set; } = null!;
+    public DbSet<ProductPrice> ProductsPrices { get; set; } = null!;
+
+    public DbSet<ProductStorage> ProductsStorages { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Document>(entity =>
@@ -95,6 +100,71 @@ public sealed class SalesContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
 
             entity.Property(e => e.MasterId).HasColumnName("master_id");
+        });
+
+        modelBuilder.Entity<ProductCountHistory>(entity =>
+        {
+            entity.HasKey(e => e.HistoryId)
+                .HasName("products_count_history_pkey");
+
+            entity.ToTable("products_count_history");
+
+            entity.Property(e => e.HistoryId).HasColumnName("history_id");
+
+            entity.Property(e => e.AccurDate)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("accur_date")
+                .HasDefaultValueSql("now()");
+
+            entity.Property(e => e.Delta).HasColumnName("delta");
+
+            entity.Property(e => e.DocumentId).HasColumnName("document_id").HasDefaultValue(null).IsRequired(false);
+
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+
+            entity.Property(e => e.WriteType)
+                .HasMaxLength(10)
+                .HasColumnName("write_type");
+
+            entity.HasOne(d => d.Document)
+                .WithMany()
+                .HasForeignKey(d => d.DocumentId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("products_count_history_document_id_fkey");
+        });
+
+        modelBuilder.Entity<ProductPrice>(entity =>
+        {
+            entity.HasKey(e => new { e.ProductId, e.FromDate })
+                .HasName("products_prices_pkey");
+
+            entity.ToTable("products_prices");
+
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+
+            entity.Property(e => e.FromDate)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("from_date")
+                .HasDefaultValueSql("now()");
+
+            entity.Property(e => e.Price)
+                .HasPrecision(20, 2)
+                .HasColumnName("price");
+        });
+
+        modelBuilder.Entity<ProductStorage>(entity =>
+        {
+            entity.HasNoKey();
+
+            entity.ToView("products_storage");
+
+            entity.Property(e => e.LastUpd)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("last_upd");
+
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+
+            entity.Property(e => e.Sum).HasColumnName("sum");
         });
     }
 }

@@ -30,7 +30,7 @@ public class Product : ILoadable, IKeyable<long>
     /// <exception cref="ArgumentNullException" xml:lang="ru">
     /// Если <paramref name="group"/> - <see langword="null"/>.
     /// </exception>
-    public Product(long key, string name, ProductGroup group, Money price)
+    public Product(long key, string name, ProductGroup group)
     {
         Key = key;
 
@@ -44,7 +44,6 @@ public class Product : ILoadable, IKeyable<long>
 
         Name = name;
         Group = group ?? throw new ArgumentNullException(nameof(group));
-        Price = price;
         IsLoaded = false;
         _info = null!;
     }
@@ -55,7 +54,6 @@ public class Product : ILoadable, IKeyable<long>
     /// <param name="key" xml:lang="ru">Идентификатор продукта.</param>
     /// <param name="name" xml:lang="ru">Наименование продукта.</param>
     /// <param name="group" xml:lang="ru">Группа продукта.</param>
-    /// <param name="price" xml:lang="ru">Цена продукта.</param>
     /// <param name="info" xml:lang="ru">Информация об продукте.</param>
     /// <exception cref="ArgumentException" xml:lang="ru">
     /// Если <paramref name="name"/> не соответствует формату.
@@ -63,7 +61,7 @@ public class Product : ILoadable, IKeyable<long>
     /// <exception cref="ArgumentNullException" xml:lang="ru">
     /// Если <paramref name="group"/> или <paramref name="info"/> - <see langword="null"/>.
     /// </exception>
-    public Product(long key, string name, ProductGroup group, Money price, ProductInfo info)
+    public Product(long key, string name, ProductGroup group, ProductInfo info)
     {
         Key = key;
 
@@ -77,7 +75,6 @@ public class Product : ILoadable, IKeyable<long>
 
         Name = name;
         Group = group ?? throw new ArgumentNullException(nameof(group));
-        Price = price;
         _info = info ?? throw new ArgumentNullException(nameof(info));
         IsLoaded = true;
     }
@@ -94,11 +91,6 @@ public class Product : ILoadable, IKeyable<long>
     /// Группа продукта.
     /// </summary>
     public ProductGroup Group { get; set; }
-
-    /// <summary xml:lang="ru">
-    /// Цена продукта.
-    /// </summary>
-    public Money Price { get; }
 
     /// <summary xml:lang="ru">
     /// Информация об продукте.

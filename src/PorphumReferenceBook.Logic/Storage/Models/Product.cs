@@ -16,11 +16,6 @@ public class Product
     public string Name { get; set; } = null!;
 
     /// <summary xml:lang="ru">
-    /// Стоимость продукта.
-    /// </summary>
-    public decimal Cost { get; set; }
-
-    /// <summary xml:lang="ru">
     /// Идентификатор группы продукта.
     /// </summary>
     public int GroupId { get; set; }

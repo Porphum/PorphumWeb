@@ -142,7 +142,6 @@
                 product.Key,
                 _viewModel.Name ?? throw new InvalidOperationException(),
                 group,
-                product.Price,
                 new ProductInfo(
                     _viewModel.Barcode is not null
                         ? new BarCode(_viewModel.Barcode)
@@ -159,7 +158,6 @@
                 0,
                 _viewModel.Name ?? throw new InvalidOperationException(),
                 group,
-                new General.Money(1234),
                 new ProductInfo(
                     _viewModel.Barcode is not null
                         ? new BarCode(_viewModel.Barcode)

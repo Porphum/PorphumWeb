@@ -1,0 +1,150 @@
+﻿@page "/sales/prices"
+@using BlazorBootstrap;
+@using General.Abstractions.Storage.Query;
+@using General;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+@using PorphumReferenceBook.Logic.Abstractions;
+@using PorphumReferenceBook.Logic.Storage.Repository.Query;
+@using PorphumSales.Logic.Abstractions.Storage.Repository;
+
+@using PorphumSales.Logic.Models.Mapper;
+@using TEntity = PorphumSales.Logic.Storage.Models.ProductPrice;
+@using DEntity = PorphumSales.Logic.Models.Sales.PriceableProduct;
+@using DProduct = PorphumReferenceBook.Logic.Models.Product.Product;
+
+@inject IPriceRepository repository;
+@inject IReferenceBookMapper _referenceBookMapper;
+@inject ISalesQueryParamFactory paramFactory;
+
+
+<EditForm EditContext="_editContext">
+    <ProductFinder ExternalMethod=Product ParntEditContext="_editContext" />
+    <p>
+        Product:<br />
+        <InputNumber id="produc-id" @bind-Value="_view.ProductId" readonly="readonly" />
+    </p>
+    <p>
+        Price:<br />
+        <InputNumber id="price" @bind-Value="_view.Price" />
+    </p>
+    <p>
+        FromDate:<br />
+        <InputDate id="from-date" @bind-Value="_view.From" />
+    </p>
+    <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Add price</button>
+</EditForm>
+
+<br/>
+<hr/>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>FromDate</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entity in entities!)
+        {
+            <tr>
+                <td>@entity.Product.MappedEntity.Name</td>
+                <td>@entity.Price</td>
+                <td>@entity.FromDate</td>
+                <td><button>Delete</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+<p role="status">
+    <button class="btn btn-primary" @onclick="DecrementCount">Prev</button>
+    @(_skipCount + 1)
+    <button class="btn btn-primary" @onclick="IncrementCount">Next</button>
+</p>
+
+@code {
+    private readonly int PAGE_SIZE = 5;
+
+    private int _skipCount = 0;
+
+    private DEntity[]? entities;
+
+    private EditContext? _editContext;
+
+    private ViewModel _view = new();
+
+    //private Collapse collapse = default!;
+    //private async Task ShowContentAsync() => await collapse.ShowAsync();
+    //private async Task HideContentAsync() => await collapse.HideAsync();
+    //private async Task ToggleContentAsync() => await collapse.ToggleAsync();
+
+    public string Input { get; set; } = string.Empty;
+    private void Product(long id, EditContext _context)
+    {
+        _view.ProductId = id;
+    }
+
+    private async Task Submit(EditContext _context)
+    {
+        var price = new DEntity(
+            _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.ProductId)),
+            new Money(_view.Price),
+            _view.From
+        );
+
+
+        repository.AddNewPrice(price);
+
+        UpdateProducts();
+    }
+
+    protected override void OnInitialized()
+    {
+        _editContext = new(_view);
+        UpdateProducts();
+    }
+
+    private void UpdateProducts()
+    {
+        var query = (paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).InitQuery();
+
+        var config = new ProductsPricesParamConfig()
+            {
+                Skip = _skipCount * PAGE_SIZE,
+                Limit = PAGE_SIZE
+            };
+
+        query.Append((paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).CreateParam(ProductsPricesParamType.Skip, config));
+        query.Append((paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).CreateParam(ProductsPricesParamType.Limit, config));
+
+        entities = repository.GetByQuery(query).ToArray();
+    }
+
+    private void IncrementCount()
+    {
+        _skipCount += 1;
+
+        UpdateProducts();
+    }
+
+    private void DecrementCount()
+    {
+        if (_skipCount == 0)
+        {
+            return;
+        }
+        _skipCount -= 1;
+
+        UpdateProducts();
+    }
+
+    public class ViewModel
+    {
+        public long ProductId { get; set; }
+        public DateTime From { get; set; } = DateTime.Now;
+        public int Price { get; set; } = 0;
+    }
+}
