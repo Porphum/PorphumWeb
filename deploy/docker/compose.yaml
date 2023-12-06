@@ -13,7 +13,7 @@ services:
       - postgres
 
   postgres:
-    container_name: postgres_container
+    container_name: postgres_db_container
     image: postgres:14
     command:
       - "postgres"
@@ -78,7 +78,7 @@ services:
    networks:
       - postgres
   pgadmin:
-    container_name: pgadmin_container
+    container_name: pgadmin_porp_container
     image: dpage/pgadmin4:7.2
     environment:
       PGADMIN_DEFAULT_EMAIL: "habrpguser@habr.com"
