@@ -6,11 +6,11 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["src/PorphumWeb.Blazor/PorphumWeb.Blazor.csproj", "PorphumWeb.Blazor/"]
-COPY ["src/General/General.csproj", "General/"]
-COPY ["src/PorphumReferenceBook.Logic/PorphumReferenceBook.Logic.csproj", "PorphumReferenceBook.Logic/"]
-COPY ["src/PorphumSales.Logic/PorphumSales.Logic.csproj", "PorphumSales.Logic/"]
-COPY ["src/PorphumWeb.Logic/PorphumWeb.Logic.csproj", "PorphumWeb.Logic/"]
+COPY ["PorphumWeb.Blazor/PorphumWeb.Blazor.csproj", "PorphumWeb.Blazor/"]
+COPY ["General/General.csproj", "General/"]
+COPY ["PorphumReferenceBook.Logic/PorphumReferenceBook.Logic.csproj", "PorphumReferenceBook.Logic/"]
+COPY ["PorphumSales.Logic/PorphumSales.Logic.csproj", "PorphumSales.Logic/"]
+COPY ["PorphumWeb.Logic/PorphumWeb.Logic.csproj", "PorphumWeb.Logic/"]
 RUN dotnet restore "PorphumWeb.Blazor/PorphumWeb.Blazor.csproj"
 COPY . .
 WORKDIR "/src/PorphumWeb.Blazor"
