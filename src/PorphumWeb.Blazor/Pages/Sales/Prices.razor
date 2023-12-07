@@ -1,5 +1,6 @@
 ﻿@page "/sales/prices"
 @using BlazorBootstrap;
+@using General.Abstractions.Models;
 @using General.Abstractions.Storage.Query;
 @using General;
 @using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
@@ -17,58 +18,97 @@
 @inject IReferenceBookMapper _referenceBookMapper;
 @inject ISalesQueryParamFactory paramFactory;
 
+<PageTitle>Цены</PageTitle>
 
+<h2>Цены</h2>
+<br />
+<Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => ShowAsync(true))"> Добавить цену </Button>
+<Collapse @ref="collapse">
+<hr/>
 <EditForm EditContext="_editContext">
     <ProductFinder ExternalMethod=Product ParntEditContext="_editContext" />
-    <p>
-        Product:<br />
-        <InputNumber id="produc-id" @bind-Value="_view.ProductId" readonly="readonly" />
-    </p>
-    <p>
-        Price:<br />
-        <InputNumber id="price" @bind-Value="_view.Price" />
-    </p>
-    <p>
-        FromDate:<br />
-        <InputDate id="from-date" @bind-Value="_view.From" />
-    </p>
-    <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Add price</button>
+    <input type="hidden" @bind-value="_view.ProductId" />
+    <div class="row">
+        @if (SelectedProduct is not null)
+        {
+            <div class="col-2 col-md-2">
+                <h3><b>Наименование</b></h3>
+            </div>
+            <div class="col-5 col-md-5">
+                <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@SelectedProduct" />
+            </div>
+        }
+        else
+        {
+            <div class="col-2 col-md-2">
+                Наименование не задано
+            </div>
+        }
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-1 col-md-1">
+            <b>Цена</b>
+        </div>
+        <div class="col-5 col-md-5">
+            <CurrencyInput 
+                TValue="decimal" 
+                Locale="ru-RU"
+                id="price" 
+                @bind-Value="_view.Price" />
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-1 col-md-1">
+            <b>С даты</b>
+        </div>
+        <div class="col-5 col-md-5">
+            <DateInput TValue="DateTime" id="from-date" @bind-Value="_view.From" />
+        </div>
+    </div>
+    <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="@(() => Submit(_editContext))"> Сохранить </Button>
 </EditForm>
-
+</Collapse>
 <br/>
 <hr/>
 
 <table class="table">
     <thead>
         <tr>
-            <th>Product</th>
-            <th>Price</th>
-            <th>FromDate</th>
-            <th></th>
+            <th>Наименование</th>
+            <th>Цена</th>
+            <th>С даты</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var entity in entities!)
         {
             <tr>
-                <td>@entity.Product.MappedEntity.Name</td>
+                <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@entity.Product" />
                 <td>@entity.Price</td>
                 <td>@entity.FromDate</td>
-                <td><button>Delete</button></td>
             </tr>
         }
     </tbody>
 </table>
-<p role="status">
-    <button class="btn btn-primary" @onclick="DecrementCount">Prev</button>
-    @(_skipCount + 1)
-    <button class="btn btn-primary" @onclick="IncrementCount">Next</button>
-</p>
+<Pagination ActivePageNumber="@CurrentPage"
+            TotalPages="@PageLimit"
+            Alignment="Alignment.Center"
+            FirstLinkIcon="IconName.ChevronDoubleLeft"
+            PreviousLinkIcon="IconName.ChevronLeft"
+            NextLinkIcon="IconName.ChevronRight"
+            LastLinkIcon="IconName.ChevronDoubleRight"
+            PageChanged="OnPageChangedAsync" />
 
 @code {
-    private readonly int PAGE_SIZE = 5;
+    private IMappableModel<DProduct, long>? SelectedProduct { get; set; }
 
-    private int _skipCount = 0;
+    private static readonly int PAGE_SIZE = 5;
+
+    public int CurrentPage { get; set; } = 1;
+
+    public int PageLimit { get; set; } = 1;
 
     private DEntity[]? entities;
 
@@ -76,44 +116,46 @@
 
     private ViewModel _view = new();
 
-    //private Collapse collapse = default!;
-    //private async Task ShowContentAsync() => await collapse.ShowAsync();
-    //private async Task HideContentAsync() => await collapse.HideAsync();
-    //private async Task ToggleContentAsync() => await collapse.ToggleAsync();
+    private Collapse collapse = default!;
 
     public string Input { get; set; } = string.Empty;
     private void Product(long id, EditContext _context)
     {
         _view.ProductId = id;
+        SelectedProduct = _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.ProductId));
     }
 
     private async Task Submit(EditContext _context)
     {
-        var price = new DEntity(
+        var entity = new DEntity(
             _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.ProductId)),
             new Money(_view.Price),
             _view.From
         );
 
+        repository.AddNewPrice(entity);
 
-        repository.AddNewPrice(price);
+        await ShowAsync(false);
 
-        UpdateProducts();
+        UpdateEntities();
+
     }
 
     protected override void OnInitialized()
     {
         _editContext = new(_view);
-        UpdateProducts();
+        UpdateEntities();
     }
 
-    private void UpdateProducts()
+    private void UpdateEntities()
     {
+        PageLimit = repository.GetLimit();
+
         var query = (paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).InitQuery();
 
         var config = new ProductsPricesParamConfig()
             {
-                Skip = _skipCount * PAGE_SIZE,
+                Skip = (CurrentPage - 1) * PAGE_SIZE,
                 Limit = PAGE_SIZE
             };
 
@@ -123,28 +165,29 @@
         entities = repository.GetByQuery(query).ToArray();
     }
 
-    private void IncrementCount()
+    private async Task OnPageChangedAsync(int newPageNumber)
     {
-        _skipCount += 1;
+        await Task.Run(() => { CurrentPage = newPageNumber; });
 
-        UpdateProducts();
+        UpdateEntities();
     }
 
-    private void DecrementCount()
+    private async Task ShowAsync(bool isShow)
     {
-        if (_skipCount == 0)
+        if (isShow)
         {
-            return;
+            await collapse.ShowAsync();
         }
-        _skipCount -= 1;
-
-        UpdateProducts();
+        else
+        {
+            await collapse.HideAsync();
+        }
     }
 
     public class ViewModel
     {
         public long ProductId { get; set; }
         public DateTime From { get; set; } = DateTime.Now;
-        public int Price { get; set; } = 0;
+        public decimal Price { get; set; } = 0;
     }
 }
