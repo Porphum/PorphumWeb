@@ -4,6 +4,7 @@ using General.Models.Query.Params;
 using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
 using PorphumReferenceBook.Logic.Storage.Repository.Query.Params;
 using PorphumSales.Logic.Storage.Models;
+using PorphumSales.Logic.Storage.Repository.Query;
 using PorphumSales.Logic.Storage.Repository.Query.Params;
 
 namespace PorphumReferenceBook.Logic.Storage.Repository.Query;
@@ -34,4 +35,19 @@ public class SalesQueryParamFactory : ISalesQueryParamFactory
         _ => throw new NotImplementedException()
     };
     IQuery<IQueryParam<ProductStorage>, ProductStorage> IQueryParamsFactory<ProductsStoragesParamType, ProductsStoragesParamConfig, ProductStorage>.InitQuery() => new BaseQuery<IQueryParam<ProductStorage>, ProductStorage>();
+    
+    public IQueryParam<Document> CreateParam(DocumentsParamType key, DocumentsParamConfig config) => key switch
+    {
+        DocumentsParamType.Limit => new LimitQueryParam<Document>(config.Limit ?? throw new ArgumentNullException(nameof(config.Limit))),
+        DocumentsParamType.Skip => new SkipQueryParam<Document>(config.Skip ?? throw new ArgumentNullException(nameof(config.Skip))),
+        DocumentsParamType.OfClient => new OfClientDocumentsParam(
+            config.ClientId ?? throw new ArgumentNullException(nameof(config.ClientId)),
+            config.DocumentType ?? throw new ArgumentNullException(nameof(config.DocumentType))
+        ),
+        DocumentsParamType.OnDate => new OnDateDocumentsParam(config.OnDate ?? throw new ArgumentNullException(nameof(config.OnDate))),
+        DocumentsParamType.OfType => new OfTypeDocumentsParam(config.DocumentType ?? throw new ArgumentNullException(nameof(config.DocumentType))),
+        _ => throw new NotImplementedException()
+    };
+
+    IQuery<IQueryParam<Document>, Document> IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, Document>.InitQuery() => new BaseQuery<IQueryParam<Document>, Document>();
 }

@@ -11,20 +11,24 @@ namespace PorphumSales.Logic.Models.Document;
 /// </summary>
 public enum DocumentState
 {
+    Init = 0,
+
     /// <summary xml:lang="ru">
     /// Документ заполняется.
     /// </summary>
-    Fill = 0,
+    Fill = 1,
     
     /// <summary xml:lang="ru">
     /// Документ проведён.
     /// </summary>
-    Complete = 1,
+    Complete = 2,
 
     /// <summary xml:lang="ru">
     /// Ошибка загрузки.
     /// </summary>
-    MapError = 2,
+    HeaderMapError = 3,
 
+    FillMapError = 4,
 
+    ProductLimitError = 4
 }

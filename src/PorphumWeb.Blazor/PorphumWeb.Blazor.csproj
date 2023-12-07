@@ -26,4 +26,8 @@
     <ProjectReference Include="..\PorphumWeb.Logic\PorphumWeb.Logic.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Pages\Admin\" />
+  </ItemGroup>
+
 </Project>

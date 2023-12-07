@@ -9,7 +9,6 @@ using PorphumSales.Logic.Models.Extensions;
 using PorphumSales.Logic.Models.Sales;
 using PorphumSales.Logic.Storage.Models;
 
-
 namespace PorphumSales.Logic.Storage.Repository;
 public class StorageRepository : BaseQueryRepository<StorageProduct, ProductStorage>, IStorageRepository
 {
@@ -29,6 +28,18 @@ public class StorageRepository : BaseQueryRepository<StorageProduct, ProductStor
     protected override IQueryable<ProductStorage> GetInitQuery() => _context.ProductsStorages.AsQueryable();
 
     public IEnumerable<ProductHistory> GetByParams(params IQueryParam<ProductCountHistory>[] queryParams) => _historyRepository.GetByParams(queryParams);
+    
     public IEnumerable<ProductHistory> GetByQuery(IQuery<IQueryParam<ProductCountHistory>, ProductCountHistory> query) => _historyRepository.GetByQuery(query);
+    
     public void ManualWrite(ProductHistory productHistory) => _historyRepository.ManualWrite(productHistory);
+    
+    public Dictionary<long, long> GetStorageState(IReadOnlySet<long> productsId)
+    {
+        var state = _context.ProductsStorages
+            .Where(x => x.ProductId != null)
+            .Where(x => x.Sum != null)
+            .Where(x => productsId.ToArray().Contains(x.ProductId!.Value));
+
+        return state.ToDictionary(x => x.ProductId!.Value, x => x.Sum!.Value);
+    }
 }

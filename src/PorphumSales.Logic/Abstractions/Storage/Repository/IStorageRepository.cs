@@ -5,4 +5,5 @@ using PorphumSales.Logic.Storage.Models;
 namespace PorphumSales.Logic.Abstractions.Storage.Repository;
 public interface IStorageRepository : IQueryableRepository<StorageProduct, ProductStorage>, IHistoryRepository
 {
+    public Dictionary<long, long> GetStorageState(IReadOnlySet<long> productsId);
 }
