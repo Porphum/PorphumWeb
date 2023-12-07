@@ -1,7 +1,7 @@
 \c porphum_sales
 BEGIN;
 
-drop view public.products_storage;
+DROP VIEW IF EXISTS public.products_storage;
 DROP TABLE IF EXISTS products_prices;
 
 CREATE TABLE products_prices(
