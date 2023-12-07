@@ -1,40 +1,62 @@
 ﻿@inherits LayoutComponentBase
-@inject NavigationManager MyNavigationManager  
 
-<PageTitle>PorphumWeb v0.0.0</PageTitle>
+<div class="bb-page">
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+    <Sidebar @ref="sidebar"
+             IconName="IconName.BootstrapFill"
+             Title="Porphum"
+             DataProvider="SidebarDataProvider" />
 
     <main>
-        @if (MyNavigationManager.Uri.Contains("refbook"))  
-        {
-            <div class="top-row px-4">
-                <RefBookTopNavMenu />
-            </div>
-        }  
-        else if (MyNavigationManager.Uri.Contains("sales"))
-        {
-            <div class="top-row px-4">
-                <SalesTopNavMenu />
-            </div>
-        }
-        else if (MyNavigationManager.Uri.Contains("documents"))
-        {
-            <div class="top-row px-4">
-                <DocumentsTopNavMenu />
-            </div>
-        }
-        else  
-        {
-            <div class="top-row px-4">
-                <DefaultTopNavMenu />
-            </div>
-        }  
+        <div class="bb-top-row px-4 d-flex justify-content-between">
+            <Icon Name="IconName.List" role="button" @onclick="ToogleSidebar" />
+            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+        </div>
+
         <article class="content px-4">
             @Body
         </article>
     </main>
+
 </div>
+
+@code {
+    Sidebar sidebar;
+    IEnumerable<NavItem> navItems;
+
+    private async Task<SidebarDataProviderResult> SidebarDataProvider(SidebarDataProviderRequest request)
+    {
+        if (navItems is null)
+            navItems = GetNavItems();
+
+        return await Task.FromResult(request.ApplyTo(navItems));
+    }
+
+    private IEnumerable<NavItem> GetNavItems()
+    {
+        navItems = new List<NavItem>
+        {
+            new NavItem { Id = "1", Href = "/", IconName = IconName.HouseDoorFill, Text = "Главная"},
+
+            new NavItem { Id = "2", IconName = IconName.LayoutSidebarInset, Text = "Справочник", IconColor = IconColor.Primary },
+            new NavItem { Id = "3", Href = "/refbook/groups", IconName = IconName.PersonSquare, Text = "Группы", ParentId="2"},
+            new NavItem { Id = "4", Href = "/refbook/products", IconName = IconName.PersonSquare, Text = "Наименования", ParentId="2"},
+            new NavItem { Id = "5", Href = "/refbook/clients", IconName = IconName.PersonSquare, Text = "Клиенты", ParentId="2"},
+
+            new NavItem { Id = "4", IconName = IconName.ExclamationTriangleFill, Text = "Продажи", IconColor = IconColor.Success, Href="/sales" },
+            new NavItem { Id = "5", Href = "/sales/master", IconName = IconName.CheckCircleFill, Text = "Мастер", ParentId="4"},
+            new NavItem { Id = "6", Href = "/sales/price", IconName = IconName.SegmentedNav, Text = "Цены", ParentId="4"},
+            new NavItem { Id = "7", Href = "/sales/storage", IconName = IconName.LayoutSidebarInset, Text = "Склад", ParentId="4"},
+
+            new NavItem { Id = "8", IconName = IconName.WindowPlus, Text = "Документы", IconColor = IconColor.Danger },
+            new NavItem { Id = "9", Href = "/documents/1", IconName = IconName.InputCursorText, Text = "Приход", ParentId="8"},
+            new NavItem { Id = "10", Href = "/documents/2", IconName = IconName.CurrencyDollar, Text = "Расход", ParentId="8"},
+
+            new NavItem { Id = "13", IconName = IconName.WindowPlus, Text = "Админ", IconColor = IconColor.Danger },
+        };
+
+        return navItems;
+    }
+
+    private void ToogleSidebar() => sidebar.ToggleSidebar();
+}

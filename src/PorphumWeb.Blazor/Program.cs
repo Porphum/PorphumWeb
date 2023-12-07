@@ -19,10 +19,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Add(IPAddress.Parse("10.0.0.100"));
 });
 
-
-builder.Services.AddBlazorBootstrap();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddBlazorBootstrap();
 builder.Services.AddSingleton<WeatherForecastService>();
 
 builder.Services.AddDbContext<WebContext>(opt =>
