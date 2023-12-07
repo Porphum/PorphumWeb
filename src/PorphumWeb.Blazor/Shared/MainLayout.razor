@@ -3,7 +3,7 @@
 <div class="bb-page">
 
     <Sidebar @ref="sidebar"
-             IconName="IconName.BootstrapFill"
+             IconName="IconName.Gem"
              Title="Porphum"
              DataProvider="SidebarDataProvider" />
 
@@ -38,21 +38,21 @@
         {
             new NavItem { Id = "1", Href = "/", IconName = IconName.HouseDoorFill, Text = "Главная"},
 
-            new NavItem { Id = "2", IconName = IconName.LayoutSidebarInset, Text = "Справочник", IconColor = IconColor.Primary },
-            new NavItem { Id = "3", Href = "/refbook/groups", IconName = IconName.PersonSquare, Text = "Группы", ParentId="2"},
-            new NavItem { Id = "4", Href = "/refbook/products", IconName = IconName.PersonSquare, Text = "Наименования", ParentId="2"},
+            new NavItem { Id = "2", IconName = IconName.BookHalf, Text = "Справочник", IconColor = IconColor.Primary },
+            new NavItem { Id = "3", Href = "/refbook/groups", IconName = IconName.BookmarkCheck, Text = "Группы", ParentId="2"},
+            new NavItem { Id = "4", Href = "/refbook/products", IconName = IconName.Bookshelf, Text = "Наименования", ParentId="2"},
             new NavItem { Id = "5", Href = "/refbook/clients", IconName = IconName.PersonSquare, Text = "Клиенты", ParentId="2"},
 
-            new NavItem { Id = "4", IconName = IconName.ExclamationTriangleFill, Text = "Продажи", IconColor = IconColor.Success, Href="/sales" },
+            new NavItem { Id = "4", IconName = IconName.BarChartFill, Text = "Продажи", IconColor = IconColor.Success, Href="/sales" },
             new NavItem { Id = "5", Href = "/sales/master", IconName = IconName.CheckCircleFill, Text = "Мастер", ParentId="4"},
             new NavItem { Id = "6", Href = "/sales/price", IconName = IconName.SegmentedNav, Text = "Цены", ParentId="4"},
             new NavItem { Id = "7", Href = "/sales/storage", IconName = IconName.LayoutSidebarInset, Text = "Склад", ParentId="4"},
 
-            new NavItem { Id = "8", IconName = IconName.WindowPlus, Text = "Документы", IconColor = IconColor.Danger },
+            new NavItem { Id = "8", IconName = IconName.Plus, Text = "Документы", IconColor = IconColor.Danger },
             new NavItem { Id = "9", Href = "/documents/1", IconName = IconName.InputCursorText, Text = "Приход", ParentId="8"},
             new NavItem { Id = "10", Href = "/documents/2", IconName = IconName.CurrencyDollar, Text = "Расход", ParentId="8"},
 
-            new NavItem { Id = "13", IconName = IconName.WindowPlus, Text = "Админ", IconColor = IconColor.Danger },
+            new NavItem { Id = "13", IconName = IconName.ChevronDoubleLeft, Text = "Админ", IconColor = IconColor.Danger },
         };
 
         return navItems;
