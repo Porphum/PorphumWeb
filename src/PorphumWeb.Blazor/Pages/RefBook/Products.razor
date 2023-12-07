@@ -3,18 +3,31 @@
 @using PorphumReferenceBook.Logic.Models.Product;
 
 @inject IProductGroupRepository productGroupRepository;
+@inject NavigationManager Navigation
 
-<PageTitle>Product</PageTitle>
-
+<PageTitle>Наименования</PageTitle>
+<br/>
+<div class="row">
+    <div class="col-2">
+        <h2>Наименования</h2>
+    </div>
+    <div class="col-4">
+        <Button Type="ButtonType.Link"
+                Color="ButtonColor.Primary"
+        @onclick="@(()=>Navigation.NavigateTo("refbook/product/create"))">
+            Создать
+        </Button>
+    </div>
+</div>
 <div class="row">
     <EditForm EditContext="_editContext" OnSubmit="Submit">
         <p>
-            SearchString:<br />
+            Название:<br />
             <InputText id="search-string" @bind-Value="_filter.SearchString" />
         </p>
         <p>
-            Group: <br />
-            <InputSelect @bind-Value="_filter.GroupId" class="form-control">
+            Группа: <br />
+            <InputSelect @bind-Value="_filter.GroupId" id="search-group">
                 <option value="0">None</option>
                 @if (_groups.Any())
                 {
@@ -25,7 +38,7 @@
                 }
             </InputSelect>
         </p>
-        <button type="submit">Submit</button>
+        <Button Type="ButtonType.Submit" Color="ButtonColor.Secondary"> Поиск </Button>
     </EditForm>
 </div>
 

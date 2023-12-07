@@ -3,69 +3,113 @@
 @using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 @using PorphumReferenceBook.Logic.Models.Product;
 
-@inject IProductRepository productRepository;
+@inject IProductRepository repository;
 @inject IProductGroupRepository productGroupRepository;
 @inject NavigationManager Navigation
 
-@using DProduct = PorphumReferenceBook.Logic.Models.Product.Product;
+@using DEntity = PorphumReferenceBook.Logic.Models.Product.Product;
 
 <PageTitle>@Title</PageTitle>
+<ConfirmDialog @ref="dialog" />
 
+<div class=row>
+    <div class="col-4 col-md-4">
+        <h2>@Title</h2>
+    </div>
+    @if (_viewModel.isEdit)
+    {
+        <div class="col-3 col-md-3">
+            <Button Type="ButtonType.Submit" Color="ButtonColor.Danger" @onclick="@(() => DeleteAsync(_editContext))"> Удалить </Button>
+        </div>
+    }
+</div>
 <div class="row">
-    <h2>
-        <p>
-            Main Info
-        </p>
-        @if(_viewModel.isEdit)
-        {
-            <button type="submit" class="btn btn-primary" @onclick="@(() => Delete(_editContext))">Delete</button>
-        }
-    </h2>
     <EditForm EditContext="_editContext">
+        <br />
         <input type="hidden" @bind-value="_viewModel.isEdit" />
         @if (_viewModel.isEdit)
         {
-            <p>
-                Id:<br />
-                <InputNumber id="name" @bind-Value="_viewModel.Key" readonly="readonly"/>
-            </p>
+            <div class="row">
+                <div class="col-1 col-md-1">
+                    <b>Id</b>
+                </div>
+                <div class="col-5 col-md-5">
+                    <InputNumber id="id" @bind-Value="_viewModel.Key" readonly="readonly" />
+                </div>
+
+            </div>
         }
-        <p>
-            Name:<br />
-            <InputText id="name" @bind-Value="_viewModel.Name" />
-        </p>
-        <p>
-            Group: <br />
-            <InputSelect @bind-Value="_viewModel.GroupId" class="form-control">
-                @if (_groups.Any())
-                {
-                    @foreach (var group in _groups)
+        <br />
+        <div class="row">
+            <div class="col-1 col-md-1">
+                <b>Название</b>
+            </div>
+            <div class="col-5 col-md-5">
+                <InputText id="name" @bind-Value="_viewModel.Name" />
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-1 col-md-1">
+                <b>Группа</b>
+            </div>
+            <div class="col-5 col-md-5">
+                <InputSelect @bind-Value="_viewModel.GroupId" id="group">
+                    @if (_groups.Any())
                     {
-                        <option value="@group.Key">@group.Name</option>
+                        @foreach (var group in _groups)
+                        {
+                            <option value="@group.Key">@group.Name</option>
+                        }
                     }
-                }
-            </InputSelect>
-        </p>
-        
-        <h2>
-            <p>
-                Extra Info
-            </p>
-        </h2>
+                </InputSelect>
+            </div>
+        </div>
         <hr />
-        <p>
-            Barcode:<br />
-            <InputText id="barcode" @bind-Value="_viewModel.Barcode" />
-        </p>
-        <p>
-            Description:<br />
-            <InputTextArea id="description" @bind-Value="_viewModel.Description" />
-        </p>
-        <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Save</button>
+        <br />
+        <div class=row>
+            <div class="col-2 col-md-2">
+                <h2>Дополнительная информация</h2>
+            </div>
+            <div class="col-3 col-md-3">
+                <Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => ShowAsync(true))"> Показать </Button>
+            </div>
+        </div>
+        <br />
+        <Collapse @ref="collapse1">
+            <div class="row">
+                <div class="col-1 col-md-1">
+                    <b>Штрих код</b>
+                </div>
+                <div class="col-5 col-md-5">
+                    <InputText id="barcode" @bind-Value="_viewModel.Barcode" />
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-1 col-md-1">
+                    <b>Описание</b>
+                </div>
+                <div class="col-5 col-md-5">
+                    <InputTextArea id="description" @bind-Value="_viewModel.Description" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-5 col-md-5">
+                    <Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => ShowAsync(false))"> Скрыть </Button>
+                </div>
+            </div>
+        </Collapse>
+        <hr />
+        <br />
+        <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="@(() => Submit(_editContext))"> Сохранить </Button>
     </EditForm>
 </div>
 
 @code {
+    private ConfirmDialog dialog = default!;
+    private Collapse collapse1 = default!;
+
     public string Title { get; set; } = "Default tittle";
     [Parameter]
     [EditorRequired]
@@ -84,13 +128,13 @@
 
         if (Type == "create")
         {
-            Title = "Add new Product";
+            Title = "Добавить новое наименование";
         }
         else if (Type == "edit")
         {
-            Title = "Edit Product";
+            Title = "Наимнование";
 
-            var product = productRepository.GetByKey(ProductId ?? throw new InvalidOperationException()) ?? throw new InvalidOperationException();
+            var product = repository.GetByKey(ProductId ?? throw new InvalidOperationException()) ?? throw new InvalidOperationException();
 
             _viewModel = new()
             {
@@ -114,18 +158,28 @@
         _editContext = new(_viewModel);
     }
 
-    private void Delete(EditContext formContext)
+    private async void DeleteAsync(EditContext formContext)
     {
         if (_viewModel.isEdit)
         {
-            var product = productRepository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
+            var product = repository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
 
-            productRepository.Delete(product);
+            var confirmation = await dialog.ShowAsync(
+                title: "Вы уверены, что вы хотите удалть?",
+                message1: "После удаления нельзя будет вернуться.",
+                message2: "Выполнить?");
+
+            if (!confirmation)
+            {
+                return;
+            }
+
+            repository.Delete(product);
 
             Navigation.NavigateTo("refbook/products");
             return;
         }
-        
+
         throw new InvalidOperationException();
     }
 
@@ -136,9 +190,9 @@
 
         if (_viewModel.isEdit)
         {
-            var product = productRepository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
+            var product = repository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
 
-            var newProduct = new DProduct(
+            var newProduct = new DEntity(
                 product.Key,
                 _viewModel.Name ?? throw new InvalidOperationException(),
                 group,
@@ -150,11 +204,11 @@
                 )
             );
 
-            productRepository.Update(newProduct);
+            repository.Update(newProduct);
         }
         else
         {
-            var newProduct = new DProduct(
+            var newProduct = new DEntity(
                 0,
                 _viewModel.Name ?? throw new InvalidOperationException(),
                 group,
@@ -166,10 +220,22 @@
                 )
             );
 
-            productRepository.Add(newProduct);
+            repository.Add(newProduct);
         }
 
         Navigation.NavigateTo("refbook/products");
+    }
+
+    private async Task ShowAsync(bool isShow)
+    {
+        if (isShow)
+        {
+            await collapse1.ShowAsync();
+        }
+        else
+        {
+            await collapse1.HideAsync();
+        }
     }
 
     public class ViewModel

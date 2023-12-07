@@ -14,7 +14,7 @@
 <div class="row">
     <div class=row>
         <div class="col-2 col-md-2">
-            <h2>Группа</h2>
+            <h2>@Title</h2>
         </div>
         @if (_viewModel.isEdit)
         {
@@ -71,11 +71,11 @@
     {
         if (Type == "create")
         {
-            Title = "Add new Group";
+            Title = "Добавить новую группу";
         }
         else if (Type == "edit")
         {
-            Title = "Edit Group";
+            Title = "Группа";
 
             var product = repository.GetByKey(ProductId ?? throw new InvalidOperationException()) ?? throw new InvalidOperationException();
 
@@ -101,7 +101,7 @@
             var entity = repository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
 
             var confirmation = await dialog.ShowAsync(
-                title: "Вы уверены что вы хотите удалть?",
+                title: "Вы уверены, что вы хотите удалть?",
                 message1: "После удаления нельзя будет вернуться.",
                 message2: "Выполнить?");
 
