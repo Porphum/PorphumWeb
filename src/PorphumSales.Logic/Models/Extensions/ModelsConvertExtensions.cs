@@ -27,7 +27,7 @@ public static class ModelsConvertExtensions
     /// <param name="isFullLoad" xml:lang="ru">Флаг полной загрузки модели.</param>
     /// <returns xml:lang="ru">Доменная модель.</returns>
     public static Document ConvertToModel(this TDocument storage, IReferenceBookMapper mapper, bool isFullLoad = true) => 
-        isFullLoad
+        !isFullLoad
             ? new Document(
             storage.Id,
             new DocumentHeader(
@@ -44,8 +44,8 @@ public static class ModelsConvertExtensions
             new DocumentHeader(
                 storage.Number,
                 storage.Date,
-                new MappableModel<Client, long>(storage.ClientWhoId),
-                new MappableModel<Client, long>(storage.ClientWhoId)
+                mapper.MapEntity(new MappableModel<Client, long>(storage.ClientWhoId)),
+                mapper.MapEntity(new MappableModel<Client, long>(storage.ClientWhoId))
             ),
             (DocumentType)storage.TypeId,
             (DocumentState)storage.StatusId,

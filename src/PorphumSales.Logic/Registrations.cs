@@ -2,11 +2,10 @@
 using PorphumSales.Logic.Storage.Repository;
 using PorphumSales.Logic.Abstractions.Storage;
 using PorphumSales.Logic.Abstractions.Storage.Repository;
-using PorphumSales.Logic.Services.Handle;
-using PorphumSales.Logic.Services.Initialize;
-using PorphumSales.Logic.Services.Validation;
 using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
 using PorphumReferenceBook.Logic.Storage.Repository.Query;
+using PorphumSales.Logic.Abstractions.Models;
+using PorphumSales.Logic.Services;
 
 namespace PorphumSales.Logic;
 
@@ -23,7 +22,5 @@ public static class Registrations
 
     public static IServiceCollection AddSalesDocumentLogic(this IServiceCollection services) =>
         services
-            .AddScoped<DocumentStateHandler>()
-            .AddScoped<DocumentInitializer>()
-            .AddScoped<DocumentValidator>();
+            .AddScoped<IDocumentStateMachine, DocumentStateMachine>();
 }

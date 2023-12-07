@@ -1,0 +1,126 @@
+﻿@page "/documents/{type}/add"
+@using BlazorBootstrap;
+@using General.Abstractions.Storage.Query;
+@using General;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+@using PorphumReferenceBook.Logic.Abstractions;
+@using PorphumReferenceBook.Logic.Models.Client;
+@using PorphumReferenceBook.Logic.Storage.Repository.Query;
+@using PorphumSales.Logic.Abstractions.Models;
+@using PorphumSales.Logic.Abstractions.Storage.Repository;
+
+@using PorphumSales.Logic.Models.Document;
+@using PorphumSales.Logic.Models.Mapper;
+@using PorphumWeb.Blazor.Pages.Sales
+
+@using DEntity = PorphumSales.Logic.Models.Document.Document;
+
+@inject IDocumentRepository repository;
+@inject IReferenceBookMapper _referenceBookMapper;
+@inject IDocumentStateMachine _documentSateMachine;
+@inject NavigationManager Navigation
+
+
+<EditForm EditContext="_editContext">
+    <ClientsFinder ExternalMethod=Product ParntEditContext="_editContext" />
+    <p>
+        @ClientDescription:<br />
+        <InputNumber id="client-id" @bind-Value="_view.ClientId" readonly="readonly" />
+    </p>
+    <p>
+        Number:<br />
+        <InputNumber id="number" @bind-Value="_view.Number" />
+    </p>
+    <p>
+        Date:<br />
+        <InputDate id="date" @bind-Value="_view.Date" />
+    </p>
+    <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Add price</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public string Type { get; set; } = null!;
+
+    public DocumentType CurrentDocType => (DocumentType)short.Parse(Type);
+    public string ClientDescription => (CurrentDocType == DocumentType.Prihod
+        ? "Seller"
+        : "Buyer"
+    ) + "Id";
+    private EditContext? _editContext;
+
+    private ViewModel _view = new();
+
+    //private Collapse collapse = default!;
+    //private async Task ShowContentAsync() => await collapse.ShowAsync();
+    //private async Task HideContentAsync() => await collapse.HideAsync();
+    //private async Task ToggleContentAsync() => await collapse.ToggleAsync();
+
+    public string Input { get; set; } = string.Empty;
+    private void Product(long id, EditContext _context)
+    {
+        _view.ClientId = id;
+    }
+
+    private async Task Submit(EditContext _context)
+    {
+        var header = CurrentDocType switch
+        {
+            DocumentType.Prihod => new DocumentHeader(
+                _view.Number,
+                _view.Date,
+                _referenceBookMapper.MapEntity(new MappableModel<Client, long>(_view.ClientId)),
+                repository.Config.Master
+            ),
+            DocumentType.Rashod => new DocumentHeader(
+                _view.Number,
+                _view.Date,
+                repository.Config.Master,
+                _referenceBookMapper.MapEntity(new MappableModel<Client, long>(_view.ClientId))
+            ),
+            _ => throw new InvalidOperationException()
+        };
+
+        var price = new DEntity(
+            0,
+            header,
+            CurrentDocType,
+            DocumentState.Init,
+            new DocumentFill()
+        );
+
+        var result = _documentSateMachine.GoToState(ref price, DocumentState.Fill);
+
+        if (!result)
+        {
+            return;
+        }
+
+        repository.Add(price);
+
+        Navigation.NavigateTo($"documents/{Type}");
+    }
+
+    protected override void OnInitialized()
+    {
+        var config = repository.Config;
+
+        if (config is null || config.Master.MapState != MapState.Success)
+        {
+            throw new InvalidOperationException();
+        }
+
+        _editContext = new(_view);
+    }
+
+    public class ViewModel
+    {
+        public long ClientId { get; set; }
+
+        public DateTime Date { get; set; } = DateTime.Now;
+
+        public int Number { get; set; }
+    }
+}

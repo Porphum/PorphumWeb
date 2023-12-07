@@ -102,7 +102,7 @@ public class Document : ILoadable, IKeyable<long>
 
         State = state;
 
-        IsLoaded = false;
+        IsLoaded = true;
         _fill = fill ?? throw new ArgumentNullException(nameof(fill));
     }
 
@@ -138,7 +138,7 @@ public class Document : ILoadable, IKeyable<long>
     /// <summary xml:lang="ru">
     /// Состояние документа.
     /// </summary>
-    public DocumentState State { get; private set; }
+    public DocumentState State { get; set; }
 
     /// <summary xml:lang="ru">
     /// Тип документа.

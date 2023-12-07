@@ -1,0 +1,175 @@
+﻿@page "/documents/{type}"
+@using General.Abstractions.Storage.Query;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
+@using PorphumSales.Logic.Abstractions.Storage.Repository;
+@using PorphumSales.Logic.Models.Document;
+@using PorphumSales.Logic.Storage.Repository.Query;
+@using PorphumWeb.Blazor.Pages.Sales
+
+@using TEntity = PorphumSales.Logic.Storage.Models.Document;
+@using DEntity = PorphumSales.Logic.Models.Document.Document;
+@using DClient = PorphumReferenceBook.Logic.Models.Client.Client;
+
+@inject NavigationManager Navigation
+@inject IDocumentRepository repository;
+@inject ISalesQueryParamFactory paramFactory;
+
+
+<div class="row">
+    <EditForm EditContext="_editContext">
+    <ClientsFinder ExternalMethod=Find ParntEditContext="_editContext" />
+    <p>
+        Client:<br />
+        <InputNumber id="produc-id" @bind-Value="_filter.ClientId" readonly="readonly" />
+    </p>
+    <p>
+        On Date:<br />
+        <InputDate id="produc-id" @bind-Value="_filter.OnDate" />
+    </p>
+    <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Find</button>
+</EditForm>
+</div>
+<p>
+    <h2>
+        Add:
+    </h2>
+    <button @onclick="@(()=>Navigation.NavigateTo($"documets/{Type}/add"))">Add</button>
+</p>
+
+@if (entities is not null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Number</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th>State</th>
+                <th>Comment</th>
+                <th>Sum</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var entity in entities)
+            {
+                <tr>
+                    <td>@entity.Header.Number</td>
+                    <td>@entity.Header.Date</td>
+                    <td>@if (CurrentDocType == DocumentType.Prihod)
+                        {
+                            @entity.Header.Who.MappedEntity.Name
+                        }
+                        else if (CurrentDocType == DocumentType.Rashod)
+                        {
+                            @entity.Header.With.MappedEntity.Name
+                        }
+                    </td>
+                    <td>@entity.State</td>
+                    <td>@entity.Fill.Rows</td>
+                    <td>122345</td>
+                    <td><button @onclick="@(()=>Navigation.NavigateTo($"documets/{entity.Key}"))">Open</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p role="status">
+        <button class="btn btn-primary" @onclick="DecrementCount">Prev</button>
+        @(_skipCount + 1)
+        <button class="btn btn-primary" @onclick="IncrementCount">Next</button>
+    </p>
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public string Type { get; set; }
+
+    public DocumentType CurrentDocType => (DocumentType)short.Parse(Type);
+
+    private DEntity[]? entities;
+
+    private Filter _filter = new();
+    private EditContext? _editContext;
+
+    private readonly int PAGE_SIZE = 5;
+
+    private int _skipCount = 0;
+
+    private void IncrementCount()
+    {
+        _skipCount += 1;
+
+        Update();
+    }
+
+    private void DecrementCount()
+    {
+        if (_skipCount == 0)
+        {
+            return;
+        }
+        _skipCount -= 1;
+
+        Update();
+    }
+
+    private void Update()
+    {
+        var config = new DocumentsParamConfig()
+        {
+            Skip = _skipCount * PAGE_SIZE,
+            Limit = PAGE_SIZE,
+            DocumentType = CurrentDocType,
+            ClientId = _filter.ClientId,
+            OnDate = _filter.OnDate
+        };
+
+        var query = (paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).InitQuery();
+
+        if (config.DocumentType is not null)
+        {
+            query.Append((paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).CreateParam(DocumentsParamType.OfType, config));
+        }
+        if (config.ClientId is not null)
+        {
+            query.Append((paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).CreateParam(DocumentsParamType.OfClient, config));
+        }
+        if (config.OnDate is not null)
+        {
+            query.Append((paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).CreateParam(DocumentsParamType.OnDate, config));
+        }
+
+        query.Append((paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).CreateParam(DocumentsParamType.Skip, config));
+        query.Append((paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).CreateParam(DocumentsParamType.Limit, config));
+
+        entities = repository.GetByQuery(query).ToArray();
+    }
+
+    private void Find(long id, EditContext? context)
+    {
+        _filter.ClientId = id;
+    }
+
+    private void Submit(EditContext? context)
+    {
+        Update();
+    }
+
+    protected override void OnInitialized()
+    {
+        _editContext = new(_filter);
+        Update();
+    }
+
+    protected override void OnParametersSet()
+    {
+        Update();
+    }
+
+    public class Filter
+    {
+        public long? ClientId { get; set; }
+        public DateTime? OnDate { get; set; } = DateTime.Now;
+    }
+}

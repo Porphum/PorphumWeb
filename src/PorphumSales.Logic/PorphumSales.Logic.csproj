@@ -20,8 +20,4 @@
     <ProjectReference Include="..\PorphumReferenceBook.Logic\PorphumReferenceBook.Logic.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Abstractions\Models\" />
-  </ItemGroup>
-
 </Project>
