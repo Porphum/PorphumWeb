@@ -60,5 +60,8 @@ public class PriceRepository : BaseQueryRepository<PriceableProduct, ProductPric
 
     protected override PriceableProduct ConvertFromStorage(ProductPrice storage) => storage.ConvertToModel(_referenceBookMapper);
 
-    protected override IQueryable<ProductPrice> GetInitQuery() => _repositoryContext.ProductsPrices.AsNoTracking().OrderByDescending(x => x.FromDate).AsQueryable();
+    protected override IQueryable<ProductPrice> GetInitQuery() => _repositoryContext.ProductsPrices
+        .AsNoTracking()
+        .OrderByDescending(x => x.FromDate)
+        .AsQueryable();
 }

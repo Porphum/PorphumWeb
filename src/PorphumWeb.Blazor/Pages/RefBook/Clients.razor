@@ -85,7 +85,7 @@ else
     private Filter _filter = new();
     private EditContext? _editContext;
 
-    private readonly int PAGE_SIZE = 5;
+    private static readonly int PAGE_SIZE = 5;
 
     public int CurrentPage { get; set; } = 1;
 
@@ -99,6 +99,7 @@ else
 
     private void UpdateEntities()
     {
+        PageLimit = repository.GetLimit();
         var query = (paramFactory as IQueryParamsFactory<ClientsParamType, ClientsParamConfig, TEntity>).InitQuery();
 
         var config = new ClientsParamConfig()

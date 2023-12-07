@@ -1,10 +1,12 @@
 ﻿@page "/sales/master"
 @using BlazorBootstrap;
+@using General.Abstractions.Models;
 @using General.Abstractions.Storage.Query;
 @using General;
 @using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
 @using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 @using PorphumReferenceBook.Logic.Abstractions;
+@using PorphumReferenceBook.Logic.Models.Client;
 @using PorphumReferenceBook.Logic.Storage.Repository.Query;
 @using PorphumSales.Logic.Abstractions.Storage.Repository;
 
@@ -16,18 +18,44 @@
 @inject IDocumentRepository repository;
 @inject IReferenceBookMapper _referenceBookMapper;
 
-
-
+<PageTitle>Master</PageTitle>
+<div class=row>
+    <div class="col-2 col-md-2">
+        <h2>Master</h2>
+    </div>
+</div>
+<br/>
 <EditForm EditContext="_editContext">
-    <ClientsFinder ExternalMethod=Product ParntEditContext="_editContext" />
-    <p>
-        MasterId:<br />
-        <InputNumber id="produc-id" @bind-Value="_view.ClientId" readonly="readonly" />
-    </p>
-    <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Add price</button>
+    <div class="row">
+        @if (MasterClient is not null)
+        {
+            <div class="col-2 col-md-2">
+                <h3><b>Master Клиент</b></h3>
+            </div>
+            <div class="col-5 col-md-5">
+                <PorphumWeb.Blazor.Pages.Components.MapClient Entity="@MasterClient" />
+            </div>
+        }
+        else
+        {
+            <div class="col-2 col-md-2">
+                Master Клиент не задан
+            </div>
+        }
+    </div>
+    <input type="hidden" @bind-value="_view.ClientId" />
+    <br />
+    <div class="row">
+        <ClientsFinder ExternalMethod=Product ParntEditContext="_editContext" />
+    </div>
+    <hr />
+    <br />
+    <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="@(() => Submit(_editContext))"> Сохранить </Button>
 </EditForm>
 
 @code {
+    private IMappableModel<Client, long>? MasterClient { get; set; }
+
     private readonly int PAGE_SIZE = 5;
 
     private int _skipCount = 0;
@@ -47,17 +75,19 @@
     private void Product(long id, EditContext _context)
     {
         _view.ClientId = id;
+
+        MasterClient = _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.ClientId));
     }
 
-    private async Task Submit(EditContext _context)
+    private void Submit(EditContext _context)
     {
-        var price = new DEntity(
+        var entity = new DEntity(
             0,
             _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.ClientId))
         );
 
 
-        repository.Config = price;
+        repository.Config = entity;
     }
 
     protected override void OnInitialized()
@@ -67,6 +97,7 @@
         if (config is not null)
         {
             _view.ClientId = config.Master.MapKey;
+            MasterClient = config.Master;
         }
 
         _editContext = new(_view);

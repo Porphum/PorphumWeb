@@ -1,0 +1,22 @@
+﻿@using General.Abstractions.Models;
+@using PorphumReferenceBook.Logic.Models.Client;
+
+@if (Entity.MapState == General.MapState.Success)
+{
+    @($"{Entity.MapKey} - {Entity.MappedEntity.Name}")
+}
+else if (Entity.MapState == General.MapState.MapError)
+{
+    @($"Ошибка загрузки по ключу: {Entity.MapKey}")
+}
+else if (Entity.MapState == General.MapState.Success)
+{
+    @($"Передана незагруженная сущность; Ключ: {Entity.MapKey}")
+}
+
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public IMappableModel<Client, long> Entity { get; set; } = null!;
+}
