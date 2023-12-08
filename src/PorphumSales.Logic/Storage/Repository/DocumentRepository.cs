@@ -206,7 +206,7 @@ public class DocumentRepository : BaseQueryRepository<Document, TDocument>, IDoc
 
             storage.MasterId = newStorage.MasterId;
 
-            _repositoryContext.Configs.Add(storage);
+            _repositoryContext.Configs.Update(storage);
             Save();
         }
     }
