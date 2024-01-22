@@ -78,16 +78,13 @@ else
     {
         PageLimit = (repository as IQueryableRepository<StorageProduct, ProductStorage>).GetLimit();
 
-        var query = (paramFactory as IQueryParamsFactory<ProductsStoragesParamType, ProductsStoragesParamConfig, ProductStorage>).InitQuery();
-
         var config = new ProductsStoragesParamConfig()
             {
                 Skip = (CurrentPage - 1) * PAGE_SIZE,
                 Limit = PAGE_SIZE
             };
 
-        query.Append((paramFactory as IQueryParamsFactory<ProductsStoragesParamType, ProductsStoragesParamConfig, ProductStorage>).CreateParam(ProductsStoragesParamType.Skip, config));
-        query.Append((paramFactory as IQueryParamsFactory<ProductsStoragesParamType, ProductsStoragesParamConfig, ProductStorage>).CreateParam(ProductsStoragesParamType.Limit, config));
+        var query = (paramFactory as IQueryParamsFactory<ProductsStoragesParamType, ProductsStoragesParamConfig, ProductStorage>).InitQuery(config);
 
         entities = repository.GetByQuery(query).ToArray();
     }

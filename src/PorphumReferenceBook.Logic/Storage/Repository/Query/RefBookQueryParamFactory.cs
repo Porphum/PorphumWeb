@@ -34,11 +34,54 @@ public class RefBookQueryParamFactory : IRefBookQueryParamFactory
         _ => throw new NotImplementedException()
     };
 
-    public IQuery<IQueryParam<Product>, Product> InitQuery() => new BaseQuery<IQueryParam<Product>, Product>();
+    public IQuery<IQueryParam<Product>, Product> InitQuery(ProductsParamConfig config)
+    {
+        var query = new BaseQuery<IQueryParam<Product>, Product>();
 
-    IQuery<IQueryParam<ProductGroup>, ProductGroup> IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, ProductGroup>.InitQuery() =>
-        new BaseQuery<IQueryParam<ProductGroup>, ProductGroup>();
+        if (config.NameLike is not null)
+        {
+            query.Append((this as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, Product>).CreateParam(ProductsParamType.NameLike, config));
+        }
 
-    IQuery<IQueryParam<Client>, Client> IQueryParamsFactory<ClientsParamType, ClientsParamConfig, Client>.InitQuery() =>
-        new BaseQuery<IQueryParam<Client>, Client>();
+        if (config.GroupsKeys is not null)
+        {
+            query.Append((this as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, Product>).CreateParam(ProductsParamType.OfInGroupKey, config));
+        }
+
+        query.Append((this as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, Product>).CreateParam(ProductsParamType.Skip, config));
+        query.Append((this as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, Product>).CreateParam(ProductsParamType.Limit, config));
+
+        return query;
+    }
+
+    IQuery<IQueryParam<ProductGroup>, ProductGroup> IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, ProductGroup>.InitQuery(ProductsGroupsParamConfig config)
+    {
+        var query = new BaseQuery<IQueryParam<ProductGroup>, ProductGroup>();
+
+        if (config.NameLike is not null)
+        {
+            query.Append((this as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, ProductGroup>).CreateParam(ProductsGroupsParamType.NameLike, config));
+        }
+
+        query.Append((this as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, ProductGroup>).CreateParam(ProductsGroupsParamType.Skip, config));
+        query.Append((this as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, ProductGroup>).CreateParam(ProductsGroupsParamType.Limit, config));
+
+
+        return query;
+    }
+
+    IQuery<IQueryParam<Client>, Client> IQueryParamsFactory<ClientsParamType, ClientsParamConfig, Client>.InitQuery(ClientsParamConfig config)
+    {
+        var query = new BaseQuery<IQueryParam<Client>, Client>(); ;
+
+        if (config.NameLike is not null)
+        {
+            query.Append(CreateParam(ClientsParamType.NameLike, config));
+        }
+
+        query.Append(CreateParam(ClientsParamType.Skip, config));
+        query.Append(CreateParam(ClientsParamType.Limit, config));
+
+        return query;
+    }
 }

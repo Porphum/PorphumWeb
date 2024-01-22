@@ -119,8 +119,6 @@ else
     {
         PageLimit = repository.GetLimit();
 
-        var query = (paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).InitQuery();
-
         var config = new ProductsHistoriesParamConfig()
             {
                 OfProductId = ProductId,
@@ -128,10 +126,8 @@ else
                 Limit = PAGE_SIZE
             };
 
-        query.Append((paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).CreateParam(ProductsHistoriesParamType.OfProductId, config));
+        var query = (paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).InitQuery(config);
 
-        query.Append((paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).CreateParam(ProductsHistoriesParamType.Skip, config));
-        query.Append((paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).CreateParam(ProductsHistoriesParamType.Limit, config));
 
         entities = repository.GetByQuery(query).ToArray();
     }

@@ -113,8 +113,6 @@ else
     {
         PageLimit = (productRepository.GetLimit() + PAGE_SIZE - 1) / PAGE_SIZE;
 
-        var query = (paramFactory as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, TEntity>).InitQuery();
-
         var config = new ProductsGroupsParamConfig()
             {
                 NameLike = NameLike,
@@ -122,13 +120,8 @@ else
                 Limit = PAGE_SIZE
             };
 
-        if (NameLike is not null)
-        {
-            query.Append((paramFactory as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, TEntity>).CreateParam(ProductsGroupsParamType.NameLike, config));
-        }
+        var query = (paramFactory as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, TEntity>).InitQuery(config);
 
-        query.Append((paramFactory as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, TEntity>).CreateParam(ProductsGroupsParamType.Skip, config));
-        query.Append((paramFactory as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, TEntity>).CreateParam(ProductsGroupsParamType.Limit, config));
 
         entities = productRepository.GetByQuery(query).ToArray();
     }

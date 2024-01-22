@@ -151,16 +151,13 @@
     {
         PageLimit = repository.GetLimit();
 
-        var query = (paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).InitQuery();
-
         var config = new ProductsPricesParamConfig()
             {
                 Skip = (CurrentPage - 1) * PAGE_SIZE,
                 Limit = PAGE_SIZE
             };
 
-        query.Append((paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).CreateParam(ProductsPricesParamType.Skip, config));
-        query.Append((paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).CreateParam(ProductsPricesParamType.Limit, config));
+        var query = (paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).InitQuery(config);
 
         entities = repository.GetByQuery(query).ToArray();
     }

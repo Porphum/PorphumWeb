@@ -100,23 +100,17 @@ else
     private void UpdateEntities()
     {
         PageLimit = repository.GetLimit();
-        var query = (paramFactory as IQueryParamsFactory<ClientsParamType, ClientsParamConfig, TEntity>).InitQuery();
-
+        
         var config = new ClientsParamConfig()
             {
                 NameLike = NameLike,
                 Skip = (CurrentPage - 1) * PAGE_SIZE,
                 Limit = PAGE_SIZE
             };
+        
+        var query = (paramFactory as IQueryParamsFactory<ClientsParamType, ClientsParamConfig, TEntity>).InitQuery(config);
 
-        if (NameLike is not null)
-        {
-            query.Append((paramFactory as IQueryParamsFactory<ClientsParamType, ClientsParamConfig, TEntity>).CreateParam(ClientsParamType.NameLike, config));
-        }
-
-        query.Append((paramFactory as IQueryParamsFactory<ClientsParamType, ClientsParamConfig, TEntity>).CreateParam(ClientsParamType.Skip, config));
-        query.Append((paramFactory as IQueryParamsFactory<ClientsParamType, ClientsParamConfig, TEntity>).CreateParam(ClientsParamType.Limit, config));
-
+        
         entities = repository.GetByQuery(query).ToArray();
     }
 

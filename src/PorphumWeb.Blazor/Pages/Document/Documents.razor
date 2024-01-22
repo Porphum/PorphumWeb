@@ -125,23 +125,7 @@
             OnDate = _filter.OnDate
         };
 
-        var query = (paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).InitQuery();
-
-        if (config.DocumentType is not null)
-        {
-            query.Append((paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).CreateParam(DocumentsParamType.OfType, config));
-        }
-        if (config.ClientId is not null)
-        {
-            query.Append((paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).CreateParam(DocumentsParamType.OfClient, config));
-        }
-        if (config.OnDate is not null)
-        {
-            query.Append((paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).CreateParam(DocumentsParamType.OnDate, config));
-        }
-
-        query.Append((paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).CreateParam(DocumentsParamType.Skip, config));
-        query.Append((paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).CreateParam(DocumentsParamType.Limit, config));
+        var query = (paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).InitQuery(config);
 
         entities = repository.GetByQuery(query).ToArray();
     }

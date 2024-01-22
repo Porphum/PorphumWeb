@@ -81,8 +81,6 @@
 
     private void SearchProducts()
     {
-        var query = (paramFactory as IQueryParamsFactory<ClientsParamType, ClientsParamConfig, TEntity>).InitQuery();
-
         var config = new ClientsParamConfig()
             {
                 NameLike = _filter.SearchString,
@@ -90,13 +88,7 @@
                 Limit = PAGE_SIZE
             };
 
-        if (config.NameLike is not null)
-        {
-            query.Append((paramFactory as IQueryParamsFactory<ClientsParamType, ClientsParamConfig, TEntity>).CreateParam(ClientsParamType.NameLike, config));
-        }
-
-        query.Append((paramFactory as IQueryParamsFactory<ClientsParamType, ClientsParamConfig, TEntity>).CreateParam(ClientsParamType.Skip, config));
-        query.Append((paramFactory as IQueryParamsFactory<ClientsParamType, ClientsParamConfig, TEntity>).CreateParam(ClientsParamType.Limit, config));
+        var query = (paramFactory as IQueryParamsFactory<ClientsParamType, ClientsParamConfig, TEntity>).InitQuery(config);
 
         entities = repository.GetByQuery(query).ToArray();
     }

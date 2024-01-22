@@ -3,5 +3,5 @@ public interface IQueryParamsFactory<TEnum, TQueryParamConfig, TStorageModel>
 {
     public IQueryParam<TStorageModel> CreateParam(TEnum key, TQueryParamConfig config);
 
-    public IQuery<IQueryParam<TStorageModel>, TStorageModel> InitQuery();
+    public IQuery<IQueryParam<TStorageModel>, TStorageModel> InitQuery(TQueryParamConfig config);
 }

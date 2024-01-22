@@ -81,28 +81,16 @@ else
     {
         PageLimit = (repository.GetLimit() + PAGE_SIZE - 1) / PAGE_SIZE;
 
-        var query = (paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).InitQuery();
-
         var config = new ProductsParamConfig()
-        {
-            NameLike = NameLike,
-            Skip = (CurrentPage - 1) * PAGE_SIZE,
-            Limit = PAGE_SIZE,
-            GroupsKeys = (GroupsKeys ?? new()).ToHashSet()
-        };
+            {
+                NameLike = NameLike,
+                Skip = (CurrentPage - 1) * PAGE_SIZE,
+                Limit = PAGE_SIZE,
+                GroupsKeys = (GroupsKeys ?? new()).ToHashSet()
+            };
 
-        if (NameLike is not null)
-        {
-            query.Append((paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).CreateParam(ProductsParamType.NameLike, config));
-        }
+        var query = (paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).InitQuery(config);
 
-        if (GroupsKeys is not null)
-        {
-            query.Append((paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).CreateParam(ProductsParamType.OfInGroupKey, config));
-        }
-
-        query.Append((paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).CreateParam(ProductsParamType.Skip, config));
-        query.Append((paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).CreateParam(ProductsParamType.Limit, config));
 
         entities = repository.GetByQuery(query).ToArray();
     }
