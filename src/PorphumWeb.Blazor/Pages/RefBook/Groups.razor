@@ -16,31 +16,40 @@
 
 <PageTitle>Группы</PageTitle>
 <br />
-
 <div class="row">
-    <div class="col-2">
-        <h2>Группы</h2>
-    </div>
-    <div class="col-4">
-        <Button 
-            Type="ButtonType.Link" 
-            Color="ButtonColor.Primary"
+    <Button 
+        Class="col-md-1"
+        Style="margin-right:1rem;"
+        Type="ButtonType.Link"
+        Color="ButtonColor.Dark"
+            @onclick="@(()=>toggleItem.ToggleAsync())">
+        @toggleItem.ButtonTittle
+    </Button>
+    <Button
+        Class="col-md-1"
+        Type="ButtonType.Link"
+        Color="ButtonColor.Primary"
             @onclick="@(()=>Navigation.NavigateTo("refbook/group/create"))">
-            Создать
-        </Button>
+        Создать
+    </Button>
+</div>
+<Collapse 
+    @ref=toggleItem.CollapseItem
+    OnHiding="toggleItem.OnHiddenCallback"
+    OnShown="toggleItem.OnShownCallback">
+    <div class="row">
+        <EditForm EditContext="gridItem.EditContext" OnSubmit="UpdateEntities">
+            <p>
+                Название:<br />
+                <InputText id="search-string" @bind-Value="gridItem.Filter.SearchString" />
+            </p>
+            <Button Type="ButtonType.Submit" Color="ButtonColor.Dark"> Поиск </Button>
+        </EditForm>
     </div>
-</div>
-<div class="row">
-    <EditForm EditContext="_editContext" OnSubmit="Submit">
-        <p>
-            Название:<br />
-            <InputText id="search-string" @bind-Value="_filter.SearchString" />
-        </p>
-        <Button Type="ButtonType.Submit"  Color="ButtonColor.Secondary"> Поиск </Button>
-    </EditForm>
-</div>
+</Collapse>
+<hr/>
 <br />
-@if (entities == null)
+@if (gridItem.Entities == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -51,12 +60,12 @@ else
             <tr>
                 <th>Id</th>
                 <th>Название</th>
-                <th>Наимнования</th>
+                <th></th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var entity in entities)
+            @foreach (var entity in gridItem.Entities)
             {
                 <tr>
                     <td>@entity.Key</td>
@@ -66,7 +75,7 @@ else
                                 Type="ButtonType.Link"
                                 Color="ButtonColor.Secondary"
                         @onclick="@(()=>Navigation.NavigateTo($"refbook/products/{entity.Key}"))">
-                            Показать
+                            Наименования
                         </Button>
                     </td>
                     <td><Button 
@@ -82,8 +91,8 @@ else
     </table>
 
     <Pagination 
-        ActivePageNumber="@CurrentPage"
-        TotalPages="@PageLimit" 
+        ActivePageNumber="@gridItem.CurrentPage"
+        TotalPages="@gridItem.PageLimit" 
         Alignment="Alignment.Center"
         FirstLinkIcon="IconName.ChevronDoubleLeft"
         PreviousLinkIcon="IconName.ChevronLeft"
@@ -93,42 +102,37 @@ else
     />
 }
 
-
-
 @code {
-    private Filter _filter = new();
-    private EditContext? _editContext;
+    private ToggleClass toggleItem = new();
 
-    private static readonly int PAGE_SIZE = 5;
+    private GridClass gridItem = new();
 
-    private DEntity[]? entities;
-
-    public string? NameLike { get; set; } = null;
-
-    public int CurrentPage { get; set; } = 1;
-
-    public int PageLimit { get; set; } = 1;
-
-    private void UpdateEntities()
+    public void UpdateEntities()
     {
-        PageLimit = (productRepository.GetLimit() + PAGE_SIZE - 1) / PAGE_SIZE;
+        int skipCount, rowsLimit;
+
+        gridItem.UpdateDataForPagination(
+            count: productRepository.GetLimit(),
+            skipCount: out skipCount,
+            rowsLimit: out rowsLimit
+        );
 
         var config = new ProductsGroupsParamConfig()
             {
-                NameLike = NameLike,
-                Skip = (CurrentPage - 1) * PAGE_SIZE,
-                Limit = PAGE_SIZE
+                NameLike = gridItem.Filter.SearchString,
+                Skip = skipCount,
+                Limit = rowsLimit
             };
 
         var query = (paramFactory as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, TEntity>).InitQuery(config);
 
 
-        entities = productRepository.GetByQuery(query).ToArray();
+        gridItem.Entities = productRepository.GetByQuery(query).ToArray();
     }
 
-    private async Task OnPageChangedAsync(int newPageNumber)
+    public async Task OnPageChangedAsync(int newPageNumber)
     {
-        await Task.Run(() => { CurrentPage = newPageNumber; });
+        await Task.Run(() => { gridItem.CurrentPage = newPageNumber; });
 
         UpdateEntities();
     }
@@ -136,19 +140,58 @@ else
     protected override void OnInitialized()
     {
         UpdateEntities();
-        _editContext = new(_filter);
+        gridItem.EditContext = new(gridItem.Filter);
     }
 
-    public void Submit()
+    public class GridClass
     {
-        NameLike = _filter.SearchString;
-        UpdateEntities();
+        public static readonly int PAGE_SIZE = 5;
+        public int CurrentPage { get; set; } = 1;
+
+        public int PageLimit { get; set; } = 1;
+
+        public EditContext? EditContext { get; set; }
+
+        public FilterClass Filter { get; set; } = new();
+
+        public DEntity[]? Entities { get; set; }
+
+        public void UpdateDataForPagination(int count, out int skipCount, out int rowsLimit)
+        {
+            PageLimit = (count + PAGE_SIZE - 1) / PAGE_SIZE;
+            skipCount = (CurrentPage - 1) * PAGE_SIZE;
+            rowsLimit = PAGE_SIZE;
+        }
+
+        public class FilterClass
+        {
+            public string? SearchString { get; set; } = null!;
+
+            public int? GroupId { get; set; } = null!;
+        }
     }
 
-    public class Filter
+    public class ToggleClass
     {
-        public string? SearchString { get; set; } = null!;
+        private static string SHOW_BUTTON_TITTLE = "Поиск";
+        private static string HIDE_BUTTON_TITTLE = "Скрыть";
 
-        public int? GroupId { get; set; } = null!;
+        public Collapse CollapseItem { get; set; } = default!;
+        public string ButtonTittle { get; set; } = SHOW_BUTTON_TITTLE;
+
+        public async Task ToggleAsync()
+        {
+            await CollapseItem.ToggleAsync();
+        }
+
+        public void OnHiddenCallback()
+        {
+            ButtonTittle = SHOW_BUTTON_TITTLE;
+        }
+
+        public void OnShownCallback()
+        {
+            ButtonTittle = HIDE_BUTTON_TITTLE;
+        }
     }
 }

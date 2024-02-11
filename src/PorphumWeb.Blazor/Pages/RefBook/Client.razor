@@ -53,12 +53,11 @@
             <div class="col-2 col-md-2">
                 <h2>Дополнительная информация</h2>
             </div>
-            <div class="col-3 col-md-3">
-                <Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => ShowAsync(true))"> Показать </Button>
-            </div>
         </div>
         <br />
-        <Collapse @ref="collapse1">
+        <Collapse @ref="toggleItem.CollapseItem"
+                  OnHiding="toggleItem.OnHiddenCallback"
+                  OnShown="toggleItem.OnShownCallback">
             <div class="row">
                 <div class="col-1 col-md-1">
                     <b>ИНН</b>
@@ -76,13 +75,13 @@
                     <InputTextArea id="adress" @bind-Value="_viewModel.Adress" />
                 </div>
             </div>
-            <div class="row">
-                <div class="col-5 col-md-5">
-                    <Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => ShowAsync(false))"> Скрыть </Button>
-                </div>
-            </div>
         </Collapse>
         <hr />
+        <div class="row">
+            <div class="col-5 col-md-5">
+                <Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => toggleItem.ToggleAsync())">@toggleItem.ButtonTittle </Button>
+                </div>
+            </div>
         <br />
         <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="@(() => Submit(_editContext))"> Сохранить </Button>
     </EditForm>
@@ -90,7 +89,7 @@
 
 @code {
     private ConfirmDialog dialog = default!;
-    private Collapse collapse1 = default!;
+    private ToggleClass toggleItem = new();
 
     public string Title { get; set; } = "Default tittle";
     [Parameter]
@@ -203,18 +202,6 @@
         Navigation.NavigateTo("refbook/clients");
     }
 
-    private async Task ShowAsync(bool isShow)
-    {
-        if (isShow)
-        {
-            await collapse1.ShowAsync();
-        }
-        else
-        {
-            await collapse1.HideAsync();
-        }
-    }
-
     public class ViewModel
     {
         public bool isEdit { get; set; } = false;
@@ -226,5 +213,29 @@
         public string? Inn { get; set; }
 
         public string? Adress { get; set; }
+    }
+
+    public class ToggleClass
+    {
+        private static string SHOW_BUTTON_TITTLE = "Показать";
+        private static string HIDE_BUTTON_TITTLE = "Скрыть";
+
+        public Collapse CollapseItem { get; set; } = default!;
+        public string ButtonTittle { get; set; } = SHOW_BUTTON_TITTLE;
+
+        public async Task ToggleAsync()
+        {
+            await CollapseItem.ToggleAsync();
+        }
+
+        public void OnHiddenCallback()
+        {
+            ButtonTittle = SHOW_BUTTON_TITTLE;
+        }
+
+        public void OnShownCallback()
+        {
+            ButtonTittle = HIDE_BUTTON_TITTLE;
+        }
     }
 }

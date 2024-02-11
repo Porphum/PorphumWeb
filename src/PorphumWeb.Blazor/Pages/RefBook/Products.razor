@@ -8,50 +8,57 @@
 <PageTitle>Наименования</PageTitle>
 <br/>
 <div class="row">
-    <div class="col-2">
-        <h2>Наименования</h2>
-    </div>
-    <div class="col-4">
-        <Button Type="ButtonType.Link"
-                Color="ButtonColor.Primary"
-        @onclick="@(()=>Navigation.NavigateTo("refbook/product/create"))">
-            Создать
-        </Button>
-    </div>
+    <Button Class="col-md-1"
+            Style="margin-right:1rem;"
+            Type="ButtonType.Link"
+            Color="ButtonColor.Dark"
+            @onclick="@(()=>toggleItem.ToggleAsync())">
+        @toggleItem.ButtonTittle
+    </Button>
+    <Button Class="col-md-1"
+            Type="ButtonType.Link"
+            Color="ButtonColor.Primary"
+            @onclick="@(()=>Navigation.NavigateTo("refbook/product/create"))">
+        Создать
+    </Button>
 </div>
-<div class="row">
-    <EditForm EditContext="_editContext" OnSubmit="Submit">
-        <p>
-            Название:<br />
-            <InputText id="search-string" @bind-Value="_filter.SearchString" />
-        </p>
-        <p>
-            Группа: <br />
-            <InputSelect @bind-Value="_filter.GroupId" id="search-group">
-                <option value="0">None</option>
-                @if (_groups.Any())
-                {
-                    @foreach (var group in _groups)
+
+<Collapse @ref=toggleItem.CollapseItem
+          OnHiding="toggleItem.OnHiddenCallback"
+          OnShown="toggleItem.OnShownCallback">
+    <div class="row">
+        <EditForm EditContext="_editContext">
+            <p>
+                Название:<br />
+                <InputText id="search-string" @bind-Value="_filter.SearchString" />
+            </p>
+            <p>
+                Группа: <br />
+                <InputSelect @bind-Value="_filter.GroupId" id="search-group">
+                    <option value="0">None</option>
+                    @if (_groups.Any())
                     {
-                        <option value="@group.Key">@group.Name</option>
+                        @foreach (var group in _groups)
+                        {
+                            <option value="@group.Key">@group.Name</option>
+                        }
                     }
-                }
-            </InputSelect>
-        </p>
-        <Button Type="ButtonType.Submit" Color="ButtonColor.Secondary"> Поиск </Button>
-    </EditForm>
-</div>
+                </InputSelect>
+            </p>
+        </EditForm>
+    </div>
+</Collapse>
+<hr />
 
 <br />
 
-<ProductsTable NameLike=@SearchString GroupsKeys="@Groups"/>
+<ProductsTable NameLike=@_filter.SearchString GroupsKeys="@_filter.Groups" />
 
 
 @code {
-    public string? SearchString { get; set; } = null!;
-    public List<int>? Groups { get; set; } = null;
+    private ToggleClass toggleItem = new();
 
-    private Filter _filter = new();
+    private FilterClass _filter = new();
     private EditContext? _editContext;
 
     private IEnumerable<ProductGroup> _groups = Enumerable.Empty<ProductGroup>();
@@ -61,43 +68,47 @@
 
     protected override void OnInitialized()
     {
-        if (GroupId is not null && productGroupRepository.GetByKey(GroupId.Value) is null)
-        {
-            GroupId = null;
-        }
-        _filter.GroupId = 0;
-        if (GroupId is not null)
-        {
-            Groups = new List<int>();
-            Groups.Add(GroupId.Value);
-
-            _filter.GroupId = GroupId;
-        }
+        _filter.GroupId = GroupId;
         _groups = productGroupRepository.GetEntities();
 
         _editContext = new(_filter);
     }
 
-    public void Submit()
-    {
-        SearchString = _filter.SearchString;
-
-        if (_filter.GroupId is not null && _filter.GroupId != 0)
-        {
-            GroupId = _filter.GroupId;
-            Groups = new List<int>();
-            Groups.Add(GroupId.Value);
-        }
-        if (_filter.GroupId == 0)
-        {
-            Groups = null;
-        }
-    }
-
-    public class Filter
+    public class FilterClass
     {
         public string? SearchString { get; set; } = null!;
 
         public int? GroupId { get; set; } = null!;
+
+        public List<int>? Groups => GroupId is null || GroupId == 0 
+            ? null
+            : new List<int>()
+                .Append(GroupId.Value)
+                .ToList();
+    }
+
+
+    public class ToggleClass
+    {
+        private static string SHOW_BUTTON_TITTLE = "Поиск";
+        private static string HIDE_BUTTON_TITTLE = "Скрыть";
+
+        public Collapse CollapseItem { get; set; } = default!;
+        public string ButtonTittle { get; set; } = SHOW_BUTTON_TITTLE;
+
+        public async Task ToggleAsync()
+        {
+            await CollapseItem.ToggleAsync();
+        }
+
+        public void OnHiddenCallback()
+        {
+            ButtonTittle = SHOW_BUTTON_TITTLE;
+        }
+
+        public void OnShownCallback()
+        {
+            ButtonTittle = HIDE_BUTTON_TITTLE;
+        }
     }
 }

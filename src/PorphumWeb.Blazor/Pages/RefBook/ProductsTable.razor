@@ -13,7 +13,7 @@
 @inject NavigationManager Navigation
 @inject LinkGenerator LinkGenerator
 
-@if (entities == null)
+@if (gridItem.Entities == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -30,7 +30,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var entity in entities)
+            @foreach (var entity in gridItem.Entities)
             {
                 <tr>
                     <td>@entity.Key</td>
@@ -49,8 +49,8 @@ else
             }
         </tbody>
     </table>
-    <Pagination ActivePageNumber="@CurrentPage"
-                TotalPages="@PageLimit"
+    <Pagination ActivePageNumber="@gridItem.CurrentPage"
+                TotalPages="@gridItem.PageLimit"
                 Alignment="Alignment.Center"
                 FirstLinkIcon="IconName.ChevronDoubleLeft"
                 PreviousLinkIcon="IconName.ChevronLeft"
@@ -60,13 +60,7 @@ else
 }
 
 @code {
-    private static readonly int PAGE_SIZE = 5;
-
-    public int CurrentPage { get; set; } = 1;
-
-    public int PageLimit { get; set; } = 1;
-
-    private DProduct[]? entities;
+    private GridClass gridItem = new();
 
     [Parameter]
     public string? NameLike { get; set; } = null;
@@ -79,20 +73,27 @@ else
 
     private void UpdateEntities()
     {
-        PageLimit = (repository.GetLimit() + PAGE_SIZE - 1) / PAGE_SIZE;
+        int skipCount, rowsLimit;
+
+        gridItem.UpdateDataForPagination(
+            count: repository.GetLimit(),
+            skipCount: out skipCount,
+            rowsLimit: out rowsLimit
+        );
+
 
         var config = new ProductsParamConfig()
             {
                 NameLike = NameLike,
-                Skip = (CurrentPage - 1) * PAGE_SIZE,
-                Limit = PAGE_SIZE,
-                GroupsKeys = (GroupsKeys ?? new()).ToHashSet()
+                Skip = skipCount,
+                Limit = rowsLimit,
+                GroupsKeys = GroupsKeys is null ? null : GroupsKeys.ToHashSet()
             };
 
         var query = (paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).InitQuery(config);
 
 
-        entities = repository.GetByQuery(query).ToArray();
+        gridItem.Entities = repository.GetByQuery(query).ToArray();
     }
 
     protected override void OnParametersSet()
@@ -102,10 +103,27 @@ else
 
     private async Task OnPageChangedAsync(int newPageNumber)
     {
-        await Task.Run(() => { CurrentPage = newPageNumber; });
+        await Task.Run(() => { gridItem.CurrentPage = newPageNumber; });
 
         UpdateEntities();
     }
 
     protected override void OnInitialized() => UpdateEntities();
+
+    public class GridClass
+    {
+        public static readonly int PAGE_SIZE = 5;
+        public int CurrentPage { get; set; } = 1;
+
+        public int PageLimit { get; set; } = 1;
+
+        public DProduct[]? Entities { get; set; }
+
+        public void UpdateDataForPagination(int count, out int skipCount, out int rowsLimit)
+        {
+            PageLimit = (count + PAGE_SIZE - 1) / PAGE_SIZE;
+            skipCount = (CurrentPage - 1) * PAGE_SIZE;
+            rowsLimit = PAGE_SIZE;
+        }
+    }
 }
