@@ -1,6 +1,7 @@
 ﻿@page "/refbook/products/{GroupId:int?}"
 @using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 @using PorphumReferenceBook.Logic.Models.Product;
+@using PorphumWeb.Blazor.Classes
 
 @inject IProductGroupRepository productGroupRepository;
 @inject NavigationManager Navigation
@@ -85,30 +86,5 @@
             : new List<int>()
                 .Append(GroupId.Value)
                 .ToList();
-    }
-
-
-    public class ToggleClass
-    {
-        private static string SHOW_BUTTON_TITTLE = "Поиск";
-        private static string HIDE_BUTTON_TITTLE = "Скрыть";
-
-        public Collapse CollapseItem { get; set; } = default!;
-        public string ButtonTittle { get; set; } = SHOW_BUTTON_TITTLE;
-
-        public async Task ToggleAsync()
-        {
-            await CollapseItem.ToggleAsync();
-        }
-
-        public void OnHiddenCallback()
-        {
-            ButtonTittle = SHOW_BUTTON_TITTLE;
-        }
-
-        public void OnShownCallback()
-        {
-            ButtonTittle = HIDE_BUTTON_TITTLE;
-        }
     }
 }

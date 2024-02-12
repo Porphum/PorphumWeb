@@ -1,9 +1,13 @@
 ﻿@using General.Abstractions.Models;
 @using PorphumReferenceBook.Logic.Models.Product;
 
-@if (Entity.MapState == General.MapState.Success)
+@if (Entity is null)
 {
-    @($"{Entity.MapKey} - {Entity.MappedEntity.Group.Name} - {Entity.MappedEntity.Name}")
+    <ProductDisplay Entity="null" NullCheck=true />
+}
+else if (Entity.MapState == General.MapState.Success)
+{
+    <ProductDisplay Entity="Entity.MappedEntity" NullCheck=true />
 }
 else if (Entity.MapState == General.MapState.MapError)
 {

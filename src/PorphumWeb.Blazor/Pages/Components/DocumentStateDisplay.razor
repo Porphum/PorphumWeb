@@ -1,0 +1,32 @@
+﻿@using PorphumSales.Logic.Models.Document
+
+<Badge Color="@Color"
+        Class="@Style"
+        IndicatorType="BadgeIndicatorType.RoundedPill">
+    @Tittle
+</Badge>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public DocumentState State { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; } = "p-2";
+
+    private string Tittle => State switch
+    {
+        PorphumSales.Logic.Models.Document.DocumentState.Init => "Инициализирована",
+        PorphumSales.Logic.Models.Document.DocumentState.Fill => "Заполняется",
+        PorphumSales.Logic.Models.Document.DocumentState.Complete => "Проведена",
+        _ => "Ошибка"
+    };
+
+    private BadgeColor Color => State switch
+    {
+        PorphumSales.Logic.Models.Document.DocumentState.Init => BadgeColor.Secondary,
+        PorphumSales.Logic.Models.Document.DocumentState.Fill => BadgeColor.Warning,
+        PorphumSales.Logic.Models.Document.DocumentState.Complete => BadgeColor.Success,
+        _ => BadgeColor.Danger
+    };
+}

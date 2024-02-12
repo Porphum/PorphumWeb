@@ -3,7 +3,7 @@
 
 @if (Entity.MapState == General.MapState.Success)
 {
-    @($"{Entity.MapKey} - {Entity.MappedEntity.Name}")
+    <ClientDisplay Entity="Entity.MappedEntity" />
 }
 else if (Entity.MapState == General.MapState.MapError)
 {

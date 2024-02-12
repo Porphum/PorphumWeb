@@ -10,40 +10,41 @@
 @using PorphumSales.Logic.Abstractions.Storage.Repository;
 
 @using PorphumSales.Logic.Models.Mapper;
+@using PorphumWeb.Blazor.Classes
+@using PorphumWeb.Blazor.Pages.Components
 @using TEntity = PorphumSales.Logic.Storage.Models.ProductPrice;
 @using DEntity = PorphumSales.Logic.Models.Sales.PriceableProduct;
 @using DProduct = PorphumReferenceBook.Logic.Models.Product.Product;
+@using static PorphumWeb.Blazor.Pages.Components.ProductFinder
 
 @inject IPriceRepository repository;
 @inject IReferenceBookMapper _referenceBookMapper;
 @inject ISalesQueryParamFactory paramFactory;
 
 <PageTitle>Цены</PageTitle>
-
+<Modal @ref="productFind" />
 <h2>Цены</h2>
 <br />
-<Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => ShowAsync(true))"> Добавить цену </Button>
-<Collapse @ref="collapse">
+<Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => toggleItem.ToggleAsync())">@toggleItem.ButtonTittle</Button>
+<Collapse @ref=toggleItem.CollapseItem
+          OnHiding="toggleItem.OnHiddenCallback"
+          OnShown="toggleItem.OnShownCallback">
 <hr/>
 <EditForm EditContext="_editContext">
-    <ProductFinder ExternalMethod=Product ParntEditContext="_editContext" />
+        <Button Size="Size.Small"
+                Type="ButtonType.Link"
+                Color="ButtonColor.Dark"
+                @onclick="() => PickProductAsync()">
+            Задать
+        </Button> <br />
     <input type="hidden" @bind-value="_view.ProductId" />
     <div class="row">
-        @if (SelectedProduct is not null)
-        {
             <div class="col-2 col-md-2">
                 <h3><b>Наименование</b></h3>
             </div>
             <div class="col-5 col-md-5">
                 <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@SelectedProduct" />
             </div>
-        }
-        else
-        {
-            <div class="col-2 col-md-2">
-                Наименование не задано
-            </div>
-        }
     </div>
     <br />
     <div class="row">
@@ -67,7 +68,7 @@
             <DateInput TValue="DateTime" id="from-date" @bind-Value="_view.From" />
         </div>
     </div>
-    <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="@(() => Submit(_editContext))"> Сохранить </Button>
+    <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="@(() => Submit(_editContext))"> Добавить </Button>
 </EditForm>
 </Collapse>
 <br/>
@@ -92,8 +93,8 @@
         }
     </tbody>
 </table>
-<Pagination ActivePageNumber="@CurrentPage"
-            TotalPages="@PageLimit"
+<Pagination ActivePageNumber="@gridItem.CurrentPage"
+            TotalPages="@gridItem.PageLimit"
             Alignment="Alignment.Center"
             FirstLinkIcon="IconName.ChevronDoubleLeft"
             PreviousLinkIcon="IconName.ChevronLeft"
@@ -102,13 +103,11 @@
             PageChanged="OnPageChangedAsync" />
 
 @code {
+    private Modal productFind = default!;
+    private GridClass gridItem = new();
+    private ToggleClass toggleItem = new(showTittle: "Добавить цену");
+    
     private IMappableModel<DProduct, long>? SelectedProduct { get; set; }
-
-    private static readonly int PAGE_SIZE = 5;
-
-    public int CurrentPage { get; set; } = 1;
-
-    public int PageLimit { get; set; } = 1;
 
     private DEntity[]? entities;
 
@@ -119,10 +118,19 @@
     private Collapse collapse = default!;
 
     public string Input { get; set; } = string.Empty;
-    private void Product(long id, EditContext _context)
+    private async Task PickProductAsync()
     {
-        _view.ProductId = id;
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("OnClickCallback", EventCallback.Factory.Create<ProductFindEventArgs>(this, ProductAsync));
+        await productFind.ShowAsync<ProductFinder>(title: "Выбрать клиента:", parameters: parameters);
+    }
+
+    private async Task ProductAsync(ProductFindEventArgs product)
+    {
+        await productFind.HideAsync();
+        _view.ProductId = product.Entity.Key;
         SelectedProduct = _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.ProductId));
+
     }
 
     private async Task Submit(EditContext _context)
@@ -135,7 +143,7 @@
 
         repository.AddNewPrice(entity);
 
-        await ShowAsync(false);
+        await toggleItem.CollapseItem.HideAsync();
 
         UpdateEntities();
 
@@ -149,12 +157,18 @@
 
     private void UpdateEntities()
     {
-        PageLimit = repository.GetLimit();
+        int skipCount, rowsLimit;
+
+        gridItem.UpdateDataForPagination(
+            count: repository.GetLimit(),
+            skipCount: out skipCount,
+            rowsLimit: out rowsLimit
+        );
 
         var config = new ProductsPricesParamConfig()
             {
-                Skip = (CurrentPage - 1) * PAGE_SIZE,
-                Limit = PAGE_SIZE
+                Skip = skipCount,
+                Limit = rowsLimit
             };
 
         var query = (paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).InitQuery(config);
@@ -164,21 +178,9 @@
 
     private async Task OnPageChangedAsync(int newPageNumber)
     {
-        await Task.Run(() => { CurrentPage = newPageNumber; });
+        await Task.Run(() => { gridItem.CurrentPage = newPageNumber; });
 
         UpdateEntities();
-    }
-
-    private async Task ShowAsync(bool isShow)
-    {
-        if (isShow)
-        {
-            await collapse.ShowAsync();
-        }
-        else
-        {
-            await collapse.HideAsync();
-        }
     }
 
     public class ViewModel
@@ -186,5 +188,22 @@
         public long ProductId { get; set; }
         public DateTime From { get; set; } = DateTime.Now;
         public decimal Price { get; set; } = 0;
+    }
+
+    public class GridClass
+    {
+        public static readonly int PAGE_SIZE = 5;
+        public int CurrentPage { get; set; } = 1;
+
+        public int PageLimit { get; set; } = 1;
+
+        public DEntity[]? Entities { get; set; }
+
+        public void UpdateDataForPagination(int count, out int skipCount, out int rowsLimit)
+        {
+            PageLimit = (count + PAGE_SIZE - 1) / PAGE_SIZE;
+            skipCount = (CurrentPage - 1) * PAGE_SIZE;
+            rowsLimit = PAGE_SIZE;
+        }
     }
 }

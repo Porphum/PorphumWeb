@@ -1,0 +1,22 @@
+﻿@using PorphumReferenceBook.Logic.Models.Product
+
+@if (Entity is null && NullCheck)
+{
+    @(NullMessage)
+}
+else
+{
+    @($"{Entity.Key} - {Entity.Group.Name} - {Entity.Name}")
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public Product Entity { get; set; } = null!;
+
+    [Parameter]
+    public bool NullCheck { get; set; } = false;
+
+    [Parameter]
+    public string NullMessage { get; set; } = "Наименование не задано";
+}

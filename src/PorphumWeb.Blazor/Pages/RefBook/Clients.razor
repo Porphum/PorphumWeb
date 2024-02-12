@@ -5,6 +5,7 @@
 @using PorphumReferenceBook.Logic.Models.Product;
 @using PorphumReferenceBook.Logic.Storage.Repository.Query;
 
+@using PorphumWeb.Blazor.Classes
 @using TEntity = PorphumReferenceBook.Logic.Storage.Models.Client;
 @using DEntity = PorphumReferenceBook.Logic.Models.Client.Client;
 
@@ -40,7 +41,7 @@
                 Наименование:<br />
                 <InputText id="search-string" @bind-Value="gridItem.Filter.SearchString" />
             </p>
-            <Button Type="ButtonType.Submit" Color="ButtonColor.Secondary"> Поиск </Button>
+            <Button Type="ButtonType.Submit" Color="ButtonColor.Dark"> Поиск </Button>
         </EditForm>
     </div>
 </Collapse>
@@ -70,7 +71,7 @@ else
                         <Button Size="Size.Small"
                                 Type="ButtonType.Link"
                                 Color="ButtonColor.Primary"
-                        @onclick="@(()=>Navigation.NavigateTo($"refbook/client/edit/{entity.Key}"))">
+                                @onclick="@(()=>Navigation.NavigateTo($"refbook/client/edit/{entity.Key}"))">
                             Редактировать
                         </Button>
                     </td>
@@ -157,30 +158,6 @@ else
         public class FilterClass
         {
             public string? SearchString { get; set; } = null!;
-        }
-    }
-
-    public class ToggleClass
-    {
-        private static string SHOW_BUTTON_TITTLE = "Поиск";
-        private static string HIDE_BUTTON_TITTLE = "Скрыть";
-
-        public Collapse CollapseItem { get; set; } = default!;
-        public string ButtonTittle { get; set; } = SHOW_BUTTON_TITTLE;
-
-        public async Task ToggleAsync()
-        {
-            await CollapseItem.ToggleAsync();
-        }
-
-        public void OnHiddenCallback()
-        {
-            ButtonTittle = SHOW_BUTTON_TITTLE;
-        }
-
-        public void OnShownCallback()
-        {
-            ButtonTittle = HIDE_BUTTON_TITTLE;
         }
     }
 }

@@ -8,6 +8,7 @@
 @inject NavigationManager Navigation
 
 @using DEntity = PorphumReferenceBook.Logic.Models.Product.Product;
+@using PorphumWeb.Blazor.Classes
 
 <PageTitle>@Title</PageTitle>
 <ConfirmDialog @ref="dialog" />
@@ -236,29 +237,5 @@
         public string? Description { get; set; }
 
         public int GroupId { get; set; }
-    }
-
-    public class ToggleClass
-    {
-        private static string SHOW_BUTTON_TITTLE = "Показать";
-        private static string HIDE_BUTTON_TITTLE = "Скрыть";
-
-        public Collapse CollapseItem { get; set; } = default!;
-        public string ButtonTittle { get; set; } = SHOW_BUTTON_TITTLE;
-
-        public async Task ToggleAsync()
-        {
-            await CollapseItem.ToggleAsync();
-        }
-
-        public void OnHiddenCallback()
-        {
-            ButtonTittle = SHOW_BUTTON_TITTLE;
-        }
-
-        public void OnShownCallback()
-        {
-            ButtonTittle = HIDE_BUTTON_TITTLE;
-        }
     }
 }

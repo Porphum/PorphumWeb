@@ -1,10 +1,157 @@
-﻿@page "/document/{documentId}"
+﻿@page "/document/{documentId:long}"
+@using General
+@using General.Abstractions.Models
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query
+@using PorphumReferenceBook.Logic.Models.Client
 @using PorphumSales.Logic.Abstractions.Storage.Repository;
 
-@inject IDocumentRepository repository; 
+@using PorphumSales.Logic.Models
+@using TEntity = PorphumSales.Logic.Storage.Models.Document;
+@using DEntity = PorphumSales.Logic.Models.Document.Document;
+@using DClient = PorphumReferenceBook.Logic.Models.Client.Client;
+
+@inject NavigationManager Navigation
+@inject IDocumentRepository repository;
+@inject ISalesQueryParamFactory paramFactory;
+
+@* <PageTitle>@PageTittle</PageTitle>
+<Modal @ref="modal" /> *@
+<PageTitle>@model.PageTittle</PageTitle>
+
+<div class="row">
+    <h2>
+        @model.Tittle
+    </h2>
+</div>
+<div class="row">
+    <div class="@ViewModel.TITTLE_STYLE">
+        <h3>
+            <b>
+                Клиент
+            </b>
+        </h3>
+
+    </div>
+    <div class="@ViewModel.CONTENT_STYLE">
+        <h4><PorphumWeb.Blazor.Pages.Components.MapClient Entity="model.Client"/></h4>
+    </div>
+</div>
+<div class="row">
+    <div class="@ViewModel.TITTLE_STYLE">
+        <h3>
+            <b>
+                Состояние
+            </b>
+        </h3>
+
+    </div>
+    <div class="@ViewModel.CONTENT_STYLE">
+        <h4><PorphumWeb.Blazor.Pages.Components.DocumentStateDisplay State="model.Entity.State" /></h4>
+    </div>
+</div>
+<div class="row">
+    <div class="@ViewModel.TITTLE_STYLE">
+        <h3>
+            <b>
+                Сумма
+            </b>
+        </h3>
+
+    </div>
+    <div class="@ViewModel.CONTENT_STYLE">
+        <h4><PorphumWeb.Blazor.Pages.Components.MoneyDisplay Money="@(new Money((decimal)model.Entity.Key))" /></h4>
+    </div>
+</div>
+<hr />
+<br/>
+<div class="row">
+    <Button Class="col-md-1"
+            Type="ButtonType.Link"
+            Color="ButtonColor.Primary"
+            @onclick="@(()=>OpenNewAsync())">
+        Создать
+    </Button>
+</div>
+<br/>
+<Grid TItem="SaleProduct"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="model.EmployeesDataProvider"
+      ItemsPerPageText="some text"
+      PageSizeSelectorItems="new int[] {1}"
+      PaginationItemsTextFormat=""
+      AllowPaging="true"
+      PageSize="5"
+      Responsive="true">
+
+    <GridColumn TItem="SaleProduct" HeaderText="Наименование">
+        <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@context.Product" />
+    </GridColumn>
+    <GridColumn TItem="SaleProduct" HeaderText="Employee Name">
+        @context.Quantity
+    </GridColumn>
+</Grid>
+
 
 
 
 @code {
+    private ViewModel model = new();
 
+    [Parameter]
+    [EditorRequired]
+    public long DocumentId { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        LoadEntity();
+    }
+
+    private void LoadEntity()
+    {
+        var document = repository.GetByKey(DocumentId);
+        model.Entity = document;
+
+    }
+
+    private async Task OpenNewAsync()
+    {
+        // var parameters = new Dictionary<string, object>();
+        // parameters.Add("Type", Type);
+        // parameters.Add("OnSubmit", EventCallback.Factory.Create<MouseEventArgs>(this, ShowDTMessage));
+        // await modal.ShowAsync<NewDocument>(
+        //     title: "Employee Details",
+        //     parameters: parameters
+        // );
+    }
+
+    public class ViewModel
+    {
+        public static string TITTLE_STYLE = "col-md-2";
+        public static string CONTENT_STYLE = "col-md-2";
+
+        private string _typeString => Entity.Type switch
+        {
+            PorphumSales.Logic.Models.Document.DocumentType.Prihod => "Приходная",
+            PorphumSales.Logic.Models.Document.DocumentType.Rashod => "Расходная",
+            _ => "Неопределенная"
+        };
+
+        public DEntity Entity { get; set; } = null!;
+
+        public string PageTittle => $"Накладная №{Entity.Header.Number}";
+
+        public string Tittle => $"{_typeString} накладная №{Entity.Header.Number} от {Entity.Header.Date.ToString("dd.MM.yyyy")}";
+
+        public IMappableModel<Client, long> Client => Entity.Type switch
+        {
+            PorphumSales.Logic.Models.Document.DocumentType.Prihod => Entity.Header.Who,
+            PorphumSales.Logic.Models.Document.DocumentType.Rashod => Entity.Header.With,
+            _ => throw new InvalidOperationException()
+        };
+
+        public async Task<GridDataProviderResult<SaleProduct>> EmployeesDataProvider(GridDataProviderRequest<SaleProduct> request)
+        {
+            return await Task.FromResult(request.ApplyTo(Entity.Fill.Rows));
+        }
+    }
 }
