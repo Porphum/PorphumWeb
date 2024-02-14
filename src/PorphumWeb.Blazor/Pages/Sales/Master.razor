@@ -23,11 +23,7 @@
 <PageTitle>Master</PageTitle>
 
 <Modal @ref="clientFind" />
-<div class=row>
-    <div class="col-2 col-md-2">
-        <h2>Master</h2>
-    </div>
-</div>
+
 <br/>
 <EditForm EditContext="_editContext">
     <div class="row">
@@ -49,12 +45,16 @@
     </div>
     <br />
     <div class="row">
-        <Button Size="Size.Small"
-                Type="ButtonType.Link"
-                Color="ButtonColor.Dark"
-                @onclick="() => PickClientAsync()">
-            Задать
-        </Button>
+        <div class="col-5 col-md-5">
+            <Button Size="Size.Small"
+                    Type="ButtonType.Link"
+                    Color="ButtonColor.Dark"
+                    @onclick="() => PickClientAsync()">
+                Задать
+            </Button>
+        </div>
+        
+        
     </div>
     <hr />
     <br />

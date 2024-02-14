@@ -23,7 +23,6 @@
 
 <PageTitle>Цены</PageTitle>
 <Modal @ref="productFind" />
-<h2>Цены</h2>
 <br />
 <Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => toggleItem.ToggleAsync())">@toggleItem.ButtonTittle</Button>
 <Collapse @ref=toggleItem.CollapseItem
@@ -31,27 +30,29 @@
           OnShown="toggleItem.OnShownCallback">
 <hr/>
 <EditForm EditContext="_editContext">
-        <Button Size="Size.Small"
-                Type="ButtonType.Link"
-                Color="ButtonColor.Dark"
-                @onclick="() => PickProductAsync()">
-            Задать
-        </Button> <br />
-    <input type="hidden" @bind-value="_view.ProductId" />
+     <br />
     <div class="row">
-            <div class="col-2 col-md-2">
-                <h3><b>Наименование</b></h3>
+            <div class="@ViewModel.TITTLE_CLASS">
+                    <b>Наименование:</b>
             </div>
-            <div class="col-5 col-md-5">
-                <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@SelectedProduct" />
+                <div class="@ViewModel.VALUE_CLASS">
+                <ProductDisplay  Entity="@_view.Product" NullCheck=true />
+            </div>
+            <div class="col-3 col-md-3">
+                    <Button Size="Size.Small"
+                            Type="ButtonType.Link"
+                            Color="ButtonColor.Dark"
+                            @onclick="() => PickProductAsync()">
+                        Задать
+                    </Button>
             </div>
     </div>
     <br />
     <div class="row">
-        <div class="col-1 col-md-1">
-            <b>Цена</b>
+                <div class="@ViewModel.TITTLE_CLASS">
+            <b>Цена:</b>
         </div>
-        <div class="col-5 col-md-5">
+                <div class="@ViewModel.VALUE_CLASS">
             <CurrencyInput 
                 TValue="decimal" 
                 Locale="ru-RU"
@@ -61,10 +62,10 @@
     </div>
     <br />
     <div class="row">
-        <div class="col-1 col-md-1">
-            <b>С даты</b>
+        <div class="@ViewModel.TITTLE_CLASS">
+            <b>С даты:</b>
         </div>
-        <div class="col-5 col-md-5">
+        <div class="@ViewModel.VALUE_CLASS">
             <DateInput TValue="DateTime" id="from-date" @bind-Value="_view.From" />
         </div>
     </div>
@@ -86,8 +87,8 @@
         @foreach (var entity in entities!)
         {
             <tr>
-                <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@entity.Product" />
-                <td>@entity.Price</td>
+                <td><PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@entity.Product" /></td>
+                <td><MoneyDisplay Money="@entity.Price" /></td>
                 <td>@entity.FromDate</td>
             </tr>
         }
@@ -107,15 +108,11 @@
     private GridClass gridItem = new();
     private ToggleClass toggleItem = new(showTittle: "Добавить цену");
     
-    private IMappableModel<DProduct, long>? SelectedProduct { get; set; }
-
     private DEntity[]? entities;
 
     private EditContext? _editContext;
 
     private ViewModel _view = new();
-
-    private Collapse collapse = default!;
 
     public string Input { get; set; } = string.Empty;
     private async Task PickProductAsync()
@@ -128,15 +125,13 @@
     private async Task ProductAsync(ProductFindEventArgs product)
     {
         await productFind.HideAsync();
-        _view.ProductId = product.Entity.Key;
-        SelectedProduct = _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.ProductId));
-
+        _view.Product = product.Entity;
     }
 
     private async Task Submit(EditContext _context)
     {
         var entity = new DEntity(
-            _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.ProductId)),
+            _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.Product.Key)),
             new Money(_view.Price),
             _view.From
         );
@@ -185,7 +180,10 @@
 
     public class ViewModel
     {
-        public long ProductId { get; set; }
+        public static string TITTLE_CLASS = "col-1 col-md-1";
+        public static string VALUE_CLASS = "col-3 col-md-3";
+
+        public DProduct Product { get; set; }
         public DateTime From { get; set; } = DateTime.Now;
         public decimal Price { get; set; } = 0;
     }

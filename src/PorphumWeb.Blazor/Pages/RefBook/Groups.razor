@@ -38,15 +38,19 @@
     @ref=toggleItem.CollapseItem
     OnHiding="toggleItem.OnHiddenCallback"
     OnShown="toggleItem.OnShownCallback">
-    <div class="row">
+    <br />
         <EditForm EditContext="gridItem.EditContext" OnSubmit="UpdateEntities">
-            <p>
-                Название:<br />
-                <InputText id="search-string" @bind-Value="gridItem.Filter.SearchString" />
-            </p>
+            <div class="row">
+                <div class="@GridClass.FilterClass.TITTLE_CLASS">
+                    Название:
+                </div>
+                <div class="@GridClass.FilterClass.VALUE_CLASS">
+                    <InputText id="search-string" @bind-Value="gridItem.Filter.SearchString" />
+                </div>
+            </div>
             <Button Type="ButtonType.Submit" Color="ButtonColor.Dark"> Поиск </Button>
         </EditForm>
-    </div>
+    
 </Collapse>
 <hr/>
 <br />
@@ -166,6 +170,9 @@ else
 
         public class FilterClass
         {
+            public static string TITTLE_CLASS = "col-1 col-md-1";
+            public static string VALUE_CLASS = "col-5 col-md-5";
+
             public string? SearchString { get; set; } = null!;
 
             public int? GroupId { get; set; } = null!;

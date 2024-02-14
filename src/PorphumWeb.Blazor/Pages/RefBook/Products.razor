@@ -27,27 +27,35 @@
 <Collapse @ref=toggleItem.CollapseItem
           OnHiding="toggleItem.OnHiddenCallback"
           OnShown="toggleItem.OnShownCallback">
-    <div class="row">
+    <br />
         <EditForm EditContext="_editContext">
-            <p>
-                Название:<br />
-                <InputText id="search-string" @bind-Value="_filter.SearchString" />
-            </p>
-            <p>
-                Группа: <br />
-                <InputSelect @bind-Value="_filter.GroupId" id="search-group">
-                    <option value="0">None</option>
-                    @if (_groups.Any())
-                    {
-                        @foreach (var group in _groups)
+            <div class="row">
+                <div class="@FilterClass.TITTLE_CLASS">
+                    Название:
+                </div>
+                <div class="@FilterClass.VALUE_CLASS">
+                    <InputText id="search-string" @bind-Value="_filter.SearchString" />
+                </div>
+            </div>
+        <br />
+            <div class="row">
+                <div class="@FilterClass.TITTLE_CLASS">
+                    Группа:
+                </div>
+                <div class="@FilterClass.VALUE_CLASS">
+                    <InputSelect @bind-Value="_filter.GroupId" id="search-group">
+                        <option value="0">None</option>
+                        @if (_groups.Any())
                         {
-                            <option value="@group.Key">@group.Name</option>
+                            @foreach (var group in _groups)
+                            {
+                                <option value="@group.Key">@group.Name</option>
+                            }
                         }
-                    }
-                </InputSelect>
-            </p>
+                    </InputSelect>
+                </div>                
+            </div>
         </EditForm>
-    </div>
 </Collapse>
 <hr />
 
@@ -77,6 +85,9 @@
 
     public class FilterClass
     {
+        public static string TITTLE_CLASS = "col-1 col-md-1";
+        public static string VALUE_CLASS = "col-5 col-md-5";
+
         public string? SearchString { get; set; } = null!;
 
         public int? GroupId { get; set; } = null!;

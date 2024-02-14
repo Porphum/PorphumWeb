@@ -30,10 +30,10 @@
         @if (_viewModel.isEdit)
         {
             <div class="row">
-                <div class="col-1 col-md-1">
+                <div class="@ViewModel.TITTLE_CLASS">
                     <b>Id</b>
                 </div>
-                <div class="col-5 col-md-5">
+                <div class="@ViewModel.VALUE_CLASS">
                     <InputNumber id="id" @bind-Value="_viewModel.Key" readonly="readonly" />
                 </div>
 
@@ -41,18 +41,21 @@
         }
         <br />
         <div class="row">
-            <div class="col-1 col-md-1">
+            <div class="@ViewModel.TITTLE_CLASS">
                 <b>Название</b>
             </div>
-            <div class="col-5 col-md-5">
+            <div class="@ViewModel.VALUE_CLASS">
                 <InputText id="name" @bind-Value="_viewModel.Name" />
             </div>
         </div>
         <hr />
         <br />
         <div class=row>
-            <div class="col-2 col-md-2">
+            <div class="col-2 col-md-2" style="margin-left:2rem">
                 <h2>Дополнительная информация</h2>
+            </div>
+            <div class="col-5 col-md-5">
+                <Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => toggleItem.ToggleAsync())">@toggleItem.ButtonTittle </Button>
             </div>
         </div>
         <br />
@@ -60,37 +63,32 @@
                   OnHiding="toggleItem.OnHiddenCallback"
                   OnShown="toggleItem.OnShownCallback">
             <div class="row">
-                <div class="col-1 col-md-1">
+                <div class="@ViewModel.TITTLE_CLASS">
                     <b>ИНН</b>
                 </div>
-                <div class="col-5 col-md-5">
+                <div class="@ViewModel.VALUE_CLASS">
                     <InputText id="inn" @bind-Value="_viewModel.Inn" />
                 </div>
             </div>
             <br />
             <div class="row">
-                <div class="col-1 col-md-1">
+                <div class="@ViewModel.TITTLE_CLASS">
                     <b>Адрес</b>
                 </div>
-                <div class="col-5 col-md-5">
+                <div class="@ViewModel.VALUE_CLASS">
                     <InputTextArea id="adress" @bind-Value="_viewModel.Adress" />
                 </div>
             </div>
         </Collapse>
         <hr />
-        <div class="row">
-            <div class="col-5 col-md-5">
-                <Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => toggleItem.ToggleAsync())">@toggleItem.ButtonTittle </Button>
-                </div>
-            </div>
         <br />
         <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="@(() => Submit(_editContext))"> Сохранить </Button>
     </EditForm>
 </div>
 
-@code {
+    @code {
     private ConfirmDialog dialog = default!;
-    private ToggleClass toggleItem = new();
+    private ToggleClass toggleItem = new(showTittle: "Показать");
 
     public string Title { get; set; } = "Default tittle";
     [Parameter]
@@ -141,7 +139,7 @@
         if (_viewModel.isEdit)
         {
             var product = repository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
-            
+
             var confirmation = await dialog.ShowAsync(
                 title: "Вы уверены, что вы хотите удалть?",
                 message1: "После удаления нельзя будет вернуться.",
@@ -205,6 +203,9 @@
 
     public class ViewModel
     {
+        public static string TITTLE_CLASS = "col-1 col-md-1";
+        public static string VALUE_CLASS = "col-5 col-md-5";
+
         public bool isEdit { get; set; } = false;
 
         public long Key { get; set; }

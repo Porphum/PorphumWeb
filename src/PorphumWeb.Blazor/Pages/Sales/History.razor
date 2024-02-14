@@ -10,6 +10,7 @@
 @using PorphumSales.Logic.Models.Mapper;
 @using PorphumSales.Logic.Models.Sales;
 @using PorphumSales.Logic.Storage.Models;
+@using PorphumWeb.Blazor.Classes
 
 @inject IHistoryRepository repository;
 @inject ISalesQueryParamFactory paramFactory;
@@ -19,8 +20,6 @@
 @page "/sales/history/{ProductId:long}"
 
 <PageTitle>История</PageTitle>
-
-<h2>История</h2>
 <br />
 <div class="row">
     @if (SelectedProduct is not null)
@@ -40,8 +39,12 @@
     }
 </div>
 <br/>
-<Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => ShowAsync(true))"> Изменить колличество </Button>
-<Collapse @ref="collapse">
+<Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(()=>toggleItem.ToggleAsync())">
+    @toggleItem.ButtonTittle
+</Button>
+<Collapse @ref="toggleItem.CollapseItem"
+          OnHiding="toggleItem.OnHiddenCallback"
+          OnShown="toggleItem.OnShownCallback">
     <br />
     <hr />
 <EditForm EditContext="_editContext">
@@ -58,7 +61,7 @@
 </Collapse>
 <br />
 <hr />
-@if (entities == null)
+@if (gridItem.Entities is null)
 {
     <p><em>Loading...</em></p>
 }
@@ -73,7 +76,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var entity in entities)
+            @foreach (var entity in gridItem.Entities)
             {
                 <tr>
                     <td>@entity.AccurDate</td>
@@ -83,8 +86,8 @@ else
             }
         </tbody>
     </table>
-    <Pagination ActivePageNumber="@CurrentPage"
-                TotalPages="@PageLimit"
+    <Pagination ActivePageNumber="@gridItem.CurrentPage"
+                TotalPages="@gridItem.PageLimit"
                 Alignment="Alignment.Center"
                 FirstLinkIcon="IconName.ChevronDoubleLeft"
                 PreviousLinkIcon="IconName.ChevronLeft"
@@ -97,7 +100,9 @@ else
 
 @code {
     private IMappableModel<Product, long>? SelectedProduct { get; set; }
-    private Collapse collapse = default!;
+    
+    private GridClass gridItem = new();
+    private ToggleClass toggleItem = new(showTittle: "Изменить колличество"); 
 
     [Parameter]
     [EditorRequired]
@@ -107,34 +112,31 @@ else
 
     private ViewModel _view = new();
 
-    private static readonly int PAGE_SIZE = 5;
-
-    public int CurrentPage { get; set; } = 1;
-
-    public int PageLimit { get; set; } = 1;
-
-    private ProductHistory[]? entities;
-
     private void UpdateEntities()
     {
-        PageLimit = repository.GetLimit();
+        int skipCount, rowsLimit;
+
+        gridItem.UpdateDataForPagination(
+            count: repository.GetLimit(),
+            skipCount: out skipCount,
+            rowsLimit: out rowsLimit
+        );
 
         var config = new ProductsHistoriesParamConfig()
-            {
-                OfProductId = ProductId,
-                Skip = (CurrentPage - 1) * PAGE_SIZE,
-                Limit = PAGE_SIZE
-            };
+        {
+            OfProductId = ProductId,
+            Skip = skipCount,
+            Limit = rowsLimit
+        };
 
         var query = (paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).InitQuery(config);
 
-
-        entities = repository.GetByQuery(query).ToArray();
+        gridItem.Entities = repository.GetByQuery(query).ToArray();
     }
 
-    private async Task OnPageChangedAsync(int newPageNumber)
+    public async Task OnPageChangedAsync(int newPageNumber)
     {
-        await Task.Run(() => { CurrentPage = newPageNumber; });
+        await Task.Run(() => { gridItem.CurrentPage = newPageNumber; });
 
         UpdateEntities();
     }
@@ -155,24 +157,31 @@ else
         );
 
         repository.ManualWrite(delta);
-        await ShowAsync(false);
+        await toggleItem.CollapseItem.HideAsync();
         Navigation.NavigateTo($"sales/storage");
-    }
-
-    private async Task ShowAsync(bool isShow)
-    {
-        if (isShow)
-        {
-            await collapse.ShowAsync();
-        }
-        else
-        {
-            await collapse.HideAsync();
-        }
     }
 
     public class ViewModel
     {
         public int Delta { get; set; } = 0;
+    }
+
+    public class GridClass
+    {
+        public static readonly int PAGE_SIZE = 5;
+        public int CurrentPage { get; set; } = 1;
+
+        public int PageLimit { get; set; } = 1;
+
+        public EditContext? EditContext { get; set; }
+
+        public ProductHistory[]? Entities { get; set; }
+
+        public void UpdateDataForPagination(int count, out int skipCount, out int rowsLimit)
+        {
+            PageLimit = (count + PAGE_SIZE - 1) / PAGE_SIZE;
+            skipCount = (CurrentPage - 1) * PAGE_SIZE;
+            rowsLimit = PAGE_SIZE;
+        }
     }
 }

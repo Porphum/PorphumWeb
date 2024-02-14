@@ -29,10 +29,10 @@
         @if (_viewModel.isEdit)
         {
             <div class="row">
-                <div class="col-1 col-md-1">
+                <div class="@ViewModel.TITTLE_CLASS">
                     <b>Id</b>
                 </div>
-                <div class="col-5 col-md-5">
+                <div class="@ViewModel.VALUE_CLASS">
                     <InputNumber id="id" @bind-Value="_viewModel.Key" readonly="readonly" />
                 </div>
                 
@@ -40,10 +40,10 @@
         }
         <br/>
         <div class="row">
-            <div class="col-1 col-md-1">
+            <div class="@ViewModel.TITTLE_CLASS">
                 <b>Название</b>
             </div>
-            <div class="col-5 col-md-5">
+            <div class="@ViewModel.VALUE_CLASS">
                 <InputText id="name" @bind-Value="_viewModel.Name" />
             </div>
         </div>
@@ -147,6 +147,9 @@
 
     public class ViewModel
     {
+        public static string TITTLE_CLASS = "col-1 col-md-1";
+        public static string VALUE_CLASS = "col-5 col-md-5";
+
         public bool isEdit { get; set; } = false;
 
         public int Key { get; set; }
