@@ -36,7 +36,7 @@
           OnHiding="toggleItem.OnHiddenCallback"
           OnShown="toggleItem.OnShownCallback">
     <br />
-        <EditForm EditContext="gridItem.EditContext" OnSubmit="UpdateEntities">
+    <EditForm EditContext="gridItem.EditContext" OnSubmit="UpdateEntitiesAsync">
             <div class="row">
                 <div class="@GridClass.FilterClass.TITTLE_CLASS">
                     Наименование:
@@ -45,119 +45,86 @@
                     <InputText id="search-string" @bind-Value="gridItem.Filter.SearchString" />
                 </div>
             </div>
+        <br />
             <Button Type="ButtonType.Submit" Color="ButtonColor.Dark"> Поиск </Button>
         </EditForm>
     
 </Collapse>
 <hr />
 <br />
-@if (gridItem.Entities == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Наименование</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var entity in gridItem.Entities)
-            {
-                <tr>
-                    <td>@entity.Key</td>
-                    <td>@entity.Name</td>
-                    <td>
-                        <Button Size="Size.Small"
-                                Type="ButtonType.Link"
-                                Color="ButtonColor.Primary"
-                                @onclick="@(()=>Navigation.NavigateTo($"refbook/client/edit/{entity.Key}"))">
-                            Редактировать
-                        </Button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-<Pagination ActivePageNumber="@gridItem.CurrentPage"
-            TotalPages="@gridItem.PageLimit"
-            Alignment="Alignment.Center"
-            FirstLinkIcon="IconName.ChevronDoubleLeft"
-            PreviousLinkIcon="IconName.ChevronLeft"
-            NextLinkIcon="IconName.ChevronRight"
-            LastLinkIcon="IconName.ChevronDoubleRight"
-            PageChanged="OnPageChangedAsync" />
+<Grid @ref="gridItem.Grid"
+      TItem="DEntity"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="GridDataProvider"
+      OnRowDoubleClick="RowClick"
+      ItemsPerPageText="some text"
+      PageSizeSelectorItems="new int[] {1}"
+      PaginationItemsTextFormat=""
+      AllowPaging="true"
+      AllowRowClick="true"
+      EmptyText="Нет данных"
+      PageSize="GridClass.PAGE_SIZE"
+      Responsive="true">
+
+    <GridColumn TItem="DEntity" HeaderText="Id">
+        @context.Key
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="Наименование">
+        @context.Name
+    </GridColumn>
+</Grid>
 
 @code {
     private GridClass gridItem = new();
 
     private ToggleClass toggleItem = new();
 
-    private void UpdateEntities()
+    protected override void OnInitialized()
     {
-        int skipCount, rowsLimit;
+        gridItem.EditContext = new(gridItem.Filter);
+    }
 
-        gridItem.UpdateDataForPagination(
-            count: repository.GetLimit(),
-            skipCount: out skipCount,
-            rowsLimit: out rowsLimit
-        );
+    public void RowClick(GridRowEventArgs<DEntity> args)
+    {
+
+        Navigation.NavigateTo($"refbook/client/edit/{args.Item.Key}");
+    }
+
+    public async Task UpdateEntitiesAsync()
+    {
+        await gridItem.Grid.RefreshDataAsync();
+    }
+
+    public async Task<GridDataProviderResult<DEntity>> GridDataProvider(GridDataProviderRequest<DEntity> request)
+    {
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
 
         var config = new ClientsParamConfig()
             {
                 NameLike = gridItem.Filter.SearchString,
-                Skip = skipCount,
-                Limit = rowsLimit
+                Skip = skip,
+                Limit = limit
             };
 
         var query = (paramFactory as IQueryParamsFactory<ClientsParamType, ClientsParamConfig, TEntity>).InitQuery(config);
 
-
-        gridItem.Entities = repository.GetByQuery(query).ToArray();
-    }
-
-    protected override void OnParametersSet()
-    {
-        UpdateEntities();
-    }
-
-    private async Task OnPageChangedAsync(int newPageNumber)
-    {
-        await Task.Run(() => { gridItem.CurrentPage = newPageNumber; });
-
-        UpdateEntities();
-    }
-
-    protected override void OnInitialized()
-    {
-        UpdateEntities();
-        gridItem.EditContext = new(gridItem.Filter);
+        return await Task.FromResult(new GridDataProviderResult<DEntity>
+            {
+                Data = repository.GetByQuery(query),
+                TotalCount = repository.GetLimit()
+            });
     }
 
     public class GridClass
     {
         public static readonly int PAGE_SIZE = 5;
-        public int CurrentPage { get; set; } = 1;
 
-        public int PageLimit { get; set; } = 1;
+        public Grid<DEntity> Grid { get; set; } = null!;
 
         public EditContext? EditContext { get; set; }
 
         public FilterClass Filter { get; set; } = new();
-
-        public DEntity[]? Entities { get; set; }
-
-        public void UpdateDataForPagination(int count, out int skipCount, out int rowsLimit)
-        {
-            PageLimit = (count + PAGE_SIZE - 1) / PAGE_SIZE;
-            skipCount = (CurrentPage - 1) * PAGE_SIZE;
-            rowsLimit = PAGE_SIZE;
-        }
 
         public class FilterClass
         {

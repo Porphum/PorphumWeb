@@ -10,49 +10,37 @@
 
 <div class="row">
     <EditForm EditContext="gridItem.EditContext">
-        <p>
-            Наименование:<br />
-            <InputText id="search-string" @bind-Value="gridItem.Filter.SearchString" />
-        </p>
-        <button type="submit" class="btn btn-dark" @onclick="@(() => Submit(gridItem.EditContext))">Поиск</button>
+        <div class="row">
+            <div class="@GridClass.FilterClass.TITTLE_CLASS">
+                Наименование:
+            </div>
+            <div class="@GridClass.FilterClass.VALUE_CLASS">
+                <InputText id="search-string" @bind-Value="gridItem.Filter.SearchString" />
+            </div>
+        </div>
+        <br />
+        <button type="submit" class="btn btn-dark" @onclick="@(() => UpdateEntitiesAsync(gridItem.EditContext))">Поиск</button>
     </EditForm>
 </div>
 <hr />
-@if (gridItem.Entities is not null)
-    {
-        <div class="row">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Наименование</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var entity in gridItem.Entities)
-                {
-                    <tr>
-                            <td>@($"{entity.Key} - {entity.Group.Name} - {entity.Name}")</td>
+<Grid @ref="gridItem.Grid"
+      TItem="DEntity"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="GridDataProvider"
+      OnRowDoubleClick="RowClickAsync"
+      ItemsPerPageText="some text"
+      PageSizeSelectorItems="new int[] {1}"
+      PaginationItemsTextFormat=""
+      AllowPaging="true"
+      AllowRowClick="true"
+      EmptyText="Нет данных"
+      PageSize="GridClass.PAGE_SIZE"
+      Responsive="true">
 
-                            <td><button class="btn btn-dark"
-                                @onclick="@(() => SelectOnAsync(entity, gridItem.EditContext))">Выбрать</button></td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    <div class="row">
-        <Pagination ActivePageNumber="@gridItem.CurrentPage"
-                    TotalPages="@gridItem.PageLimit"
-                    Alignment="Alignment.Center"
-                    FirstLinkIcon="IconName.ChevronDoubleLeft"
-                    PreviousLinkIcon="IconName.ChevronLeft"
-                    NextLinkIcon="IconName.ChevronRight"
-                    LastLinkIcon="IconName.ChevronDoubleRight"
-                    PageChanged="OnPageChangedAsync" />
-    </div>
-    }
-
+    <GridColumn TItem="DEntity" HeaderText="Наименование">
+        <ProductDisplay Entity="context" />
+    </GridColumn>
+</Grid>
   
 @code {
     private GridClass gridItem = new();
@@ -61,59 +49,43 @@
     [EditorRequired]
     public EventCallback<ProductFindEventArgs> OnClickCallback { get; set; }
 
-    private void SearchProducts()
+    public async Task RowClickAsync(GridRowEventArgs<DEntity> args)
     {
-        int skipCount, rowsLimit;
-
-        gridItem.UpdateDataForPagination(
-            count: repository.GetLimit(),
-            skipCount: out skipCount,
-            rowsLimit: out rowsLimit
-        );
-
-        var config = new ProductsParamConfig()
-            {
-                NameLike = gridItem.Filter.SearchString,
-                Skip = skipCount,
-                Limit = rowsLimit
-            };
-
-        var query = (paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TEntity>).InitQuery(config);
-
-        gridItem.Entities = repository.GetByQuery(query).ToArray();
-    }
-
-    public async Task SelectOnAsync(DEntity entity, EditContext? _editContext)
-    {
-        gridItem.Filter.SearchString = null!;
-        Submit(_editContext);
         await OnClickCallback.InvokeAsync(new ProductFindEventArgs
             {
-                Entity = entity
+                Entity = args.Item
             });
     }
 
-    public void Submit(EditContext? _editContext)
+    public async Task UpdateEntitiesAsync(EditContext? _context)
     {
-        if (string.IsNullOrWhiteSpace(gridItem.Filter.SearchString))
-        {
-            gridItem.Entities = null;
-            return;
-        }
-
-        SearchProducts();
-    }
-
-    public async Task OnPageChangedAsync(int newPageNumber)
-    {
-        await Task.Run(() => { gridItem.CurrentPage = newPageNumber; });
-
-        SearchProducts();
+        await gridItem.Grid.RefreshDataAsync();
     }
 
     protected override void OnInitialized()
     {
         gridItem.EditContext = new(gridItem.Filter);
+    }
+
+    public async Task<GridDataProviderResult<DEntity>> GridDataProvider(GridDataProviderRequest<DEntity> request)
+    {
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
+
+        var config = new ProductsParamConfig()
+            {
+                NameLike = gridItem.Filter.SearchString,
+                Skip = skip,
+                Limit = limit
+            };
+
+        var query = (paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TEntity>).InitQuery(config);
+
+        return await Task.FromResult(new GridDataProviderResult<DEntity>
+            {
+                Data = repository.GetByQuery(query),
+                TotalCount = repository.GetLimit()
+            });
     }
 
     public class ProductFindEventArgs : MouseEventArgs
@@ -124,25 +96,18 @@
     internal class GridClass
     {
         public static readonly int PAGE_SIZE = 5;
-        public int CurrentPage { get; set; } = 1;
 
-        public int PageLimit { get; set; } = 1;
+        public Grid<DEntity> Grid { get; set; } = default!;
 
         public EditContext? EditContext { get; set; }
 
         public FilterClass Filter { get; set; } = new();
 
-        public DEntity[]? Entities { get; set; }
-
-        public void UpdateDataForPagination(int count, out int skipCount, out int rowsLimit)
-        {
-            PageLimit = (count + PAGE_SIZE - 1) / PAGE_SIZE;
-            skipCount = (CurrentPage - 1) * PAGE_SIZE;
-            rowsLimit = PAGE_SIZE;
-        }
-
         public class FilterClass
         {
+            public static string TITTLE_CLASS = "col-5 col-md-5";
+            public static string VALUE_CLASS = "col-5 col-md-5";
+
             public string? SearchString { get; set; } = null!;
         }
     }

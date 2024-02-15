@@ -18,103 +18,65 @@
 
 <h2>Склад</h2>
 <br />
-@if (_gridItem.Entities is null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Наименование</th>
-                <th>Колличество</th>
-                <th>Дата изменения</th>
-                <th>История</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var product in _gridItem.Entities)
-            {
-                <tr>
-                    <td><PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@product.Product" /></td>
-                    <td>@product.Count</td>
-                    <td>@product.LastUpdate</td>
-                    <td>
-                        <Button Size="Size.Small"
-                                Type="ButtonType.Link"
-                                Color="ButtonColor.Primary"
-                        @onclick="@(()=>Navigation.NavigateTo($"sales/history/{product.Product.MapKey}"))">
-                            Посмотреть
-                        </Button></td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <Pagination ActivePageNumber="@_gridItem.CurrentPage"
-                TotalPages="@_gridItem.PageLimit"
-                Alignment="Alignment.Center"
-                FirstLinkIcon="IconName.ChevronDoubleLeft"
-                PreviousLinkIcon="IconName.ChevronLeft"
-                NextLinkIcon="IconName.ChevronRight"
-                LastLinkIcon="IconName.ChevronDoubleRight"
-                PageChanged="OnPageChangedAsync" />
-}
+<Grid @ref="gridItem.Grid"
+      TItem="StorageProduct"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="GridDataProvider"
+      ItemsPerPageText="some text"
+      PageSizeSelectorItems="new int[] {1}"
+      PaginationItemsTextFormat=""
+      AllowPaging="true"
+      EmptyText="Нет данных"
+      PageSize="GridClass.PAGE_SIZE"
+      Responsive="true">
 
+    <GridColumn TItem="StorageProduct" HeaderText="Наименование">
+        <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@context.Product" />
+    </GridColumn>
+    <GridColumn TItem="StorageProduct" HeaderText="Количество">
+        @context.Count
+    </GridColumn>
+    <GridColumn TItem="StorageProduct" HeaderText="Дата изменения">
+        @context.LastUpdate
+    </GridColumn>
+    <GridColumn TItem="StorageProduct" HeaderText="История">
+        <Button Size="Size.Small"
+                Type="ButtonType.Link"
+                Color="ButtonColor.Primary"
+                @onclick="@(()=>Navigation.NavigateTo($"sales/history/{context.Product.MapKey}"))">
+            Посмотреть
+        </Button>
+    </GridColumn>
+</Grid>
 
 
 @code {
-    private EditContext? _editContext;
+    private GridClass gridItem = new();
 
-    private GridClass _gridItem = new();
-
-    private void UpdateEntities()
+    public async Task<GridDataProviderResult<StorageProduct>> GridDataProvider(GridDataProviderRequest<StorageProduct> request)
     {
-        int skipCount, rowsLimit;
-
-        _gridItem.UpdateDataForPagination(
-            count: (repository as IQueryableRepository<StorageProduct, ProductStorage>).GetLimit(),
-            skipCount: out skipCount,
-            rowsLimit: out rowsLimit
-        );
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
 
         var config = new ProductsStoragesParamConfig()
             {
-                Skip = skipCount,
-                Limit = rowsLimit
+                Skip = skip,
+                Limit = limit
             };
 
         var query = (paramFactory as IQueryParamsFactory<ProductsStoragesParamType, ProductsStoragesParamConfig, ProductStorage>).InitQuery(config);
 
-        _gridItem.Entities = repository.GetByQuery(query).ToArray();
-    }
-
-    public async Task OnPageChangedAsync(int newPageNumber)
-    {
-        await Task.Run(() => { _gridItem.CurrentPage = newPageNumber; });
-
-        UpdateEntities();
-    }
-
-    protected override void OnInitialized()
-    {
-        UpdateEntities();
+        return await Task.FromResult(new GridDataProviderResult<StorageProduct>
+            {
+                Data = repository.GetByQuery(query),
+                TotalCount = (repository as IQueryableRepository<StorageProduct, ProductStorage>).GetLimit()
+            });
     }
 
     public class GridClass
     {
         public static readonly int PAGE_SIZE = 5;
-        public int CurrentPage { get; set; } = 1;
 
-        public int PageLimit { get; set; } = 1;
-
-        public StorageProduct[]? Entities { get; set; }
-
-        public void UpdateDataForPagination(int count, out int skipCount, out int rowsLimit)
-        {
-            PageLimit = (count + PAGE_SIZE - 1) / PAGE_SIZE;
-            skipCount = (CurrentPage - 1) * PAGE_SIZE;
-            rowsLimit = PAGE_SIZE;
-        }
+        public Grid<StorageProduct> Grid { get; set; } = default!;
     }
 }

@@ -74,47 +74,41 @@
 </Collapse>
 <br/>
 <hr/>
+<Grid @ref="gridItem.Grid"
+      TItem="DEntity"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="GridDataProvider"
+      ItemsPerPageText="some text"
+      PageSizeSelectorItems="new int[] {1}"
+      PaginationItemsTextFormat=""
+      AllowPaging="true"
+      AllowRowClick="false"
+      EmptyText="Нет данных"
+      PageSize="GridClass.PAGE_SIZE"
+      Responsive="true">
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Наименование</th>
-            <th>Цена</th>
-            <th>С даты</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var entity in entities!)
-        {
-            <tr>
-                <td><PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@entity.Product" /></td>
-                <td><MoneyDisplay Money="@entity.Price" /></td>
-                <td>@entity.FromDate</td>
-            </tr>
-        }
-    </tbody>
-</table>
-<Pagination ActivePageNumber="@gridItem.CurrentPage"
-            TotalPages="@gridItem.PageLimit"
-            Alignment="Alignment.Center"
-            FirstLinkIcon="IconName.ChevronDoubleLeft"
-            PreviousLinkIcon="IconName.ChevronLeft"
-            NextLinkIcon="IconName.ChevronRight"
-            LastLinkIcon="IconName.ChevronDoubleRight"
-            PageChanged="OnPageChangedAsync" />
+    <GridColumn TItem="DEntity" HeaderText="Id">
+        <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@context.Product" />
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="Цена">
+        <MoneyDisplay Money="@context.Price" />
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="С даты">
+        @context.FromDate
+    </GridColumn>
+</Grid>
 
 @code {
     private Modal productFind = default!;
     private GridClass gridItem = new();
     private ToggleClass toggleItem = new(showTittle: "Добавить цену");
-    
+
     private DEntity[]? entities;
 
     private EditContext? _editContext;
 
     private ViewModel _view = new();
 
-    public string Input { get; set; } = string.Empty;
     private async Task PickProductAsync()
     {
         var parameters = new Dictionary<string, object>();
@@ -137,45 +131,35 @@
         );
 
         repository.AddNewPrice(entity);
-
+        _view = new();
         await toggleItem.CollapseItem.HideAsync();
 
-        UpdateEntities();
-
+        await gridItem.Grid.RefreshDataAsync();
     }
 
     protected override void OnInitialized()
     {
         _editContext = new(_view);
-        UpdateEntities();
     }
 
-    private void UpdateEntities()
+    public async Task<GridDataProviderResult<DEntity>> GridDataProvider(GridDataProviderRequest<DEntity> request)
     {
-        int skipCount, rowsLimit;
-
-        gridItem.UpdateDataForPagination(
-            count: repository.GetLimit(),
-            skipCount: out skipCount,
-            rowsLimit: out rowsLimit
-        );
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
 
         var config = new ProductsPricesParamConfig()
             {
-                Skip = skipCount,
-                Limit = rowsLimit
+                Skip = skip,
+                Limit = limit
             };
 
         var query = (paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).InitQuery(config);
 
-        entities = repository.GetByQuery(query).ToArray();
-    }
-
-    private async Task OnPageChangedAsync(int newPageNumber)
-    {
-        await Task.Run(() => { gridItem.CurrentPage = newPageNumber; });
-
-        UpdateEntities();
+        return await Task.FromResult(new GridDataProviderResult<DEntity>
+        {
+            Data = repository.GetByQuery(query),
+            TotalCount = repository.GetLimit()
+        });
     }
 
     public class ViewModel
@@ -191,17 +175,7 @@
     public class GridClass
     {
         public static readonly int PAGE_SIZE = 5;
-        public int CurrentPage { get; set; } = 1;
 
-        public int PageLimit { get; set; } = 1;
-
-        public DEntity[]? Entities { get; set; }
-
-        public void UpdateDataForPagination(int count, out int skipCount, out int rowsLimit)
-        {
-            PageLimit = (count + PAGE_SIZE - 1) / PAGE_SIZE;
-            skipCount = (CurrentPage - 1) * PAGE_SIZE;
-            rowsLimit = PAGE_SIZE;
-        }
+        public Grid<DEntity> Grid { get; set; } = default!;
     }
 }

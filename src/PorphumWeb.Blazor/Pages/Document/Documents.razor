@@ -43,78 +43,77 @@
           OnHiding="toggleItem.OnHiddenCallback"
           OnShown="toggleItem.OnShownCallback">
     <div class="row">
-        <EditForm EditContext="gridItem.EditContext" OnSubmit="UpdateEntities">
-            <p>
-                Клиент:<br />
-                <Button Size="Size.Small"
-                        Type="ButtonType.Link"
-                        Color="ButtonColor.Dark"
-                        @onclick="() => PickClientAsync()">
-                    Задать
-                </Button> <br />
-                <ClientDisplay Entity="gridItem.Filter.Client" NullCheck=true />
-            </p>
-            <p>
-                За дату:<br />
-                <DateInput id="produc-id" @bind-Value="gridItem.Filter.OnDate" TValue="DateTime?" Placeholder="Выберите дату"/>
-            </p>
+        <EditForm EditContext="gridItem.EditContext" OnSubmit="UpdateEntitiesAsync">
+            <div class="row">
+                <div class="@GridClass.FilterClass.TITTLE_CLASS">
+                    Клиент:
+                </div>
+                <div class="@GridClass.FilterClass.TITTLE_CLASS">
+                    <ClientDisplay Entity="gridItem.Filter.Client" NullCheck=true />
+                </div>
+                <div class="@GridClass.FilterClass.TITTLE_CLASS">
+                    <Button Size="Size.Small"
+                            Type="ButtonType.Link"
+                            Color="ButtonColor.Dark"
+                            @onclick="() => PickClientAsync()">
+                        Задать
+                    </Button>
+                </div>                
+            </div>
+            <br />
+            <div class="row">
+                <div class="@GridClass.FilterClass.TITTLE_CLASS">
+                    За дату:
+                </div>
+                <div class="@GridClass.FilterClass.VALUE_CLASS">
+                    <DateInput id="produc-id" @bind-Value="gridItem.Filter.OnDate" TValue="DateTime?" Placeholder="Выберите дату" />
+                </div>
+            </div>
+            <br />
             <Button Type="ButtonType.Submit" Color="ButtonColor.Dark"> Поиск </Button>
         </EditForm>
     </div>
 </Collapse>
 <hr />
 <br />
-@if (gridItem.Entities is not null)
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Номер</th>
-                <th>Дата</th>
-                <th>Клиент</th>
-                <th>Статус</th>
-                <th>Сумма</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var entity in gridItem.Entities)
-            {
-                <tr>
-                    <td>@entity.Header.Number</td>
-                    <td>@entity.Header.Date</td>
-                    <td>@if (CurrentDocType == DocumentType.Prihod)
-                        {
-                            <MapClient Entity="entity.Header.Who" />
-                        }
-                        else if (CurrentDocType == DocumentType.Rashod)
-                        {
-                            <MapClient Entity="entity.Header.With" />
-                        }
-                    </td>
-                    <td><DocumentStateDisplay  State="@entity.State" Style=""/></td>
-                    <td><MoneyDisplay Money="@(new Money((decimal)entity.Key))"/></td>
-                    <td>
-                        <Button Size="Size.Small"
-                                Type="ButtonType.Link"
-                                Color="ButtonColor.Primary"
-                                @onclick="@(()=>Navigation.NavigateTo($"document/{entity.Key}"))">
-                            Открыть
-                        </Button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <Pagination ActivePageNumber="@gridItem.CurrentPage"
-                TotalPages="@gridItem.PageLimit"
-                Alignment="Alignment.Center"
-                FirstLinkIcon="IconName.ChevronDoubleLeft"
-                PreviousLinkIcon="IconName.ChevronLeft"
-                NextLinkIcon="IconName.ChevronRight"
-                LastLinkIcon="IconName.ChevronDoubleRight"
-                PageChanged="OnPageChangedAsync" />
-}
+<Grid @ref="gridItem.Grid"
+      TItem="DEntity"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="GridDataProvider"
+      OnRowDoubleClick="RowClick"
+      ItemsPerPageText="some text"
+      PageSizeSelectorItems="new int[] {1}"
+      PaginationItemsTextFormat=""
+      AllowPaging="true"
+      AllowRowClick="true"
+      EmptyText="Нет данных"
+      PageSize="GridClass.PAGE_SIZE"
+      Responsive="true">
+
+    <GridColumn TItem="DEntity" HeaderText="Номер">
+        @context.Header.Number
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="Дата">
+        @context.Header.Date
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="Клиент">
+        @if (CurrentDocType == DocumentType.Prihod)
+        {
+            <MapClient Entity="context.Header.Who" />
+        }
+        else if (CurrentDocType == DocumentType.Rashod)
+        {
+            <MapClient Entity="context.Header.With" />
+        }
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="Статус">
+        <DocumentStateDisplay State="@context.State" Style="" />
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="Сумма">
+        <MoneyDisplay Money="@(new Money((decimal)context.Key))" />
+    </GridColumn>
+</Grid>
+
 
 @code {
     private Modal modal = default!;
@@ -135,40 +134,24 @@
         _ => "Неопределенно"
     };
 
-    private void UpdateEntities()
+    public async Task UpdateEntitiesAsync()
     {
-        int skipCount, rowsLimit;
-
-        gridItem.UpdateDataForPagination(
-            count: repository.GetLimit(),
-            skipCount: out skipCount,
-            rowsLimit: out rowsLimit
-        );
-
-        var config = new DocumentsParamConfig()
-        {
-            Skip = skipCount,
-            Limit = rowsLimit,
-            DocumentType = CurrentDocType,
-            ClientId = gridItem.Filter.Client is null
-                ? null
-                : gridItem.Filter.Client.Key,
-            OnDate = gridItem.Filter.OnDate
-        };
-
-        var query = (paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).InitQuery(config);
-
-        gridItem.Entities = repository.GetByQuery(query).ToArray();
+        await gridItem.Grid.RefreshDataAsync();
     }
 
-    private async Task PickClientAsync()
+    public void RowClick(GridRowEventArgs<DEntity> args)
+    {
+        Navigation.NavigateTo($"document/{args.Item.Key}");
+    }
+
+    public async Task PickClientAsync()
     {
         var parameters = new Dictionary<string, object>();
-        parameters.Add("OnClickCallback", EventCallback.Factory.Create<ClientFindEventArgs>(this, ProductAsync));
+        parameters.Add("OnClickCallback", EventCallback.Factory.Create<ClientFindEventArgs>(this, SetAsync));
         await modal.ShowAsync<ClientsFinder>(title: "Выбрать клиента:", parameters: parameters);
     }
 
-    private async Task ProductAsync(ClientFindEventArgs client)
+    public async Task SetAsync(ClientFindEventArgs client)
     {
         gridItem.Filter.Client = client.Entity;
         await modal.HideAsync();
@@ -177,43 +160,48 @@
     protected override void OnInitialized()
     {
         gridItem.EditContext = new(gridItem.Filter);
-        UpdateEntities();
     }
 
-    protected override void OnParametersSet()
+    public async Task<GridDataProviderResult<DEntity>> GridDataProvider(GridDataProviderRequest<DEntity> request)
     {
-        UpdateEntities();
-    }
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
 
-    private async Task OnPageChangedAsync(int newPageNumber)
-    {
-        await Task.Run(() => { gridItem.CurrentPage = newPageNumber; });
+        var config = new DocumentsParamConfig()
+            {
+                Skip = skip,
+                Limit = limit,
+                DocumentType = CurrentDocType,
+                ClientId = gridItem.Filter.Client is null
+                    ? null
+                    : gridItem.Filter.Client.Key,
+                OnDate = gridItem.Filter.OnDate
+            };
 
-        UpdateEntities();
+        var query = (paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).InitQuery(config);
+
+        return await Task.FromResult(new GridDataProviderResult<DEntity>
+            {
+                Data = repository.GetByQuery(query),
+                TotalCount = repository.GetLimit()
+            });
     }
 
     public class GridClass
     {
         public static readonly int PAGE_SIZE = 5;
-        public int CurrentPage { get; set; } = 1;
-
-        public int PageLimit { get; set; } = 1;
 
         public EditContext? EditContext { get; set; }
 
         public FilterClass Filter { get; set; } = new();
 
-        public DEntity[]? Entities { get; set; }
-
-        public void UpdateDataForPagination(int count, out int skipCount, out int rowsLimit)
-        {
-            PageLimit = (count + PAGE_SIZE - 1) / PAGE_SIZE;
-            skipCount = (CurrentPage - 1) * PAGE_SIZE;
-            rowsLimit = PAGE_SIZE;
-        }
+        public Grid<DEntity> Grid { get; set; } = default!;
 
         public class FilterClass
         {
+            public static string TITTLE_CLASS = "col-3 col-md-3";
+            public static string VALUE_CLASS = "col-5 col-md-5";
+
             public Client? Client { get; set; }
             public DateTime? OnDate { get; set; } = null!;
         }

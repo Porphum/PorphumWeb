@@ -27,24 +27,43 @@
 <br />
 <EditForm EditContext="_editContext">
     
-    <p>
-        @ClientDescription:<br />
-        <Button Size="Size.Small"
-                Type="ButtonType.Link"
-                Color="ButtonColor.Dark"
-                @onclick="() => PickClientAsync()">
-            Задать
-        </Button> <br />
-        <ClientDisplay Entity="_viewModel.Client" NullCheck=true />
-    </p>
-    <p>
-        Номер:<br />
-        <InputNumber id="number" @bind-Value="_viewModel.Number" />
-    </p>
-    <p>
-        Дата:<br />
-        <InputDate id="date" @bind-Value="_viewModel.Date" />
-    </p>
+    <div class="row">
+        <div class="@ViewModel.TITTLE_CLASS">
+            <b>@ClientDescription:</b>
+        </div>
+        <div class="col-2 col-md-2">
+            <ClientDisplay Entity="_viewModel.Client" NullCheck=true />
+        </div>
+        <div class="@ViewModel.VALUE_CLASS">
+            <Button Size="Size.Small"
+                    Type="ButtonType.Link"
+                    Color="ButtonColor.Dark"
+                    @onclick="() => PickClientAsync()">
+                Задать
+            </Button>
+        </div>        
+    </div>
+    <br />
+    <div class="row">
+        <div class="@ViewModel.TITTLE_CLASS">
+            <b>Номер:</b>
+        </div>
+        <div class="@ViewModel.VALUE_CLASS">
+            <InputNumber id="number" @bind-Value="_viewModel.Number" />
+        </div>
+    </div>
+    <br/>
+    <div class="row">
+        <div class="@ViewModel.TITTLE_CLASS">
+            <b>Дата:</b>
+        </div>
+        <div class="@ViewModel.VALUE_CLASS">
+            <InputDate id="date" @bind-Value="_viewModel.Date" />
+        </div>
+
+        
+    </div>
+    <br />
     <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Создать</button>
 </EditForm>
 
@@ -154,6 +173,9 @@
 
     public class ViewModel
     {
+        public static string TITTLE_CLASS = "col-1 col-md-1";
+        public static string VALUE_CLASS = "col-5 col-md-5";
+
         public Client Client { get; set; }
 
         public DateTime Date { get; set; } = DateTime.Now;

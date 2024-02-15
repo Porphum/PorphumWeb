@@ -3,19 +3,24 @@
 @using General.Abstractions.Models
 @using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query
 @using PorphumReferenceBook.Logic.Models.Client
+@using PorphumReferenceBook.Logic.Models.Product
+@using PorphumSales.Logic.Abstractions.Models
 @using PorphumSales.Logic.Abstractions.Storage.Repository;
 
 @using PorphumSales.Logic.Models
+@using PorphumWeb.Blazor.Pages.Components
 @using TEntity = PorphumSales.Logic.Storage.Models.Document;
 @using DEntity = PorphumSales.Logic.Models.Document.Document;
 @using DClient = PorphumReferenceBook.Logic.Models.Client.Client;
+@using static PorphumWeb.Blazor.Pages.Components.DocumentAddProduct
+@using static PorphumWeb.Blazor.Pages.Components.ProductFinder
 
 @inject NavigationManager Navigation
 @inject IDocumentRepository repository;
 @inject ISalesQueryParamFactory paramFactory;
+@inject IDocumentStateMachine _documentSateMachine;
 
-@* <PageTitle>@PageTittle</PageTitle>
-<Modal @ref="modal" /> *@
+<Modal @ref="modal" />
 <PageTitle>@model.PageTittle</PageTitle>
 
 <div class="row">
@@ -64,16 +69,37 @@
 </div>
 <hr />
 <br/>
-<div class="row">
-    <Button Class="col-md-1"
-            Type="ButtonType.Link"
-            Color="ButtonColor.Primary"
-            @onclick="@(()=>OpenNewAsync())">
-        Создать
-    </Button>
-</div>
-<br/>
-<Grid TItem="SaleProduct"
+
+<EditForm EditContext="gridItem.EditContext">
+    <div class="row">
+        @foreach (var button in StateButtons)
+        {
+            if (button.OnClick is null)
+            {
+                <Button Class=@button.Class
+                        Style=@button.Style
+                        Type=@button.Type
+                        Color=@button.Color
+                        @onclick="@(button.OnClickAsync)">
+                    @button.Tittle
+                </Button>
+            }
+            else
+            {
+                <Button Class=@button.Class
+                        Style=@button.Style
+                        Type=@button.Type
+                        Color=@button.Color
+                        @onclick="@(button.OnClick)">
+                    @button.Tittle
+                </Button>
+            }
+
+        }
+    </div>
+    <br />
+@* <Grid @ref="grid"
+      TItem="GridItem"
       Class="table table-hover table-bordered table-striped"
       DataProvider="model.EmployeesDataProvider"
       ItemsPerPageText="some text"
@@ -83,23 +109,90 @@
       PageSize="5"
       Responsive="true">
 
-    <GridColumn TItem="SaleProduct" HeaderText="Наименование">
+    <GridColumn TItem="GridItem" HeaderText="Наименование">
         <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@context.Product" />
     </GridColumn>
-    <GridColumn TItem="SaleProduct" HeaderText="Employee Name">
-        @context.Quantity
+    <GridColumn TItem="GridItem" HeaderText="Колличество">
+        <InputNumber id="number" @bind-Value=@context.Quantity />
     </GridColumn>
-</Grid>
+</Grid> *@
 
+    @if (gridItem.Model.Entities is not null)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Наименование</th>
+                    <th>Количество</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entity in gridItem.Model.Entities)
+                {
+                    <tr>
+                        <td><PorphumWeb.Blazor.Pages.Components.MapProduct Entity="entity.Product" /></td>
+                        <td><InputNumber id="number" @bind-Value=entity.Quantity/></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <Pagination ActivePageNumber="@gridItem.CurrentPage"
+                    TotalPages="@gridItem.PageLimit"
+                    Alignment="Alignment.Center"
+                    FirstLinkIcon="IconName.ChevronDoubleLeft"
+                    PreviousLinkIcon="IconName.ChevronLeft"
+                    NextLinkIcon="IconName.ChevronRight"
+                    LastLinkIcon="IconName.ChevronDoubleRight"
+                    PageChanged="OnPageChangedAsync" />
+    }
+
+</EditForm>
 
 
 
 @code {
+    private Modal modal = default!;
+    private GridClass gridItem = new();
     private ViewModel model = new();
 
     [Parameter]
     [EditorRequired]
     public long DocumentId { get; set; }
+
+    public ICollection<ButtonDescription> StateButtons => model.Entity.State switch
+    {
+        PorphumSales.Logic.Models.Document.DocumentState.Fill => new List<ButtonDescription>
+        {
+            new ButtonDescription
+            {
+                Type=ButtonType.Button,
+                Color=ButtonColor.Success,
+                Tittle="Добавить",
+                OnClickAsync=AddNewAsync
+            },
+            new ButtonDescription
+            {
+                Type=ButtonType.Submit,
+                Color=ButtonColor.Primary,
+                Tittle="Сохранить",
+                OnClick=Submit
+            },
+            new ButtonDescription
+            {
+                Type=ButtonType.Button,
+                Color=ButtonColor.Warning,
+                Style="",
+                Tittle="Провести",
+                OnClick=ChangeStateAsync
+            },
+        },
+        _ => Array.Empty<ButtonDescription>()
+    };
+
+    protected override void OnInitialized()
+    {
+        gridItem.EditContext = new(gridItem.Model);
+    }
 
     protected override void OnParametersSet()
     {
@@ -111,17 +204,92 @@
         var document = repository.GetByKey(DocumentId);
         model.Entity = document;
 
+        int skipCount, rowsLimit;
+
+        gridItem.UpdateDataForPagination(
+            count: model.Entity.Fill.Rows.Count,
+            skipCount: out skipCount,
+            rowsLimit: out rowsLimit
+        );
+
+
+        gridItem.Model.Entities = model.Entity.Fill.Rows
+        .Select(x => new GridClass.GridItem
+            {
+                Product = x.Product,
+                Quantity = x.Quantity
+            })
+        .OrderBy(x => x.Product.MapKey)
+        .Skip(skipCount)
+        .Take(rowsLimit)
+        .ToArray();
+
     }
 
-    private async Task OpenNewAsync()
+    private async Task OnPageChangedAsync(int newPageNumber)
     {
-        // var parameters = new Dictionary<string, object>();
-        // parameters.Add("Type", Type);
-        // parameters.Add("OnSubmit", EventCallback.Factory.Create<MouseEventArgs>(this, ShowDTMessage));
-        // await modal.ShowAsync<NewDocument>(
-        //     title: "Employee Details",
-        //     parameters: parameters
-        // );
+        await Task.Run(() => { gridItem.CurrentPage = newPageNumber; });
+
+        LoadEntity();
+    }
+
+    private void Submit()
+    {
+        var document = repository.GetByKey(DocumentId);
+        model.Entity = document;
+
+        foreach(var product in gridItem.Model.Entities)
+        {
+            model.Entity.Fill.AddOrUpdateProduct(product.Product.MappedEntity, product.Quantity);
+        }
+
+        repository.Update(model.Entity);
+
+        LoadEntity();
+
+    }
+
+    private void ChangeStateAsync()
+    {
+        LoadEntity();
+        var document = model.Entity;
+        var result = _documentSateMachine.GoToState(ref document, PorphumSales.Logic.Models.Document.DocumentState.Complete);
+
+        if (!result)
+        {
+            return;
+        }
+
+        repository.Update(document);
+
+        LoadEntity();
+    }
+
+    private async Task AddNewAsync()
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("OnClickCallback", EventCallback.Factory.Create<ProductFindEventArgs>(this, SetParamsForProduct));
+        await modal.ShowAsync<ProductFinder>(
+            title: "Выберите наименование",
+            parameters: parameters
+        );
+    }
+
+    private async Task SetParamsForProduct(ProductFindEventArgs args)
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("ProductId", args.Entity.Key);
+        parameters.Add("OnClickCallback", EventCallback.Factory.Create<AddProductEventArgs>(this, AddProductToDoc));
+        await modal.ShowAsync<DocumentAddProduct>(title: "Задайте параметры:", parameters: parameters);
+    }
+
+    private async Task AddProductToDoc(AddProductEventArgs args)
+    {
+        await modal.HideAsync();
+        model.Entity.Fill.AddOrUpdateProduct(args.Product.MappedEntity, args.Quantity);
+        repository.Update(model.Entity);
+
+        LoadEntity();
     }
 
     public class ViewModel
@@ -149,9 +317,64 @@
             _ => throw new InvalidOperationException()
         };
 
-        public async Task<GridDataProviderResult<SaleProduct>> EmployeesDataProvider(GridDataProviderRequest<SaleProduct> request)
+
+
+        // public async Task<GridDataProviderResult<GridItem>> EmployeesDataProvider(GridDataProviderRequest<GridItem> request)
+        // {
+        //     return await Task.FromResult(request.ApplyTo(Entity.Fill.Rows.Select(x => new GridItem
+        //     {
+        //         Product = x.Product,
+        //         Quantity = x.Quantity
+        //     })));
+        // }
+    }
+
+    public class GridClass
+    {
+        public static readonly int PAGE_SIZE = 5;
+        public int CurrentPage { get; set; } = 1;
+
+        public int PageLimit { get; set; } = 1;
+
+        public EditContext? EditContext { get; set; }
+
+        public GridModel Model { get; set; } = new();
+
+        public void UpdateDataForPagination(int count, out int skipCount, out int rowsLimit)
         {
-            return await Task.FromResult(request.ApplyTo(Entity.Fill.Rows));
+            PageLimit = (count + PAGE_SIZE - 1) / PAGE_SIZE;
+            skipCount = (CurrentPage - 1) * PAGE_SIZE;
+            rowsLimit = PAGE_SIZE;
         }
+
+        public class GridModel
+        {
+            public GridItem[]? Entities { get; set; }
+        }
+
+        public class GridItem
+        {
+            public IMappableModel<Product, long> Product { get; set; }
+
+            public int Quantity { get; set; }
+
+        }
+    }
+
+    public class ButtonDescription
+    {
+        public string Tittle { get; set; } = default!;
+
+        public string Style { get; set; } = "margin-right:1rem";
+
+        public string Class { get; set; } = "col-md-1";
+
+        public ButtonColor Color {get; set;}
+
+        public ButtonType Type { get; set; }
+
+        public Func<Task> OnClickAsync { get; set; }
+
+        public Action OnClick { get; set; }
     }
 }
