@@ -5,7 +5,7 @@
     <Sidebar @ref="sidebar"
              IconName="IconName.Gem"
              Title="PorphumWeb v.0.0.0"
-             DataProvider="SidebarDataProvider" />
+             DataProvider="SidebarDataProvider"/>
 
     <main>
         <div class="bb-top-row px-4 d-flex justify-content-between">
@@ -26,6 +26,7 @@
 
     private async Task<SidebarDataProviderResult> SidebarDataProvider(SidebarDataProviderRequest request)
     {
+        
         if (navItems is null)
             navItems = GetNavItems();
 
@@ -36,7 +37,7 @@
     {
         navItems = new List<NavItem>
         {
-            new NavItem { Id = "1", Href = "/", IconName = IconName.HouseDoorFill, Text = "Главная"},
+            new NavItem { Id = "1", Href = "/", IconName = IconName.HouseDoorFill, Text = "Главная" },
 
             new NavItem { Id = "2", IconName = IconName.BookHalf, Text = "Справочник", IconColor = IconColor.Primary },
             new NavItem { Id = "3", Href = "/refbook/groups", IconName = IconName.BookmarkCheck, Text = "Группы", ParentId="2"},

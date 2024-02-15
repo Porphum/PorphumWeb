@@ -10,6 +10,7 @@
 @using PorphumSales.Logic.Models.Mapper;
 @using PorphumSales.Logic.Models.Sales;
 @using PorphumSales.Logic.Storage.Models;
+@using PorphumWeb.Blazor.Classes
 
 @inject IHistoryRepository repository;
 @inject ISalesQueryParamFactory paramFactory;
@@ -19,13 +20,11 @@
 @page "/sales/history/{ProductId:long}"
 
 <PageTitle>История</PageTitle>
-
-<h2>История</h2>
 <br />
 <div class="row">
     @if (SelectedProduct is not null)
     {
-        <div class="col-2 col-md-2">
+        <div class="col-3 col-md-3">
             <h3><b>Наименование</b></h3>
         </div>
         <div class="col-5 col-md-5">
@@ -40,8 +39,12 @@
     }
 </div>
 <br/>
-<Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => ShowAsync(true))"> Изменить колличество </Button>
-<Collapse @ref="collapse">
+<Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(()=>toggleItem.ToggleAsync())">
+    @toggleItem.ButtonTittle
+</Button>
+<Collapse @ref="toggleItem.CollapseItem"
+          OnHiding="toggleItem.OnHiddenCallback"
+          OnShown="toggleItem.OnShownCallback">
     <br />
     <hr />
 <EditForm EditContext="_editContext">
@@ -53,51 +56,44 @@
                 <InputNumber id="delta" @bind-Value="_view.Delta" />
             </div>
         </div>
+        <br />
         <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="@(() => Submit(_editContext))"> Изменить </Button>
 </EditForm>
 </Collapse>
 <br />
 <hr />
-@if (entities == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Дата</th>
-                <th>Изменение</th>
-                <th>Тип</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var entity in entities)
-            {
-                <tr>
-                    <td>@entity.AccurDate</td>
-                    <td>@entity.Delta</td>
-                    <td>@entity.Type</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <Pagination ActivePageNumber="@CurrentPage"
-                TotalPages="@PageLimit"
-                Alignment="Alignment.Center"
-                FirstLinkIcon="IconName.ChevronDoubleLeft"
-                PreviousLinkIcon="IconName.ChevronLeft"
-                NextLinkIcon="IconName.ChevronRight"
-                LastLinkIcon="IconName.ChevronDoubleRight"
-                PageChanged="OnPageChangedAsync" />
-}
+<Grid @ref="gridItem.Grid"
+      TItem="ProductHistory"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="GridDataProvider"
+      ItemsPerPageText="some text"
+      PageSizeSelectorItems="new int[] {1}"
+      PaginationItemsTextFormat=""
+      AllowPaging="true"
+      EmptyText="Нет данных"
+      PageSize="GridClass.PAGE_SIZE"
+      Responsive="true">
+
+    <GridColumn TItem="ProductHistory" HeaderText="Дата">
+        @context.AccurDate
+    </GridColumn>
+    <GridColumn TItem="ProductHistory" HeaderText="Изменение">
+        @context.Delta
+    </GridColumn>
+    <GridColumn TItem="ProductHistory" HeaderText="Тип">
+        @context.Type
+    </GridColumn>
+</Grid>
+    
+
 
 
 
 @code {
     private IMappableModel<Product, long>? SelectedProduct { get; set; }
-    private Collapse collapse = default!;
+
+    private GridClass gridItem = new();
+    private ToggleClass toggleItem = new(showTittle: "Изменить количество"); 
 
     [Parameter]
     [EditorRequired]
@@ -107,47 +103,10 @@ else
 
     private ViewModel _view = new();
 
-    private static readonly int PAGE_SIZE = 5;
-
-    public int CurrentPage { get; set; } = 1;
-
-    public int PageLimit { get; set; } = 1;
-
-    private ProductHistory[]? entities;
-
-    private void UpdateEntities()
-    {
-        PageLimit = repository.GetLimit();
-
-        var query = (paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).InitQuery();
-
-        var config = new ProductsHistoriesParamConfig()
-            {
-                OfProductId = ProductId,
-                Skip = (CurrentPage - 1) * PAGE_SIZE,
-                Limit = PAGE_SIZE
-            };
-
-        query.Append((paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).CreateParam(ProductsHistoriesParamType.OfProductId, config));
-
-        query.Append((paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).CreateParam(ProductsHistoriesParamType.Skip, config));
-        query.Append((paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).CreateParam(ProductsHistoriesParamType.Limit, config));
-
-        entities = repository.GetByQuery(query).ToArray();
-    }
-
-    private async Task OnPageChangedAsync(int newPageNumber)
-    {
-        await Task.Run(() => { CurrentPage = newPageNumber; });
-
-        UpdateEntities();
-    }
-
     protected override void OnInitialized()
     {
         SelectedProduct = _referenceBookMapper.MapEntity(new MappableModel<Product, long>(ProductId));
         _editContext = new(_view);
-        UpdateEntities();
     }
 
     public async Task Submit(EditContext? editContext)
@@ -159,24 +118,41 @@ else
         );
 
         repository.ManualWrite(delta);
-        await ShowAsync(false);
-        Navigation.NavigateTo($"sales/storage");
+        await toggleItem.CollapseItem.HideAsync();
+        await gridItem.Grid.RefreshDataAsync();
+        _view = new();
     }
 
-    private async Task ShowAsync(bool isShow)
+    public async Task<GridDataProviderResult<ProductHistory>> GridDataProvider(GridDataProviderRequest<ProductHistory> request)
     {
-        if (isShow)
-        {
-            await collapse.ShowAsync();
-        }
-        else
-        {
-            await collapse.HideAsync();
-        }
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
+
+        var config = new ProductsHistoriesParamConfig()
+            {
+                OfProductId = ProductId,
+                Skip = skip,
+                Limit = limit
+            };
+
+        var query = (paramFactory as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).InitQuery(config);
+
+        return await Task.FromResult(new GridDataProviderResult<ProductHistory>
+            {
+                Data = repository.GetByQuery(query),
+                TotalCount = repository.GetLimit()
+            });
     }
 
     public class ViewModel
     {
         public int Delta { get; set; } = 0;
+    }
+
+    public class GridClass
+    {
+        public static readonly int PAGE_SIZE = 5;
+
+        public Grid<ProductHistory> Grid { get; set; } = default!;
     }
 }

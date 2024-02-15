@@ -5,6 +5,7 @@
 @using PorphumReferenceBook.Logic.Models.Product;
 @using PorphumReferenceBook.Logic.Storage.Repository.Query;
 
+@using PorphumWeb.Blazor.Classes
 @using TEntity = PorphumReferenceBook.Logic.Storage.Models.ProductGroup;
 @using DEntity = PorphumReferenceBook.Logic.Models.Product.ProductGroup;
 
@@ -16,146 +17,132 @@
 
 <PageTitle>Группы</PageTitle>
 <br />
-
 <div class="row">
-    <div class="col-2">
-        <h2>Группы</h2>
-    </div>
-    <div class="col-4">
-        <Button 
-            Type="ButtonType.Link" 
-            Color="ButtonColor.Primary"
+    <Button 
+        Class="col-md-1"
+        Style="margin-right:1rem;"
+        Type="ButtonType.Link"
+        Color="ButtonColor.Dark"
+            @onclick="@(()=>toggleItem.ToggleAsync())">
+        @toggleItem.ButtonTittle
+    </Button>
+    <Button
+        Class="col-md-1"
+        Type="ButtonType.Link"
+        Color="ButtonColor.Primary"
             @onclick="@(()=>Navigation.NavigateTo("refbook/group/create"))">
-            Создать
-        </Button>
-    </div>
+        Создать
+    </Button>
 </div>
-<div class="row">
-    <EditForm EditContext="_editContext" OnSubmit="Submit">
-        <p>
-            Название:<br />
-            <InputText id="search-string" @bind-Value="_filter.SearchString" />
-        </p>
-        <Button Type="ButtonType.Submit"  Color="ButtonColor.Secondary"> Поиск </Button>
-    </EditForm>
-</div>
+<Collapse 
+    @ref=toggleItem.CollapseItem
+    OnHiding="toggleItem.OnHiddenCallback"
+    OnShown="toggleItem.OnShownCallback">
+    <br />
+        <EditForm EditContext="gridItem.EditContext" OnSubmit="UpdateEntitiesAsync">
+            <div class="row">
+                <div class="@GridClass.FilterClass.TITTLE_CLASS">
+                    Название:
+                </div>
+                <div class="@GridClass.FilterClass.VALUE_CLASS">
+                    <InputText id="search-string" @bind-Value="gridItem.Filter.SearchString" />
+                </div>
+            </div>
+        <br />
+            <Button Type="ButtonType.Submit" Color="ButtonColor.Dark"> Поиск </Button>
+        </EditForm>
+    
+</Collapse>
+<hr/>
 <br />
-@if (entities == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Название</th>
-                <th>Наимнования</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var entity in entities)
-            {
-                <tr>
-                    <td>@entity.Key</td>
-                    <td>@entity.Name</td>
-                    <td>
-                        <Button Size="Size.Small"
-                                Type="ButtonType.Link"
-                                Color="ButtonColor.Secondary"
-                        @onclick="@(()=>Navigation.NavigateTo($"refbook/products/{entity.Key}"))">
-                            Показать
-                        </Button>
-                    </td>
-                    <td><Button 
-                        Size="Size.Small" 
-                        Type="ButtonType.Link" 
-                        Color="ButtonColor.Primary" 
-                        @onclick="@(()=>Navigation.NavigateTo($"refbook/group/edit/{entity.Key}"))"> 
-                        Редактировать 
-                    </Button></td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<Grid @ref="gridItem.Grid"
+      TItem="DEntity"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="GridDataProvider"
+      OnRowDoubleClick="RowClick"
+      ItemsPerPageText="some text"
+      PageSizeSelectorItems="new int[] {1}"
+      PaginationItemsTextFormat=""
+      AllowPaging="true"
+      AllowRowClick="true"
+      EmptyText="Нет данных"
+      PageSize="GridClass.PAGE_SIZE"
+      Responsive="true">
 
-    <Pagination 
-        ActivePageNumber="@CurrentPage"
-        TotalPages="@PageLimit" 
-        Alignment="Alignment.Center"
-        FirstLinkIcon="IconName.ChevronDoubleLeft"
-        PreviousLinkIcon="IconName.ChevronLeft"
-        NextLinkIcon="IconName.ChevronRight"
-        LastLinkIcon="IconName.ChevronDoubleRight"
-        PageChanged="OnPageChangedAsync" 
-    />
-}
-
-
+    <GridColumn TItem="DEntity" HeaderText="Id">
+        @context.Key
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="Название">
+        @context.Name
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="Наименования">
+        <Button Size="Size.Small"
+                Type="ButtonType.Link"
+                Color="ButtonColor.Secondary"
+                @onclick="@(()=>Navigation.NavigateTo($"refbook/products/{context.Key}"))">
+            Посмотреть
+        </Button>
+    </GridColumn>
+</Grid>
 
 @code {
-    private Filter _filter = new();
-    private EditContext? _editContext;
 
-    private static readonly int PAGE_SIZE = 5;
 
-    private DEntity[]? entities;
+    private ToggleClass toggleItem = new();
 
-    public string? NameLike { get; set; } = null;
-
-    public int CurrentPage { get; set; } = 1;
-
-    public int PageLimit { get; set; } = 1;
-
-    private void UpdateEntities()
-    {
-        PageLimit = (productRepository.GetLimit() + PAGE_SIZE - 1) / PAGE_SIZE;
-
-        var query = (paramFactory as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, TEntity>).InitQuery();
-
-        var config = new ProductsGroupsParamConfig()
-            {
-                NameLike = NameLike,
-                Skip = (CurrentPage - 1) * PAGE_SIZE,
-                Limit = PAGE_SIZE
-            };
-
-        if (NameLike is not null)
-        {
-            query.Append((paramFactory as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, TEntity>).CreateParam(ProductsGroupsParamType.NameLike, config));
-        }
-
-        query.Append((paramFactory as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, TEntity>).CreateParam(ProductsGroupsParamType.Skip, config));
-        query.Append((paramFactory as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, TEntity>).CreateParam(ProductsGroupsParamType.Limit, config));
-
-        entities = productRepository.GetByQuery(query).ToArray();
-    }
-
-    private async Task OnPageChangedAsync(int newPageNumber)
-    {
-        await Task.Run(() => { CurrentPage = newPageNumber; });
-
-        UpdateEntities();
-    }
+    private GridClass gridItem = new();
 
     protected override void OnInitialized()
     {
-        UpdateEntities();
-        _editContext = new(_filter);
+        gridItem.EditContext = new(gridItem.Filter);
     }
 
-    public void Submit()
+    public void RowClick(GridRowEventArgs<DEntity> args)
     {
-        NameLike = _filter.SearchString;
-        UpdateEntities();
+        
+        Navigation.NavigateTo($"refbook/group/edit/{args.Item.Key}");
     }
 
-    public class Filter
+    public async Task UpdateEntitiesAsync()
     {
-        public string? SearchString { get; set; } = null!;
+        await gridItem.Grid.RefreshDataAsync();
+    }
 
-        public int? GroupId { get; set; } = null!;
+    public async Task<GridDataProviderResult<DEntity>> GridDataProvider(GridDataProviderRequest<DEntity> request)
+    {
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
+
+        var config = new ProductsGroupsParamConfig()
+            {
+                NameLike = gridItem.Filter.SearchString,
+                Skip = skip,
+                Limit = limit
+            };
+
+        var query = (paramFactory as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, TEntity>).InitQuery(config);
+
+        return await Task.FromResult(request.ApplyTo(productRepository.GetByQuery(query)));
+    }
+
+    public class GridClass
+    {
+        public static readonly int PAGE_SIZE = 5;
+
+        public Grid<DEntity> Grid { get; set; } = default!;
+
+        public EditContext? EditContext { get; set; }
+
+        public FilterClass Filter { get; set; } = new();
+
+        public class FilterClass
+        {
+            public static string TITTLE_CLASS = "col-1 col-md-1";
+            public static string VALUE_CLASS = "col-5 col-md-5";
+
+            public string? SearchString { get; set; } = null!;
+
+            public int? GroupId { get; set; } = null!;
+        }
     }
 }

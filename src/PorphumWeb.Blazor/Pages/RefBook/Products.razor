@@ -1,6 +1,7 @@
 ﻿@page "/refbook/products/{GroupId:int?}"
 @using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 @using PorphumReferenceBook.Logic.Models.Product;
+@using PorphumWeb.Blazor.Classes
 
 @inject IProductGroupRepository productGroupRepository;
 @inject NavigationManager Navigation
@@ -8,50 +9,65 @@
 <PageTitle>Наименования</PageTitle>
 <br/>
 <div class="row">
-    <div class="col-2">
-        <h2>Наименования</h2>
-    </div>
-    <div class="col-4">
-        <Button Type="ButtonType.Link"
-                Color="ButtonColor.Primary"
-        @onclick="@(()=>Navigation.NavigateTo("refbook/product/create"))">
-            Создать
-        </Button>
-    </div>
+    <Button Class="col-md-1"
+            Style="margin-right:1rem;"
+            Type="ButtonType.Link"
+            Color="ButtonColor.Dark"
+            @onclick="@(()=>toggleItem.ToggleAsync())">
+        @toggleItem.ButtonTittle
+    </Button>
+    <Button Class="col-md-1"
+            Type="ButtonType.Link"
+            Color="ButtonColor.Primary"
+            @onclick="@(()=>Navigation.NavigateTo("refbook/product/create"))">
+        Создать
+    </Button>
 </div>
-<div class="row">
-    <EditForm EditContext="_editContext" OnSubmit="Submit">
-        <p>
-            Название:<br />
-            <InputText id="search-string" @bind-Value="_filter.SearchString" />
-        </p>
-        <p>
-            Группа: <br />
-            <InputSelect @bind-Value="_filter.GroupId" id="search-group">
-                <option value="0">None</option>
-                @if (_groups.Any())
-                {
-                    @foreach (var group in _groups)
-                    {
-                        <option value="@group.Key">@group.Name</option>
-                    }
-                }
-            </InputSelect>
-        </p>
-        <Button Type="ButtonType.Submit" Color="ButtonColor.Secondary"> Поиск </Button>
-    </EditForm>
-</div>
+
+<Collapse @ref=toggleItem.CollapseItem
+          OnHiding="toggleItem.OnHiddenCallback"
+          OnShown="toggleItem.OnShownCallback">
+    <br />
+        <EditForm EditContext="_editContext">
+            <div class="row">
+                <div class="@FilterClass.TITTLE_CLASS">
+                    Название:
+                </div>
+                <div class="@FilterClass.VALUE_CLASS">
+                    <InputText id="search-string" @bind-Value="_filter.SearchString" />
+                </div>
+            </div>
+        <br />
+            <div class="row">
+                <div class="@FilterClass.TITTLE_CLASS">
+                    Группа:
+                </div>
+                <div class="@FilterClass.VALUE_CLASS">
+                    <InputSelect @bind-Value="_filter.GroupId" id="search-group">
+                        <option value="0">None</option>
+                        @if (_groups.Any())
+                        {
+                            @foreach (var group in _groups)
+                            {
+                                <option value="@group.Key">@group.Name</option>
+                            }
+                        }
+                    </InputSelect>
+                </div>                
+            </div>
+        </EditForm>
+</Collapse>
+<hr />
 
 <br />
 
-<ProductsTable NameLike=@SearchString GroupsKeys="@Groups"/>
+<ProductsTable NameLike=@_filter.SearchString GroupsKeys="@_filter.Groups" />
 
 
 @code {
-    public string? SearchString { get; set; } = null!;
-    public List<int>? Groups { get; set; } = null;
+    private ToggleClass toggleItem = new();
 
-    private Filter _filter = new();
+    private FilterClass _filter = new();
     private EditContext? _editContext;
 
     private IEnumerable<ProductGroup> _groups = Enumerable.Empty<ProductGroup>();
@@ -61,43 +77,25 @@
 
     protected override void OnInitialized()
     {
-        if (GroupId is not null && productGroupRepository.GetByKey(GroupId.Value) is null)
-        {
-            GroupId = null;
-        }
-        _filter.GroupId = 0;
-        if (GroupId is not null)
-        {
-            Groups = new List<int>();
-            Groups.Add(GroupId.Value);
-
-            _filter.GroupId = GroupId;
-        }
+        _filter.GroupId = GroupId;
         _groups = productGroupRepository.GetEntities();
 
         _editContext = new(_filter);
     }
 
-    public void Submit()
+    public class FilterClass
     {
-        SearchString = _filter.SearchString;
+        public static string TITTLE_CLASS = "col-1 col-md-1";
+        public static string VALUE_CLASS = "col-5 col-md-5";
 
-        if (_filter.GroupId is not null && _filter.GroupId != 0)
-        {
-            GroupId = _filter.GroupId;
-            Groups = new List<int>();
-            Groups.Add(GroupId.Value);
-        }
-        if (_filter.GroupId == 0)
-        {
-            Groups = null;
-        }
-    }
-
-    public class Filter
-    {
         public string? SearchString { get; set; } = null!;
 
         public int? GroupId { get; set; } = null!;
+
+        public List<int>? Groups => GroupId is null || GroupId == 0 
+            ? null
+            : new List<int>()
+                .Append(GroupId.Value)
+                .ToList();
     }
 }

@@ -8,6 +8,7 @@
 @inject NavigationManager Navigation
 
 @using DEntity = PorphumReferenceBook.Logic.Models.Product.Product;
+@using PorphumWeb.Blazor.Classes
 
 <PageTitle>@Title</PageTitle>
 <ConfirmDialog @ref="dialog" />
@@ -30,10 +31,10 @@
         @if (_viewModel.isEdit)
         {
             <div class="row">
-                <div class="col-1 col-md-1">
+                <div class="@ViewModel.TITTLE_CLASS">
                     <b>Id</b>
                 </div>
-                <div class="col-5 col-md-5">
+                <div class="@ViewModel.VALUE_CLASS">
                     <InputNumber id="id" @bind-Value="_viewModel.Key" readonly="readonly" />
                 </div>
 
@@ -41,19 +42,19 @@
         }
         <br />
         <div class="row">
-            <div class="col-1 col-md-1">
+            <div class="@ViewModel.TITTLE_CLASS">
                 <b>Название</b>
             </div>
-            <div class="col-5 col-md-5">
+            <div class="@ViewModel.VALUE_CLASS">
                 <InputText id="name" @bind-Value="_viewModel.Name" />
             </div>
         </div>
         <br />
         <div class="row">
-            <div class="col-1 col-md-1">
+            <div class="@ViewModel.TITTLE_CLASS">
                 <b>Группа</b>
             </div>
-            <div class="col-5 col-md-5">
+            <div class="@ViewModel.VALUE_CLASS">
                 <InputSelect @bind-Value="_viewModel.GroupId" id="group">
                     @if (_groups.Any())
                     {
@@ -68,37 +69,34 @@
         <hr />
         <br />
         <div class=row>
-            <div class="col-2 col-md-2">
+            <div class="col-2 col-md-2" style="margin-left:2rem">
                 <h2>Дополнительная информация</h2>
             </div>
-            <div class="col-3 col-md-3">
-                <Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => ShowAsync(true))"> Показать </Button>
-            </div>
+            <div class="col-5 col-md-5">
+                <Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => toggleItem.ToggleAsync())">@toggleItem.ButtonTittle </Button>
+                </div>
         </div>
-        <br />
-        <Collapse @ref="collapse1">
+        <Collapse @ref="toggleItem.CollapseItem"
+                  OnHiding="toggleItem.OnHiddenCallback"
+                  OnShown="toggleItem.OnShownCallback">
             <div class="row">
-                <div class="col-1 col-md-1">
+                <div class="@ViewModel.TITTLE_CLASS">
                     <b>Штрих код</b>
                 </div>
-                <div class="col-5 col-md-5">
+                <div class="@ViewModel.VALUE_CLASS">
                     <InputText id="barcode" @bind-Value="_viewModel.Barcode" />
                 </div>
             </div>
             <br />
             <div class="row">
-                <div class="col-1 col-md-1">
+                <div class="@ViewModel.TITTLE_CLASS">
                     <b>Описание</b>
                 </div>
-                <div class="col-5 col-md-5">
+                <div class="@ViewModel.VALUE_CLASS">
                     <InputTextArea id="description" @bind-Value="_viewModel.Description" />
                 </div>
             </div>
-            <div class="row">
-                <div class="col-5 col-md-5">
-                    <Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => ShowAsync(false))"> Скрыть </Button>
-                </div>
-            </div>
+            
         </Collapse>
         <hr />
         <br />
@@ -108,7 +106,7 @@
 
 @code {
     private ConfirmDialog dialog = default!;
-    private Collapse collapse1 = default!;
+    private ToggleClass toggleItem = new(showTittle: "Показать");
 
     public string Title { get; set; } = "Default tittle";
     [Parameter]
@@ -132,7 +130,7 @@
         }
         else if (Type == "edit")
         {
-            Title = "Наимнование";
+            Title = "Наименование";
 
             var product = repository.GetByKey(ProductId ?? throw new InvalidOperationException()) ?? throw new InvalidOperationException();
 
@@ -226,20 +224,11 @@
         Navigation.NavigateTo("refbook/products");
     }
 
-    private async Task ShowAsync(bool isShow)
-    {
-        if (isShow)
-        {
-            await collapse1.ShowAsync();
-        }
-        else
-        {
-            await collapse1.HideAsync();
-        }
-    }
-
     public class ViewModel
     {
+        public static string TITTLE_CLASS = "col-1 col-md-1";
+        public static string VALUE_CLASS = "col-5 col-md-5";
+
         public bool isEdit { get; set; } = false;
 
         public long Key { get; set; }

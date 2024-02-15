@@ -160,7 +160,35 @@ public class DocumentRepository : BaseQueryRepository<Document, TDocument>, IDoc
     };
 
     /// <inheritdoc/>
-    public void Update(Document entity) => throw new NotImplementedException();
+    public void Update(Document entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+
+        var storage = entity.ConvertToStorage();
+
+        var oldDocument = _repositoryContext.Documents.SingleOrDefault(x => x.Id == storage.Id);
+
+        ArgumentNullException.ThrowIfNull(oldDocument);
+
+        oldDocument.StatusId = storage.StatusId;
+        oldDocument.ClientWhoId = storage.ClientWhoId;
+        oldDocument.ClientWhoId = storage.ClientWhoId;
+        oldDocument.DocumentsRows = storage.DocumentsRows.Select(x => {
+            var row = _repositoryContext.DocumentsRows.SingleOrDefault(xx => xx.ProductId == x.ProductId && xx.DocumentId == x.DocumentId);
+            
+            if (row is not null)
+            {
+                row.Quantity = x.Quantity;
+                x = row;
+            }
+
+            return x;
+        }).ToList();
+
+        _repositoryContext.Documents.Update(oldDocument);
+
+        Save();
+    }
 
     /// <inheritdoc/>
     public DocumentConfig? Config 

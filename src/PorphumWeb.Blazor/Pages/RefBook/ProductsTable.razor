@@ -13,60 +13,36 @@
 @inject NavigationManager Navigation
 @inject LinkGenerator LinkGenerator
 
-@if (entities == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Название</th>
-                <th>Группа</th>
-                <th>Описание</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var entity in entities)
-            {
-                <tr>
-                    <td>@entity.Key</td>
-                    <td>@entity.Name</td>
-                    <td>@entity.Group.Name</td>
-                    <td>@entity.Info.Description</td>
-                    <td>
-                        <Button Size="Size.Small"
-                                Type="ButtonType.Link"
-                                Color="ButtonColor.Primary"
-                        @onclick="@(()=>Navigation.NavigateTo($"refbook/product/edit/{entity.Key}"))">
-                            Редактировать
-                        </Button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <Pagination ActivePageNumber="@CurrentPage"
-                TotalPages="@PageLimit"
-                Alignment="Alignment.Center"
-                FirstLinkIcon="IconName.ChevronDoubleLeft"
-                PreviousLinkIcon="IconName.ChevronLeft"
-                NextLinkIcon="IconName.ChevronRight"
-                LastLinkIcon="IconName.ChevronDoubleRight"
-                PageChanged="OnPageChangedAsync" />
-}
+<Grid @ref="gridItem.Grid"
+      TItem="DProduct"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="GridDataProvider"
+      OnRowDoubleClick="RowClick"
+      ItemsPerPageText="some text"
+      PageSizeSelectorItems="new int[] {1}"
+      PaginationItemsTextFormat=""
+      AllowPaging="true"
+      AllowRowClick="true"
+      EmptyText="Нет данных"
+      PageSize="GridClass.PAGE_SIZE"
+      Responsive="true">
+
+    <GridColumn TItem="DProduct" HeaderText="Id">
+        @context.Key
+    </GridColumn>
+    <GridColumn TItem="DProduct" HeaderText="Название">
+        @context.Name
+    </GridColumn>
+    <GridColumn TItem="DProduct" HeaderText="Группа">
+        @context.Group.Name
+    </GridColumn>
+    <GridColumn TItem="DProduct" HeaderText="Описание">
+        @context.Info.Description
+    </GridColumn>
+</Grid>
 
 @code {
-    private static readonly int PAGE_SIZE = 5;
-
-    public int CurrentPage { get; set; } = 1;
-
-    public int PageLimit { get; set; } = 1;
-
-    private DProduct[]? entities;
+    private GridClass gridItem = new();
 
     [Parameter]
     public string? NameLike { get; set; } = null;
@@ -74,50 +50,52 @@ else
     [Parameter]
     public List<int>? GroupsKeys { get; set; } = null;
 
-    [Parameter]
-    public int IncrementAmount { get; set; } = 1;
-
-    private void UpdateEntities()
+    private async Task UpdateEntitiesAsync()
     {
-        PageLimit = (repository.GetLimit() + PAGE_SIZE - 1) / PAGE_SIZE;
+        if (gridItem is null || gridItem.Grid is null)
+        {
+            return;
+        }
 
-        var query = (paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).InitQuery();
+        await gridItem.Grid.RefreshDataAsync();
+    }
 
+    public void RowClick(GridRowEventArgs<DProduct> args)
+    {
+        Navigation.NavigateTo($"refbook/products/{args.Item.Key}");
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await UpdateEntitiesAsync();
+    }
+    
+    public async Task<GridDataProviderResult<DProduct>> GridDataProvider(GridDataProviderRequest<DProduct> request)
+    {
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
+        
         var config = new ProductsParamConfig()
-        {
-            NameLike = NameLike,
-            Skip = (CurrentPage - 1) * PAGE_SIZE,
-            Limit = PAGE_SIZE,
-            GroupsKeys = (GroupsKeys ?? new()).ToHashSet()
-        };
+            {
+                NameLike = NameLike,
+                Skip = skip,
+                Limit = limit,
+                GroupsKeys = GroupsKeys is null ? null : GroupsKeys.ToHashSet()
+            };
 
-        if (NameLike is not null)
-        {
-            query.Append((paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).CreateParam(ProductsParamType.NameLike, config));
-        }
+        var query = (paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).InitQuery(config);
 
-        if (GroupsKeys is not null)
-        {
-            query.Append((paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).CreateParam(ProductsParamType.OfInGroupKey, config));
-        }
-
-        query.Append((paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).CreateParam(ProductsParamType.Skip, config));
-        query.Append((paramFactory as IQueryParamsFactory<ProductsParamType, ProductsParamConfig, TProduct>).CreateParam(ProductsParamType.Limit, config));
-
-        entities = repository.GetByQuery(query).ToArray();
+        return await Task.FromResult(new GridDataProviderResult<DProduct>
+            {
+                Data = repository.GetByQuery(query),
+                TotalCount = repository.GetLimit()
+            });
     }
 
-    protected override void OnParametersSet()
+    public class GridClass
     {
-        UpdateEntities();
+        public static readonly int PAGE_SIZE = 5;
+
+        public Grid<DProduct> Grid { get; set; }
     }
-
-    private async Task OnPageChangedAsync(int newPageNumber)
-    {
-        await Task.Run(() => { CurrentPage = newPageNumber; });
-
-        UpdateEntities();
-    }
-
-    protected override void OnInitialized() => UpdateEntities();
 }

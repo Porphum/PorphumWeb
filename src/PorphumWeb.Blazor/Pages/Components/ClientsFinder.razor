@@ -1,62 +1,35 @@
-﻿@using General.Abstractions.Storage;
-@using General.Abstractions.Storage.Query;
+﻿@using General.Abstractions.Storage.Query;
 @using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 @using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
-@using PorphumReferenceBook.Logic.Models.Product;
 @using PorphumReferenceBook.Logic.Storage.Repository.Query;
-
+@using PorphumReferenceBook.Logic.Storage.Repository;
 @using PorphumWeb.Blazor.Classes
 @using TEntity = PorphumReferenceBook.Logic.Storage.Models.Client;
 @using DEntity = PorphumReferenceBook.Logic.Models.Client.Client;
 
 @inject IClientsQueryRepository repository;
 @inject IRefBookQueryParamFactory paramFactory;
-@inject NavigationManager Navigation
 
-@page "/refbook/clients"
-
-<PageTitle>Клиенты</PageTitle>
-<br />
 <div class="row">
-    <Button Class="col-md-1"
-            Style="margin-right:1rem;"
-            Type="ButtonType.Link"
-            Color="ButtonColor.Dark"
-            @onclick="@(()=>toggleItem.ToggleAsync())">
-        @toggleItem.ButtonTittle
-    </Button>
-    <Button Class="col-md-1"
-            Type="ButtonType.Link"
-            Color="ButtonColor.Primary"
-            @onclick="@(()=>Navigation.NavigateTo("refbook/client/create"))">
-        Создать
-    </Button>
-</div>
-<Collapse @ref=toggleItem.CollapseItem
-          OnHiding="toggleItem.OnHiddenCallback"
-          OnShown="toggleItem.OnShownCallback">
-    <br />
-    <EditForm EditContext="gridItem.EditContext" OnSubmit="UpdateEntitiesAsync">
-            <div class="row">
-                <div class="@GridClass.FilterClass.TITTLE_CLASS">
-                    Наименование:
-                </div>
-                <div class="@GridClass.FilterClass.VALUE_CLASS">
-                    <InputText id="search-string" @bind-Value="gridItem.Filter.SearchString" />
-                </div>
+    <EditForm EditContext="gridItem.EditContext">
+        <div class="row">
+            <div class="@GridClass.FilterClass.TITTLE_CLASS">
+                Наименование:
             </div>
+            <div class="@GridClass.FilterClass.VALUE_CLASS">
+                <InputText id="search-string" @bind-Value="gridItem.Filter.SearchString" />
+            </div>
+        </div>
         <br />
-            <Button Type="ButtonType.Submit" Color="ButtonColor.Dark"> Поиск </Button>
-        </EditForm>
-    
-</Collapse>
+        <button type="submit" class="btn btn-dark" @onclick="@(() => UpdateEntitiesAsync(gridItem.EditContext))">Поиск</button>
+    </EditForm>
+</div>
 <hr />
-<br />
 <Grid @ref="gridItem.Grid"
       TItem="DEntity"
       Class="table table-hover table-bordered table-striped"
       DataProvider="GridDataProvider"
-      OnRowDoubleClick="RowClick"
+      OnRowDoubleClick="RowClickAsync"
       ItemsPerPageText="some text"
       PageSizeSelectorItems="new int[] {1}"
       PaginationItemsTextFormat=""
@@ -66,33 +39,34 @@
       PageSize="GridClass.PAGE_SIZE"
       Responsive="true">
 
-    <GridColumn TItem="DEntity" HeaderText="Id">
-        @context.Key
-    </GridColumn>
     <GridColumn TItem="DEntity" HeaderText="Наименование">
-        @context.Name
+        <ClientDisplay Entity="context" />
     </GridColumn>
 </Grid>
 
 @code {
     private GridClass gridItem = new();
 
-    private ToggleClass toggleItem = new();
+    [Parameter]
+    [EditorRequired]
+    public EventCallback<ClientFindEventArgs> OnClickCallback { get; set; }
+
+    public async Task RowClickAsync(GridRowEventArgs<DEntity> args)
+    {
+        await OnClickCallback.InvokeAsync(new ClientFindEventArgs
+            {
+                Entity = args.Item
+            });
+    }
+
+    public async Task UpdateEntitiesAsync(EditContext? _context)
+    {
+        await gridItem.Grid.RefreshDataAsync();
+    }
 
     protected override void OnInitialized()
     {
         gridItem.EditContext = new(gridItem.Filter);
-    }
-
-    public void RowClick(GridRowEventArgs<DEntity> args)
-    {
-
-        Navigation.NavigateTo($"refbook/client/edit/{args.Item.Key}");
-    }
-
-    public async Task UpdateEntitiesAsync()
-    {
-        await gridItem.Grid.RefreshDataAsync();
     }
 
     public async Task<GridDataProviderResult<DEntity>> GridDataProvider(GridDataProviderRequest<DEntity> request)
@@ -116,19 +90,24 @@
             });
     }
 
-    public class GridClass
+    public class ClientFindEventArgs : MouseEventArgs
+    {
+        public DEntity Entity { get; set; } = null!;
+    }
+
+    internal class GridClass
     {
         public static readonly int PAGE_SIZE = 5;
-
-        public Grid<DEntity> Grid { get; set; } = null!;
-
+        
         public EditContext? EditContext { get; set; }
 
         public FilterClass Filter { get; set; } = new();
 
+        public Grid<DEntity> Grid { get; set; } = default!;
+
         public class FilterClass
         {
-            public static string TITTLE_CLASS = "col-1 col-md-1";
+            public static string TITTLE_CLASS = "col-5 col-md-5";
             public static string VALUE_CLASS = "col-5 col-md-5";
 
             public string? SearchString { get; set; } = null!;

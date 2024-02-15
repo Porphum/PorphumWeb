@@ -18,7 +18,16 @@ public class SalesQueryParamFactory : ISalesQueryParamFactory
         ProductsPricesParamType.InProductIds => new OfInPriceKeyProductsParam(config.InProductsIds ?? throw new ArgumentNullException(nameof(config.InProductsIds))),
         _ => throw new NotImplementedException()
     };
-    public IQuery<IQueryParam<ProductPrice>, ProductPrice> InitQuery() => new BaseQuery<IQueryParam<ProductPrice>, ProductPrice>();
+    public IQuery<IQueryParam<ProductPrice>, ProductPrice> InitQuery(ProductsPricesParamConfig config)
+    {
+        var query = new BaseQuery<IQueryParam<ProductPrice>, ProductPrice>();
+
+        query.Append((this as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, ProductPrice>).CreateParam(ProductsPricesParamType.Skip, config));
+        query.Append((this as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, ProductPrice>).CreateParam(ProductsPricesParamType.Limit, config));
+
+
+        return query;
+    }
 
     public IQueryParam<ProductCountHistory> CreateParam(ProductsHistoriesParamType key, ProductsHistoriesParamConfig config) => key switch
     {
@@ -27,14 +36,32 @@ public class SalesQueryParamFactory : ISalesQueryParamFactory
         ProductsHistoriesParamType.OfProductId => new OfProductIdHistoreisRroductParam(config.OfProductId ?? throw new ArgumentNullException(nameof(config.OfProductId))),
         _ => throw new NotImplementedException()
     };
-    IQuery<IQueryParam<ProductCountHistory>, ProductCountHistory> IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>.InitQuery() => new BaseQuery<IQueryParam<ProductCountHistory>, ProductCountHistory>();
+    IQuery<IQueryParam<ProductCountHistory>, ProductCountHistory> IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>.InitQuery(ProductsHistoriesParamConfig config)
+    {
+        var query = new BaseQuery<IQueryParam<ProductCountHistory>, ProductCountHistory>();
+
+        query.Append((this as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).CreateParam(ProductsHistoriesParamType.OfProductId, config));
+
+        query.Append((this as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).CreateParam(ProductsHistoriesParamType.Skip, config));
+        query.Append((this as IQueryParamsFactory<ProductsHistoriesParamType, ProductsHistoriesParamConfig, ProductCountHistory>).CreateParam(ProductsHistoriesParamType.Limit, config));
+
+        return query;
+    }
     public IQueryParam<ProductStorage> CreateParam(ProductsStoragesParamType key, ProductsStoragesParamConfig config) => key switch
     {
         ProductsStoragesParamType.Limit => new LimitQueryParam<ProductStorage>(config.Limit ?? throw new ArgumentNullException(nameof(config.Limit))),
         ProductsStoragesParamType.Skip => new SkipQueryParam<ProductStorage>(config.Skip ?? throw new ArgumentNullException(nameof(config.Skip))),
         _ => throw new NotImplementedException()
     };
-    IQuery<IQueryParam<ProductStorage>, ProductStorage> IQueryParamsFactory<ProductsStoragesParamType, ProductsStoragesParamConfig, ProductStorage>.InitQuery() => new BaseQuery<IQueryParam<ProductStorage>, ProductStorage>();
+    IQuery<IQueryParam<ProductStorage>, ProductStorage> IQueryParamsFactory<ProductsStoragesParamType, ProductsStoragesParamConfig, ProductStorage>.InitQuery(ProductsStoragesParamConfig config)
+    {
+        var query = new BaseQuery<IQueryParam<ProductStorage>, ProductStorage>();
+
+        query.Append((this as IQueryParamsFactory<ProductsStoragesParamType, ProductsStoragesParamConfig, ProductStorage>).CreateParam(ProductsStoragesParamType.Skip, config));
+        query.Append((this as IQueryParamsFactory<ProductsStoragesParamType, ProductsStoragesParamConfig, ProductStorage>).CreateParam(ProductsStoragesParamType.Limit, config));
+
+        return query;
+    } 
     
     public IQueryParam<Document> CreateParam(DocumentsParamType key, DocumentsParamConfig config) => key switch
     {
@@ -49,5 +76,26 @@ public class SalesQueryParamFactory : ISalesQueryParamFactory
         _ => throw new NotImplementedException()
     };
 
-    IQuery<IQueryParam<Document>, Document> IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, Document>.InitQuery() => new BaseQuery<IQueryParam<Document>, Document>();
+    IQuery<IQueryParam<Document>, Document> IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, Document>.InitQuery(DocumentsParamConfig config)
+    {
+        var query = new BaseQuery<IQueryParam<Document>, Document>();
+
+        if (config.DocumentType is not null)
+        {
+            query.Append(CreateParam(DocumentsParamType.OfType, config));
+        }
+        if (config.ClientId is not null)
+        {
+            query.Append(CreateParam(DocumentsParamType.OfClient, config));
+        }
+        if (config.OnDate is not null)
+        {
+            query.Append(CreateParam(DocumentsParamType.OnDate, config));
+        }
+
+        query.Append(CreateParam(DocumentsParamType.Skip, config));
+        query.Append(CreateParam(DocumentsParamType.Limit, config));
+
+        return query;
+    }
 }

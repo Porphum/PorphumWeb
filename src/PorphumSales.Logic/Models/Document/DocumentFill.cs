@@ -43,7 +43,7 @@ public class DocumentFill
     /// <exception cref="ArgumentException" xml:lang="ru">
     /// Если <paramref name="quantity"/> меньше либо равно 0.
     /// </exception>
-    public void AddProduct(Product product, int quantity = 1)
+    public void AddOrUpdateProduct(Product product, int quantity = 1)
     {
         ArgumentNullException.ThrowIfNull(product, nameof(product));
 
@@ -62,7 +62,7 @@ public class DocumentFill
             return;
         }
 
-        var newRow = new SaleProduct(newProduct, quantity + productRow.Quantity);
+        var newRow = new SaleProduct(newProduct, quantity);
 
         _rows.RemoveAll(x => x.Product.MapKey == product.Key);
 

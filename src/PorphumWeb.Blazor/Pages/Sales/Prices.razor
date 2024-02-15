@@ -10,47 +10,49 @@
 @using PorphumSales.Logic.Abstractions.Storage.Repository;
 
 @using PorphumSales.Logic.Models.Mapper;
+@using PorphumWeb.Blazor.Classes
+@using PorphumWeb.Blazor.Pages.Components
 @using TEntity = PorphumSales.Logic.Storage.Models.ProductPrice;
 @using DEntity = PorphumSales.Logic.Models.Sales.PriceableProduct;
 @using DProduct = PorphumReferenceBook.Logic.Models.Product.Product;
+@using static PorphumWeb.Blazor.Pages.Components.ProductFinder
 
 @inject IPriceRepository repository;
 @inject IReferenceBookMapper _referenceBookMapper;
 @inject ISalesQueryParamFactory paramFactory;
 
 <PageTitle>Цены</PageTitle>
-
-<h2>Цены</h2>
+<Modal @ref="productFind" />
 <br />
-<Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => ShowAsync(true))"> Добавить цену </Button>
-<Collapse @ref="collapse">
+<Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => toggleItem.ToggleAsync())">@toggleItem.ButtonTittle</Button>
+<Collapse @ref=toggleItem.CollapseItem
+          OnHiding="toggleItem.OnHiddenCallback"
+          OnShown="toggleItem.OnShownCallback">
 <hr/>
 <EditForm EditContext="_editContext">
-    <ProductFinder ExternalMethod=Product ParntEditContext="_editContext" />
-    <input type="hidden" @bind-value="_view.ProductId" />
+     <br />
     <div class="row">
-        @if (SelectedProduct is not null)
-        {
-            <div class="col-2 col-md-2">
-                <h3><b>Наименование</b></h3>
+            <div class="@ViewModel.TITTLE_CLASS">
+                    <b>Наименование:</b>
             </div>
-            <div class="col-5 col-md-5">
-                <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@SelectedProduct" />
+                <div class="@ViewModel.VALUE_CLASS">
+                <ProductDisplay  Entity="@_view.Product" NullCheck=true />
             </div>
-        }
-        else
-        {
-            <div class="col-2 col-md-2">
-                Наименование не задано
+            <div class="col-3 col-md-3">
+                    <Button Size="Size.Small"
+                            Type="ButtonType.Link"
+                            Color="ButtonColor.Dark"
+                            @onclick="() => PickProductAsync()">
+                        Задать
+                    </Button>
             </div>
-        }
     </div>
     <br />
     <div class="row">
-        <div class="col-1 col-md-1">
-            <b>Цена</b>
+                <div class="@ViewModel.TITTLE_CLASS">
+            <b>Цена:</b>
         </div>
-        <div class="col-5 col-md-5">
+                <div class="@ViewModel.VALUE_CLASS">
             <CurrencyInput 
                 TValue="decimal" 
                 Locale="ru-RU"
@@ -60,55 +62,46 @@
     </div>
     <br />
     <div class="row">
-        <div class="col-1 col-md-1">
-            <b>С даты</b>
+        <div class="@ViewModel.TITTLE_CLASS">
+            <b>С даты:</b>
         </div>
-        <div class="col-5 col-md-5">
+        <div class="@ViewModel.VALUE_CLASS">
             <DateInput TValue="DateTime" id="from-date" @bind-Value="_view.From" />
         </div>
     </div>
-    <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="@(() => Submit(_editContext))"> Сохранить </Button>
+    <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="@(() => Submit(_editContext))"> Добавить </Button>
 </EditForm>
 </Collapse>
 <br/>
 <hr/>
+<Grid @ref="gridItem.Grid"
+      TItem="DEntity"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="GridDataProvider"
+      ItemsPerPageText="some text"
+      PageSizeSelectorItems="new int[] {1}"
+      PaginationItemsTextFormat=""
+      AllowPaging="true"
+      AllowRowClick="false"
+      EmptyText="Нет данных"
+      PageSize="GridClass.PAGE_SIZE"
+      Responsive="true">
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Наименование</th>
-            <th>Цена</th>
-            <th>С даты</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var entity in entities!)
-        {
-            <tr>
-                <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@entity.Product" />
-                <td>@entity.Price</td>
-                <td>@entity.FromDate</td>
-            </tr>
-        }
-    </tbody>
-</table>
-<Pagination ActivePageNumber="@CurrentPage"
-            TotalPages="@PageLimit"
-            Alignment="Alignment.Center"
-            FirstLinkIcon="IconName.ChevronDoubleLeft"
-            PreviousLinkIcon="IconName.ChevronLeft"
-            NextLinkIcon="IconName.ChevronRight"
-            LastLinkIcon="IconName.ChevronDoubleRight"
-            PageChanged="OnPageChangedAsync" />
+    <GridColumn TItem="DEntity" HeaderText="Id">
+        <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@context.Product" />
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="Цена">
+        <MoneyDisplay Money="@context.Price" />
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="С даты">
+        @context.FromDate
+    </GridColumn>
+</Grid>
 
 @code {
-    private IMappableModel<DProduct, long>? SelectedProduct { get; set; }
-
-    private static readonly int PAGE_SIZE = 5;
-
-    public int CurrentPage { get; set; } = 1;
-
-    public int PageLimit { get; set; } = 1;
+    private Modal productFind = default!;
+    private GridClass gridItem = new();
+    private ToggleClass toggleItem = new(showTittle: "Добавить цену");
 
     private DEntity[]? entities;
 
@@ -116,78 +109,73 @@
 
     private ViewModel _view = new();
 
-    private Collapse collapse = default!;
-
-    public string Input { get; set; } = string.Empty;
-    private void Product(long id, EditContext _context)
+    private async Task PickProductAsync()
     {
-        _view.ProductId = id;
-        SelectedProduct = _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.ProductId));
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("OnClickCallback", EventCallback.Factory.Create<ProductFindEventArgs>(this, ProductAsync));
+        await productFind.ShowAsync<ProductFinder>(title: "Выбрать клиента:", parameters: parameters);
+    }
+
+    private async Task ProductAsync(ProductFindEventArgs product)
+    {
+        await productFind.HideAsync();
+        _view.Product = product.Entity;
     }
 
     private async Task Submit(EditContext _context)
     {
         var entity = new DEntity(
-            _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.ProductId)),
+            _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.Product.Key)),
             new Money(_view.Price),
             _view.From
         );
 
         repository.AddNewPrice(entity);
+        _view = new();
+        await toggleItem.CollapseItem.HideAsync();
 
-        await ShowAsync(false);
-
-        UpdateEntities();
-
+        await gridItem.Grid.RefreshDataAsync();
     }
 
     protected override void OnInitialized()
     {
         _editContext = new(_view);
-        UpdateEntities();
     }
 
-    private void UpdateEntities()
+    public async Task<GridDataProviderResult<DEntity>> GridDataProvider(GridDataProviderRequest<DEntity> request)
     {
-        PageLimit = repository.GetLimit();
-
-        var query = (paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).InitQuery();
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
 
         var config = new ProductsPricesParamConfig()
             {
-                Skip = (CurrentPage - 1) * PAGE_SIZE,
-                Limit = PAGE_SIZE
+                Skip = skip,
+                Limit = limit
             };
 
-        query.Append((paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).CreateParam(ProductsPricesParamType.Skip, config));
-        query.Append((paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).CreateParam(ProductsPricesParamType.Limit, config));
+        var query = (paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).InitQuery(config);
 
-        entities = repository.GetByQuery(query).ToArray();
-    }
-
-    private async Task OnPageChangedAsync(int newPageNumber)
-    {
-        await Task.Run(() => { CurrentPage = newPageNumber; });
-
-        UpdateEntities();
-    }
-
-    private async Task ShowAsync(bool isShow)
-    {
-        if (isShow)
+        return await Task.FromResult(new GridDataProviderResult<DEntity>
         {
-            await collapse.ShowAsync();
-        }
-        else
-        {
-            await collapse.HideAsync();
-        }
+            Data = repository.GetByQuery(query),
+            TotalCount = repository.GetLimit()
+        });
     }
 
     public class ViewModel
     {
-        public long ProductId { get; set; }
+        public static string TITTLE_CLASS = "col-1 col-md-1";
+        public static string VALUE_CLASS = "col-3 col-md-3";
+
+        public DProduct Product { get; set; }
         public DateTime From { get; set; } = DateTime.Now;
         public decimal Price { get; set; } = 0;
+    }
+
+    public class GridClass
+    {
+        public static readonly int PAGE_SIZE = 5;
+
+        public Grid<DEntity> Grid { get; set; } = default!;
     }
 }
