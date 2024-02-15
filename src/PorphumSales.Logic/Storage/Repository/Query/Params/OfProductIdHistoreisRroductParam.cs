@@ -1,10 +1,5 @@
 ﻿using General.Abstractions.Storage.Query;
 using PorphumSales.Logic.Storage.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PorphumSales.Logic.Storage.Repository.Query.Params;
 

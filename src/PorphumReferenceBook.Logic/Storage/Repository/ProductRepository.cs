@@ -1,7 +1,5 @@
 ﻿using General;
 using General.Abstractions.Storage;
-using General.Abstractions.Storage.Query;
-using General.Models.Query;
 using Microsoft.EntityFrameworkCore;
 using PorphumReferenceBook.Logic.Abstractions.Storage;
 using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
@@ -9,9 +7,6 @@ using PorphumReferenceBook.Logic.Models.Extensions;
 using PorphumReferenceBook.Logic.Models.Product;
 
 namespace PorphumReferenceBook.Logic.Storage.Repository;
-
-using TProduct = Models.Product;
-
 /// <summary xml:lang="ru">
 /// Репозиторий продуктов и их групп.
 /// </summary>
@@ -234,7 +229,7 @@ public sealed class ProductRepository : IProductRepository
     /// <inheritdoc/>
     public void Update(ProductGroup entity)
     {
-        
+
         var current = _repositoryContext.ProductGroups
             .AsNoTracking()
             .SingleOrDefault(x => x.Id == entity.Key);

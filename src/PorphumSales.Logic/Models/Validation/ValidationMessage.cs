@@ -14,7 +14,7 @@ public class ValidationMessage
     /// </exception>
     public ValidationMessage(DocumentValidationMessageResultType type)
     {
-        if (!Enum.IsDefined(typeof(DocumentValidationMessageResultType), type)) 
+        if (!Enum.IsDefined(typeof(DocumentValidationMessageResultType), type))
         {
             throw new ArgumentException($"Passed value for {nameof(DocumentValidationMessageResultType)} not declaring in enum.");
         }

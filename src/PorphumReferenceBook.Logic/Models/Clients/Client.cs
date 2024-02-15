@@ -39,7 +39,7 @@ public sealed class Client : ILoadable, IKeyable<long>
         Name = name;
         IsLoaded = false;
         _identityInfo = null!;
-        
+
     }
 
     /// <summary xml:lang="ru">
@@ -60,7 +60,7 @@ public sealed class Client : ILoadable, IKeyable<long>
         {
             throw new ArgumentException(
                 $"Given {nameof(Name)} of {nameof(Client)} " +
-                $"does not match with required pattern.", 
+                $"does not match with required pattern.",
                 nameof(name)
             );
         }
@@ -69,7 +69,7 @@ public sealed class Client : ILoadable, IKeyable<long>
         _identityInfo = info ?? throw new ArgumentNullException(nameof(info));
     }
 
-    
+
     /// <inheritdoc/>
     public long Key { get; }
 
@@ -84,7 +84,7 @@ public sealed class Client : ILoadable, IKeyable<long>
     /// <exception cref="InvalidOperationException" xml:lang="ru">
     /// Если была попытка доступа при не полностью загруженном объекте.
     /// </exception>
-    public ClientIdentityInfo IdentityInfo 
+    public ClientIdentityInfo IdentityInfo
     {
         get
         {

@@ -1,8 +1,6 @@
 ﻿using General.Abstractions.Storage.Query;
 using General.Models.Query;
-using Microsoft.CodeAnalysis.Operations;
 using PorphumReferenceBook.Logic.Abstractions;
-using PorphumReferenceBook.Logic.Models.Product;
 using PorphumSales.Logic.Abstractions.Storage;
 using PorphumSales.Logic.Abstractions.Storage.Repository;
 using PorphumSales.Logic.Models.Extensions;
@@ -28,11 +26,11 @@ public class StorageRepository : BaseQueryRepository<StorageProduct, ProductStor
     protected override IQueryable<ProductStorage> GetInitQuery() => _context.ProductsStorages.AsQueryable();
 
     public IEnumerable<ProductHistory> GetByParams(params IQueryParam<ProductCountHistory>[] queryParams) => _historyRepository.GetByParams(queryParams);
-    
+
     public IEnumerable<ProductHistory> GetByQuery(IQuery<IQueryParam<ProductCountHistory>, ProductCountHistory> query) => _historyRepository.GetByQuery(query);
-    
+
     public void ManualWrite(ProductHistory productHistory) => _historyRepository.ManualWrite(productHistory);
-    
+
     public Dictionary<long, long> GetStorageState(IReadOnlySet<long> productsId)
     {
         var state = _context.ProductsStorages

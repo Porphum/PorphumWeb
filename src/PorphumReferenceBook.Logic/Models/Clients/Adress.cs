@@ -13,7 +13,7 @@ public sealed class Address
     {
         Value = value;
     }
-    
+
 
     /// <summary xml:lang="ru">
     /// Значение.

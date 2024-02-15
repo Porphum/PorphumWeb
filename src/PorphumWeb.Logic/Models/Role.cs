@@ -14,7 +14,7 @@ public sealed class Role : IdentityRole, IKeyable<int>
     /// <param name="name" xml:lang="ru">Название роли.</param>
     public Role(string name, int key = 0)
     {
-        if (string.IsNullOrWhiteSpace(name)) 
+        if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name of role can't be null or white spaces.");
 
         Name = name;

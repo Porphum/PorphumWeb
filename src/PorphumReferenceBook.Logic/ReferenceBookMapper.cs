@@ -41,10 +41,10 @@ public class ReferenceBookMapper : IReferenceBookMapper
         IKeyableRepositoryWithModifiableLoad<Product, long> productKeyableRepository,
         IKeyableRepositoryWithModifiableLoad<Client, long> clientKeyableRepository)
     {
-        _productKeyableRepository = productKeyableRepository 
+        _productKeyableRepository = productKeyableRepository
             ?? throw new ArgumentNullException(nameof(productKeyableRepository));
-        
-        _clientKeyableRepository = clientKeyableRepository 
+
+        _clientKeyableRepository = clientKeyableRepository
             ?? throw new ArgumentNullException(nameof(clientKeyableRepository));
     }
 

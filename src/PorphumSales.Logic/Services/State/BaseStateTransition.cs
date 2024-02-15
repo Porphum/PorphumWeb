@@ -11,7 +11,7 @@ public abstract class BaseStateTransition : IStateDocumentTransition
     private readonly bool _setState;
 
     protected virtual PredicateRef<Document>[] Checks => throw new NotImplementedException();
-    
+
     public BaseStateTransition(DocumentState state, bool isSetState)
     {
         _stateToSet = state;
@@ -41,7 +41,7 @@ public abstract class BaseStateTransition : IStateDocumentTransition
     public bool CanGo(ref Document document)
     {
         var result = true;
-        foreach(var check in Checks)
+        foreach (var check in Checks)
         {
             result = check.Invoke(ref document);
 

@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
 using PorphumWeb.Logic.Storage.Models;
-using System;
-using System.Data;
 
 namespace PorphumWeb.Logic.Storage;
 
@@ -30,7 +28,7 @@ public sealed class WebContext : DbContext
     /// Пользовтели системы.
     /// </summary>
     public DbSet<User> Users { get; set; } = default!;
-    
+
     /// <summary>
     /// Доступные подключения.
     /// </summary>

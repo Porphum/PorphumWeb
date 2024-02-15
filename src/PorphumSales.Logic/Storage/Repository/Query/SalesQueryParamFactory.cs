@@ -61,8 +61,8 @@ public class SalesQueryParamFactory : ISalesQueryParamFactory
         query.Append((this as IQueryParamsFactory<ProductsStoragesParamType, ProductsStoragesParamConfig, ProductStorage>).CreateParam(ProductsStoragesParamType.Limit, config));
 
         return query;
-    } 
-    
+    }
+
     public IQueryParam<Document> CreateParam(DocumentsParamType key, DocumentsParamConfig config) => key switch
     {
         DocumentsParamType.Limit => new LimitQueryParam<Document>(config.Limit ?? throw new ArgumentNullException(nameof(config.Limit))),

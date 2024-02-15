@@ -1,5 +1,4 @@
 ﻿using General.Abstractions.Models;
-using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 
 namespace PorphumReferenceBook.Logic.Models.Product;
@@ -39,8 +38,8 @@ public sealed class ProductGroup : IKeyable<int>
         Name = name;
     }
 
-     /// <inheritdoc/>
-     public int Key { get; }
+    /// <inheritdoc/>
+    public int Key { get; }
 
     /// <summary xml:lang="ru">
     /// Название группы.

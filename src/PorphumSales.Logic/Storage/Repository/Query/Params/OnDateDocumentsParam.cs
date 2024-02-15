@@ -1,5 +1,4 @@
 ﻿using General.Abstractions.Storage.Query;
-using Microsoft.EntityFrameworkCore;
 using PorphumSales.Logic.Storage.Models;
 
 namespace PorphumSales.Logic.Storage.Repository.Query.Params;

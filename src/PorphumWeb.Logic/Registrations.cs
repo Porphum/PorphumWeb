@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
-using PorphumWeb.Logic.Models;
+﻿using Microsoft.Extensions.DependencyInjection;
 using PorphumWeb.Logic.Storage.Repository;
 
 namespace PorphumWeb.Logic;

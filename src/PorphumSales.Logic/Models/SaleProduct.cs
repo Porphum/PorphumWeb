@@ -1,5 +1,4 @@
-﻿using General;
-using General.Abstractions.Models;
+﻿using General.Abstractions.Models;
 using PorphumReferenceBook.Logic.Models.Product;
 
 namespace PorphumSales.Logic.Models;
@@ -43,8 +42,8 @@ public class SaleProduct
     /// </summary>
     public int Quantity { get; }
 
-/*    /// <summary xml:lang="ru">
-    /// Стоимость.
-    /// </summary>
-    public Money Cost { get; }*/
+    /*    /// <summary xml:lang="ru">
+        /// Стоимость.
+        /// </summary>
+        public Money Cost { get; }*/
 }

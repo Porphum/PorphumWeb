@@ -1,5 +1,4 @@
-﻿using General;
-using General.Abstractions.Models;
+﻿using General.Abstractions.Models;
 using General.Models;
 using System.Text.RegularExpressions;
 
@@ -37,10 +36,10 @@ public class Product : ILoadable, IKeyable<long>
         if (string.IsNullOrWhiteSpace(name) || !Regex.IsMatch(name, PRODUCT_NAME_PATTERN))
         {
             throw new ArgumentException($"" +
-                $"Given {nameof(Name)} of {nameof(Product)} does not match with required pattern.", 
+                $"Given {nameof(Name)} of {nameof(Product)} does not match with required pattern.",
                 nameof(name)
             );
-        }    
+        }
 
         Name = name;
         Group = group ?? throw new ArgumentNullException(nameof(group));
@@ -78,7 +77,7 @@ public class Product : ILoadable, IKeyable<long>
         _info = info ?? throw new ArgumentNullException(nameof(info));
         IsLoaded = true;
     }
-    
+
     /// <inheritdoc/>
     public long Key { get; }
 
@@ -98,8 +97,8 @@ public class Product : ILoadable, IKeyable<long>
     /// <exception cref="InvalidOperationException" xml:lang="ru">
     /// Если доступ при неполностью загруженном объекте.
     /// </exception>
-    public ProductInfo Info 
-    { 
+    public ProductInfo Info
+    {
         get
         {
             if (!IsLoaded)
@@ -111,7 +110,7 @@ public class Product : ILoadable, IKeyable<long>
             }
 
             return _info;
-        } 
+        }
     }
 
     /// <inheritdoc/>

@@ -1,7 +1,6 @@
 ﻿using Castle.Core.Internal;
 using PorphumReferenceBook.Logic.Models.Product;
 using PorphumSales.Logic.Models.Mapper;
-using System.Collections.Immutable;
 
 namespace PorphumSales.Logic.Models.Document;
 

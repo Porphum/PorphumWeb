@@ -6,7 +6,7 @@ namespace General.Abstractions.Storage;
 /// Описывает репозиторий сущностей <typeparamref name="TEntity"/> с функцией модифицируемой загрузки.
 /// </summary>
 /// <typeparam name="TEntity" xml:lang="ru">Тип сущности репозитория.</typeparam>
-public interface IRepositoryWithModifiableLoad<TEntity> where TEntity: ILoadable
+public interface IRepositoryWithModifiableLoad<TEntity> where TEntity : ILoadable
 {
     /// <summary>
     /// Возвращает коллекцию сущностей <typeparamref name="TEntity"/>, загруженных с указанной модификацией.

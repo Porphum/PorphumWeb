@@ -11,7 +11,7 @@ public sealed class UsersRepository : IUserStore<User>, IRoleStore<Role>
 
     public UsersRepository(IRepositoryContext repositoryContext)
     {
-        _repositoryContext= repositoryContext ?? throw new ArgumentNullException(nameof(repositoryContext));
+        _repositoryContext = repositoryContext ?? throw new ArgumentNullException(nameof(repositoryContext));
     }
 
     public async Task<IdentityResult> CreateAsync(Role role, CancellationToken cancellationToken)

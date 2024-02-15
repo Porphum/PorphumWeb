@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace PorphumWeb.Logic.Models.Extensions;
 
-namespace PorphumWeb.Logic.Models.Extensions;
-
-using TUser = Storage.Models.User;
 using TRole = Storage.Models.Role;
+using TUser = Storage.Models.User;
 
 public static class ConvertExtensions
 {
@@ -18,8 +12,8 @@ public static class ConvertExtensions
     /// <returns xml:lang="ru">Доменная модель.</returns>
     public static User ConvertToModel(this TUser storage) =>
         new User(
-            storage.Login, 
-            storage.Password, 
+            storage.Login,
+            storage.Password,
             storage.Roles
                 .Select(x => x.ConvertToModel())
                 .ToHashSet(),
@@ -39,7 +33,7 @@ public static class ConvertExtensions
         storage.Login = model.Login;
         storage.Password = model.Password;
         storage.Roles = model.Roles.Select(x => x.ConvertToStorage()).ToList();
-        
+
         return storage;
     }
 
@@ -64,7 +58,7 @@ public static class ConvertExtensions
 
         storage.Id = model.Key;
         storage.Name = model.Name;
-        
+
         return storage;
     }
 }

@@ -26,10 +26,10 @@ public sealed class ProductHistory
     public IMappableModel<Product, long> Product { get; }
 
     public long DocumentId { get; }
-    
+
     public int Delta { get; }
-    
+
     public DateTime AccurDate { get; }
-    
-    public WriteType WriteType { get; } 
+
+    public WriteType WriteType { get; }
 }

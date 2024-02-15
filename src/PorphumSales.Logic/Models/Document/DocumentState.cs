@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PorphumSales.Logic.Models.Document;
+﻿namespace PorphumSales.Logic.Models.Document;
 
 /// <summary xml:lang="ru">
 /// Состояние для документов.
@@ -17,7 +11,7 @@ public enum DocumentState
     /// Документ заполняется.
     /// </summary>
     Fill = 1,
-    
+
     /// <summary xml:lang="ru">
     /// Документ проведён.
     /// </summary>

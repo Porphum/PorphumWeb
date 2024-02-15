@@ -4,7 +4,7 @@ using PorphumWeb.Logic.Storage.Models;
 
 namespace PorphumWeb.Logic.Storage.Repository;
 
-public interface IRepositoryContext: IBaseRepositoryContext
+public interface IRepositoryContext : IBaseRepositoryContext
 {
     /// <summary xml:lang="ru">
     /// Роли пользовтелей.
