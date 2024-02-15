@@ -1,0 +1,116 @@
+﻿@using General.Abstractions.Storage.Query;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
+@using PorphumReferenceBook.Logic.Storage.Repository.Query;
+@using PorphumReferenceBook.Logic.Storage.Repository;
+@using PorphumWeb.Blazor.Classes
+@using TEntity = PorphumReferenceBook.Logic.Storage.Models.Client;
+@using DEntity = PorphumReferenceBook.Logic.Models.Client.Client;
+
+@inject IClientsQueryRepository repository;
+@inject IRefBookQueryParamFactory paramFactory;
+
+<div class="row">
+    <EditForm EditContext="gridItem.EditContext">
+        <div class="row">
+            <div class="@GridClass.FilterClass.TITTLE_CLASS">
+                Наименование:
+            </div>
+            <div class="@GridClass.FilterClass.VALUE_CLASS">
+                <InputText id="search-string" @bind-Value="gridItem.Filter.SearchString" />
+            </div>
+        </div>
+        <br />
+        <button type="submit" class="btn btn-dark" @onclick="@(() => UpdateEntitiesAsync(gridItem.EditContext))">Поиск</button>
+    </EditForm>
+</div>
+<hr />
+<Grid @ref="gridItem.Grid"
+      TItem="DEntity"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="GridDataProvider"
+      OnRowDoubleClick="RowClickAsync"
+      ItemsPerPageText="some text"
+      PageSizeSelectorItems="new int[] {1}"
+      PaginationItemsTextFormat=""
+      AllowPaging="true"
+      AllowRowClick="true"
+      EmptyText="Нет данных"
+      PageSize="GridClass.PAGE_SIZE"
+      Responsive="true">
+
+    <GridColumn TItem="DEntity" HeaderText="Наименование">
+        <ClientDisplay Entity="context" />
+    </GridColumn>
+</Grid>
+
+@code {
+    private GridClass gridItem = new();
+
+    [Parameter]
+    [EditorRequired]
+    public EventCallback<ClientFindEventArgs> OnClickCallback { get; set; }
+
+    public async Task RowClickAsync(GridRowEventArgs<DEntity> args)
+    {
+        await OnClickCallback.InvokeAsync(new ClientFindEventArgs
+            {
+                Entity = args.Item
+            });
+    }
+
+    public async Task UpdateEntitiesAsync(EditContext? _context)
+    {
+        await gridItem.Grid.RefreshDataAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        gridItem.EditContext = new(gridItem.Filter);
+    }
+
+    public async Task<GridDataProviderResult<DEntity>> GridDataProvider(GridDataProviderRequest<DEntity> request)
+    {
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
+
+        var config = new ClientsParamConfig()
+            {
+                NameLike = gridItem.Filter.SearchString,
+                Skip = skip,
+                Limit = limit
+            };
+
+        var query = (paramFactory as IQueryParamsFactory<ClientsParamType, ClientsParamConfig, TEntity>).InitQuery(config);
+
+        return await Task.FromResult(new GridDataProviderResult<DEntity>
+            {
+                Data = repository.GetByQuery(query),
+                TotalCount = repository.GetLimit()
+            });
+    }
+
+    public class ClientFindEventArgs : MouseEventArgs
+    {
+        public DEntity Entity { get; set; } = null!;
+    }
+
+    internal class GridClass
+    {
+        public static readonly int PAGE_SIZE = 5;
+        
+        public EditContext? EditContext { get; set; }
+
+        public FilterClass Filter { get; set; } = new();
+
+        public Grid<DEntity> Grid { get; set; } = default!;
+
+        public class FilterClass
+        {
+            public static string TITTLE_CLASS = "col-5 col-md-5";
+            public static string VALUE_CLASS = "col-5 col-md-5";
+
+            public string? SearchString { get; set; } = null!;
+        }
+    }
+}

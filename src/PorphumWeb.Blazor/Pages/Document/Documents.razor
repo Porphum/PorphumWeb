@@ -1,0 +1,209 @@
+﻿@page "/documents/{type}"
+@using General
+@using General.Abstractions.Storage.Query;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
+@using PorphumReferenceBook.Logic.Models.Client
+@using PorphumSales.Logic.Abstractions.Storage.Repository;
+@using PorphumSales.Logic.Models.Document;
+@using PorphumSales.Logic.Storage.Repository.Query;
+@using PorphumWeb.Blazor.Classes
+@using PorphumWeb.Blazor.Pages.Components
+@using PorphumWeb.Blazor.Pages.Sales
+
+@using TEntity = PorphumSales.Logic.Storage.Models.Document;
+@using DEntity = PorphumSales.Logic.Models.Document.Document;
+@using DClient = PorphumReferenceBook.Logic.Models.Client.Client;
+@using static PorphumWeb.Blazor.Pages.Components.ClientsFinder
+
+@inject NavigationManager Navigation
+@inject IDocumentRepository repository;
+@inject ISalesQueryParamFactory paramFactory;
+
+<PageTitle>@PageTittle</PageTitle>
+
+<Modal @ref="modal" />
+<br />
+<div class="row">
+    <Button Class="col-md-1"
+            Style="margin-right:1rem;"
+            Type="ButtonType.Link"
+            Color="ButtonColor.Dark"
+            @onclick="@(()=>toggleItem.ToggleAsync())">
+        @toggleItem.ButtonTittle
+    </Button>
+    <Button Class="col-md-1"
+            Type="ButtonType.Link"
+            Color="ButtonColor.Primary"
+            @onclick="@(()=>Navigation.NavigateTo($"documents/{Type}/create"))">
+        Создать
+    </Button>
+</div>
+<br />
+<Collapse @ref=toggleItem.CollapseItem
+          OnHiding="toggleItem.OnHiddenCallback"
+          OnShown="toggleItem.OnShownCallback">
+    <div class="row">
+        <EditForm EditContext="gridItem.EditContext" OnSubmit="UpdateEntitiesAsync">
+            <div class="row">
+                <div class="@GridClass.FilterClass.TITTLE_CLASS">
+                    Клиент:
+                </div>
+                <div class="@GridClass.FilterClass.TITTLE_CLASS">
+                    <ClientDisplay Entity="gridItem.Filter.Client" NullCheck=true />
+                </div>
+                <div class="@GridClass.FilterClass.TITTLE_CLASS">
+                    <Button Size="Size.Small"
+                            Type="ButtonType.Link"
+                            Color="ButtonColor.Dark"
+                            @onclick="() => PickClientAsync()">
+                        Задать
+                    </Button>
+                </div>                
+            </div>
+            <br />
+            <div class="row">
+                <div class="@GridClass.FilterClass.TITTLE_CLASS">
+                    За дату:
+                </div>
+                <div class="@GridClass.FilterClass.VALUE_CLASS">
+                    <DateInput id="produc-id" @bind-Value="gridItem.Filter.OnDate" TValue="DateTime?" Placeholder="Выберите дату" />
+                </div>
+            </div>
+            <br />
+            <Button Type="ButtonType.Submit" Color="ButtonColor.Dark"> Поиск </Button>
+        </EditForm>
+    </div>
+</Collapse>
+<hr />
+<br />
+<Grid @ref="gridItem.Grid"
+      TItem="DEntity"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="GridDataProvider"
+      OnRowDoubleClick="RowClick"
+      ItemsPerPageText="some text"
+      PageSizeSelectorItems="new int[] {1}"
+      PaginationItemsTextFormat=""
+      AllowPaging="true"
+      AllowRowClick="true"
+      EmptyText="Нет данных"
+      PageSize="GridClass.PAGE_SIZE"
+      Responsive="true">
+
+    <GridColumn TItem="DEntity" HeaderText="Номер">
+        @context.Header.Number
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="Дата">
+        @context.Header.Date
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="Клиент">
+        @if (CurrentDocType == DocumentType.Prihod)
+        {
+            <MapClient Entity="context.Header.Who" />
+        }
+        else if (CurrentDocType == DocumentType.Rashod)
+        {
+            <MapClient Entity="context.Header.With" />
+        }
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="Статус">
+        <DocumentStateDisplay State="@context.State" Style="" />
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="Сумма">
+        <MoneyDisplay Money="@(new Money((decimal)context.Key))" />
+    </GridColumn>
+</Grid>
+
+
+@code {
+    private Modal modal = default!;
+    private ToggleClass toggleItem = new();
+    private ToggleClass clientItem = new(showTittle: "Задать");
+    private GridClass gridItem = new();
+
+    [Parameter]
+    [EditorRequired]
+    public string Type { get; set; }
+
+    public DocumentType CurrentDocType => (DocumentType)short.Parse(Type);
+
+    public string PageTittle => CurrentDocType switch
+    {
+        DocumentType.Prihod => "Приход",
+        DocumentType.Rashod => "Расход",
+        _ => "Неопределенно"
+    };
+
+    public async Task UpdateEntitiesAsync()
+    {
+        await gridItem.Grid.RefreshDataAsync();
+    }
+
+    public void RowClick(GridRowEventArgs<DEntity> args)
+    {
+        Navigation.NavigateTo($"document/{args.Item.Key}");
+    }
+
+    public async Task PickClientAsync()
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("OnClickCallback", EventCallback.Factory.Create<ClientFindEventArgs>(this, SetAsync));
+        await modal.ShowAsync<ClientsFinder>(title: "Выбрать клиента:", parameters: parameters);
+    }
+
+    public async Task SetAsync(ClientFindEventArgs client)
+    {
+        gridItem.Filter.Client = client.Entity;
+        await modal.HideAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        gridItem.EditContext = new(gridItem.Filter);
+    }
+
+    public async Task<GridDataProviderResult<DEntity>> GridDataProvider(GridDataProviderRequest<DEntity> request)
+    {
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
+
+        var config = new DocumentsParamConfig()
+            {
+                Skip = skip,
+                Limit = limit,
+                DocumentType = CurrentDocType,
+                ClientId = gridItem.Filter.Client is null
+                    ? null
+                    : gridItem.Filter.Client.Key,
+                OnDate = gridItem.Filter.OnDate
+            };
+
+        var query = (paramFactory as IQueryParamsFactory<DocumentsParamType, DocumentsParamConfig, TEntity>).InitQuery(config);
+
+        return await Task.FromResult(new GridDataProviderResult<DEntity>
+            {
+                Data = repository.GetByQuery(query),
+                TotalCount = repository.GetLimit()
+            });
+    }
+
+    public class GridClass
+    {
+        public static readonly int PAGE_SIZE = 5;
+
+        public EditContext? EditContext { get; set; }
+
+        public FilterClass Filter { get; set; } = new();
+
+        public Grid<DEntity> Grid { get; set; } = default!;
+
+        public class FilterClass
+        {
+            public static string TITTLE_CLASS = "col-3 col-md-3";
+            public static string VALUE_CLASS = "col-5 col-md-5";
+
+            public Client? Client { get; set; }
+            public DateTime? OnDate { get; set; } = null!;
+        }
+    }
+}

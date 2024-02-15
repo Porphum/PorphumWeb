@@ -7,10 +7,15 @@ using PorphumSales.Logic.Models.Document;
 using TDocument = Storage.Models.Document;
 using TDocumentsRow = Storage.Models.DocumentsRow;
 using TDocumentConfig = Storage.Models.DocumentConfig;
+using ProductPrice = Storage.Models.ProductPrice;
+using ProductStorage = Storage.Models.ProductStorage;
+using ProductCountHistory = Storage.Models.ProductCountHistory;
 using DocumentStateId = Storage.Models.DocumentStateId;
 using DocumentTypeId = Storage.Models.DocumentTypeId;
 using PorphumReferenceBook.Logic.Models.Product;
 using PorphumReferenceBook.Logic.Abstractions;
+using General;
+using PorphumSales.Logic.Models.Sales;
 
 public static class ModelsConvertExtensions
 {
@@ -22,7 +27,7 @@ public static class ModelsConvertExtensions
     /// <param name="isFullLoad" xml:lang="ru">Флаг полной загрузки модели.</param>
     /// <returns xml:lang="ru">Доменная модель.</returns>
     public static Document ConvertToModel(this TDocument storage, IReferenceBookMapper mapper, bool isFullLoad = true) => 
-        isFullLoad
+        !isFullLoad
             ? new Document(
             storage.Id,
             new DocumentHeader(
@@ -39,8 +44,8 @@ public static class ModelsConvertExtensions
             new DocumentHeader(
                 storage.Number,
                 storage.Date,
-                new MappableModel<Client, long>(storage.ClientWhoId),
-                new MappableModel<Client, long>(storage.ClientWhoId)
+                mapper.MapEntity(new MappableModel<Client, long>(storage.ClientWhoId)),
+                mapper.MapEntity(new MappableModel<Client, long>(storage.ClientWhoId))
             ),
             (DocumentType)storage.TypeId,
             (DocumentState)storage.StatusId,
@@ -101,7 +106,7 @@ public static class ModelsConvertExtensions
 
         storage.ProductId = model.Product.MapKey;
         storage.Quantity = model.Quantity;
-        //storage.Cost = model.Cost.Value;
+        storage.Cost = 1;
 
         return storage;
     }
@@ -121,7 +126,7 @@ public static class ModelsConvertExtensions
     }
 
     /// <summary xml:lang="ru">
-    /// Конвертирует доменную модель <see cref="SaleProduct"/> в модель хранилища <see cref="TDocumentConfig"/>.
+    /// Конвертирует доменную модель <see cref="DocumentConfig"/> в модель хранилища <see cref="TDocumentConfig"/>.
     /// </summary>
     /// <param name="model" xml:lang="ru">Доменная модель.</param>
     /// <returns xml:lang="ru">Модель хранилища.</returns>
@@ -134,4 +139,78 @@ public static class ModelsConvertExtensions
         
         return storage;
     }
+
+    /// <summary xml:lang="ru">
+    /// Конвертирует модель хранилища <see cref="ProductPrice"/> в доменную модель <see cref="PriceableProduct"/>.
+    /// </summary>
+    /// <param name="storage" xml:lang="ru">Модель хранилища.</param>
+    /// <param name="mapper" xml:lang="ru">Загрузчик для сущностей справочника.</param>
+    /// <returns xml:lang="ru">Доменная модель.</returns>
+    public static PriceableProduct ConvertToModel(this ProductPrice storage, IReferenceBookMapper mapper) => new PriceableProduct(
+            mapper.MapEntity(new MappableModel<Product, long>(storage.ProductId)),
+            new Money(storage.Price),
+            storage.FromDate
+
+    );
+
+    /// <summary xml:lang="ru">
+    /// Конвертирует доменную модель <see cref="PriceableProduct"/> в модель хранилища <see cref="ProductPrice"/>.
+    /// </summary>
+    /// <param name="model" xml:lang="ru">Доменная модель.</param>
+    /// <returns xml:lang="ru">Модель хранилища.</returns>
+    public static ProductPrice ConvertToStorage(this PriceableProduct model)
+    {
+        var storage = new ProductPrice();
+
+        storage.ProductId = model.Product.MapKey;
+        storage.Price = model.Price.Value;
+        storage.FromDate = model.FromDate;
+
+        return storage;
+    }
+
+    /// <summary xml:lang="ru">
+    /// Конвертирует модель хранилища <see cref="ProductCountHistory"/> в доменную модель <see cref="ProductHistory"/>.
+    /// </summary>
+    /// <param name="storage" xml:lang="ru">Модель хранилища.</param>
+    /// <param name="mapper" xml:lang="ru">Загрузчик для сущностей справочника.</param>
+    /// <returns xml:lang="ru">Доменная модель.</returns>
+    public static ProductHistory ConvertToModel(this ProductCountHistory storage, IReferenceBookMapper mapper) => new ProductHistory(
+            mapper.MapEntity(new MappableModel<Product, long>(storage.ProductId)),
+            storage.Delta,
+            storage.AccurDate,
+            storage.WriteType == "trigger"
+                ? WriteType.Trigger
+                : WriteType.Manual,
+            storage.DocumentId ?? 0
+        );
+
+    /// <summary xml:lang="ru">
+    /// Конвертирует доменную модель <see cref="ProductHistory"/> в модель хранилища <see cref="ProductCountHistory"/>.
+    /// </summary>
+    /// <param name="model" xml:lang="ru">Доменная модель.</param>
+    /// <returns xml:lang="ru">Модель хранилища.</returns>
+    public static ProductCountHistory ConvertToStorage(this ProductHistory model)
+    {
+        var storage = new ProductCountHistory();
+
+        storage.ProductId = model.Product.MapKey;
+        storage.Delta = model.Delta;
+        storage.AccurDate = model.AccurDate;
+        storage.WriteType = "manual";
+        storage.DocumentId = null;
+        return storage;
+    }
+
+    /// <summary xml:lang="ru">
+    /// Конвертирует модель хранилища <see cref="ProductStorage"/> в доменную модель <see cref="StorageProduct"/>.
+    /// </summary>
+    /// <param name="storage" xml:lang="ru">Модель хранилища.</param>
+    /// <param name="mapper" xml:lang="ru">Загрузчик для сущностей справочника.</param>
+    /// <returns xml:lang="ru">Доменная модель.</returns>
+    public static StorageProduct ConvertToModel(this ProductStorage storage, IReferenceBookMapper mapper) => new(
+            mapper.MapEntity(new MappableModel<Product, long>(storage.ProductId!.Value)),
+            (int)storage.Sum!.Value,
+            storage.LastUpd!.Value
+        );
 }

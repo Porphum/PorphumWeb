@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -8,8 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.25" />
+    <_ContentIncludedByDefault Remove="wwwroot\images\logo\logo-white.svg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazor.Bootstrap" Version="1.10.4" />
+    <PackageReference Include="Blazorise.TreeView" Version="1.4.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.26" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.25" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.25">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.16" />
   </ItemGroup>
@@ -19,6 +29,21 @@
     <ProjectReference Include="..\PorphumReferenceBook.Logic\PorphumReferenceBook.Logic.csproj" />
     <ProjectReference Include="..\PorphumSales.Logic\PorphumSales.Logic.csproj" />
     <ProjectReference Include="..\PorphumWeb.Logic\PorphumWeb.Logic.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Pages\Admin\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\favicon.ico">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="wwwroot\favicon.png">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

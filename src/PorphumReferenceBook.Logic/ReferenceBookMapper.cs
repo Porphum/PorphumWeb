@@ -53,9 +53,7 @@ public class ReferenceBookMapper : IReferenceBookMapper
         MapEntityUsingRepository(
             mappable,
             _clientKeyableRepository,
-            loadMod: mappable.MappedEntity.IsLoaded
-                ? LoadMod.Full
-                : LoadMod.Partial
+                LoadMod.Full
         );
 
     /// <inheritdoc/>
@@ -63,8 +61,6 @@ public class ReferenceBookMapper : IReferenceBookMapper
         MapEntityUsingRepository(
             mappable,
                 _productKeyableRepository,
-                loadMod: mappable.MappedEntity.IsLoaded
-                    ? LoadMod.Full
-                    : LoadMod.Partial
+                LoadMod.Full
         );
 }

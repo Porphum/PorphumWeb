@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using PorphumReferenceBook.Logic.Storage;
 using PorphumSales.Logic.Storage;
 using PorphumWeb.Blazor;
-using PorphumWeb.Blazor.Data;
 using PorphumWeb.Logic.Models;
 using PorphumWeb.Logic.Storage;
 using PorphumWeb.Logic.Storage.Repository;
@@ -19,11 +18,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Add(IPAddress.Parse("10.0.0.100"));
 });
 
-
-
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddBlazorBootstrap();
 
 builder.Services.AddDbContext<WebContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetSection("WebConnectionString").Value));

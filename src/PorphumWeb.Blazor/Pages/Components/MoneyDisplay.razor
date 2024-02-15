@@ -1,0 +1,17 @@
+﻿@using General
+
+@Format
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public Money? Money { get; set; } = null!;
+
+    public string Format =>
+        Money is null
+            ? NullMessage
+        : string.Format("{0:0.00} ₽", Money.Value.Value);
+
+    [Parameter]
+    public string NullMessage { get; set; } = "Не определена";
+}

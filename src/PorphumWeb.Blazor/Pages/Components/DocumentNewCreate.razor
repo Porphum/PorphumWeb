@@ -1,0 +1,185 @@
+﻿@page "/documents/{type}/create"
+@using General
+@using PorphumReferenceBook.Logic.Abstractions
+@using PorphumReferenceBook.Logic.Models.Client
+@using PorphumSales.Logic.Abstractions.Models
+@using PorphumSales.Logic.Abstractions.Storage.Repository
+@using PorphumSales.Logic.Models.Document
+@using PorphumSales.Logic.Models.Mapper
+@using PorphumWeb.Blazor.Classes
+@using static PorphumWeb.Blazor.Pages.Components.ClientsFinder
+
+
+@using TEntity = PorphumSales.Logic.Storage.Models.Document;
+@using DEntity = PorphumSales.Logic.Models.Document.Document;
+
+@inject IDocumentRepository repository;
+@inject IReferenceBookMapper _referenceBookMapper;
+@inject IDocumentStateMachine _documentSateMachine;
+@inject NavigationManager Navigation
+
+<PageTitle>@PageTittle</PageTitle>
+
+<Modal @ref="clientFind" />
+<h2>
+@Tittle
+</h2>
+<br />
+<EditForm EditContext="_editContext">
+    
+    <div class="row">
+        <div class="@ViewModel.TITTLE_CLASS">
+            <b>@ClientDescription:</b>
+        </div>
+        <div class="col-2 col-md-2">
+            <ClientDisplay Entity="_viewModel.Client" NullCheck=true />
+        </div>
+        <div class="@ViewModel.VALUE_CLASS">
+            <Button Size="Size.Small"
+                    Type="ButtonType.Link"
+                    Color="ButtonColor.Dark"
+                    @onclick="() => PickClientAsync()">
+                Задать
+            </Button>
+        </div>        
+    </div>
+    <br />
+    <div class="row">
+        <div class="@ViewModel.TITTLE_CLASS">
+            <b>Номер:</b>
+        </div>
+        <div class="@ViewModel.VALUE_CLASS">
+            <InputNumber id="number" @bind-Value="_viewModel.Number" />
+        </div>
+    </div>
+    <br/>
+    <div class="row">
+        <div class="@ViewModel.TITTLE_CLASS">
+            <b>Дата:</b>
+        </div>
+        <div class="@ViewModel.VALUE_CLASS">
+            <InputDate id="date" @bind-Value="_viewModel.Date" />
+        </div>
+
+        
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Создать</button>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public string Type { get; set; }
+
+    public DocumentType CurrentDocType => (DocumentType)short.Parse(Type);
+
+    private Modal clientFind = default!;
+
+    private ToggleClass toggleItem = new();
+
+    private ViewModel _viewModel = new();
+
+    private EditContext? _editContext;
+
+    public string PageTittle => "Создание накладной";
+
+    public string Tittle => string.Format(
+        "Создание {0} накладной",
+        CurrentDocType switch
+        {
+            DocumentType.Prihod => "приходной",
+            DocumentType.Rashod => "расходной",
+            _ => "неопределённой"
+        }
+    );
+
+    public string ClientDescription => CurrentDocType switch
+    {
+        DocumentType.Prihod => "Продавец:",
+        DocumentType.Rashod => "Покупатель:",
+        _ => "Ошибка:"
+    };
+
+    private async Task PickClientAsync()
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("OnClickCallback", EventCallback.Factory.Create<ClientFindEventArgs>(this, ProductAsync));
+        await clientFind.ShowAsync<ClientsFinder>(title: "Выбрать клиента:", parameters: parameters);
+    }
+
+    private async Task ProductAsync(ClientFindEventArgs client)
+    {
+        _viewModel.Client = client.Entity;
+        await clientFind.HideAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+    }
+
+    private async Task Submit(EditContext _context)
+    {
+        var header = CurrentDocType switch
+        {
+            DocumentType.Prihod => new DocumentHeader(
+                _viewModel.Number,
+                _viewModel.Date,
+                _referenceBookMapper.MapEntity(new MappableModel<Client, long>(_viewModel.Client.Key)),
+                repository.Config.Master
+            ),
+            DocumentType.Rashod => new DocumentHeader(
+                _viewModel.Number,
+                _viewModel.Date,
+                repository.Config.Master,
+                _referenceBookMapper.MapEntity(new MappableModel<Client, long>(_viewModel.Client.Key))
+            ),
+            _ => throw new InvalidOperationException()
+        };
+
+        var price = new DEntity(
+            0,
+            header,
+            CurrentDocType,
+            DocumentState.Init,
+            new DocumentFill()
+        );
+
+        var result = _documentSateMachine.GoToState(ref price, DocumentState.Fill);
+
+        if (!result)
+        {
+            return;
+        }
+
+        repository.Add(price);
+
+        Navigation.NavigateTo($"documents/{Type}");
+    }
+
+    protected override void OnInitialized()
+    {
+        var config = repository.Config;
+
+        if (config is null || config.Master.MapState != MapState.Success)
+        {
+            throw new InvalidOperationException();
+        }
+
+        _editContext = new(_viewModel);
+    }
+
+    public class ViewModel
+    {
+        public static string TITTLE_CLASS = "col-1 col-md-1";
+        public static string VALUE_CLASS = "col-5 col-md-5";
+
+        public Client Client { get; set; }
+
+        public DateTime Date { get; set; } = DateTime.Now;
+
+        public int Number { get; set; }
+    }
+}

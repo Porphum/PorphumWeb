@@ -26,6 +26,10 @@ public abstract class BaseQueryRepository<TModel, TStorageModel> : IQueryableRep
 
         data = query.ApplyParam(data);
 
+        var debug = data.ToList();
+
         return data.ToList().Select(x => ConvertFromStorage(x)).AsEnumerable();
     }
+
+    public int GetLimit() => GetInitQuery().Count();
 }

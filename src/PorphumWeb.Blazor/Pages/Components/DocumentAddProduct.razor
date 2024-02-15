@@ -1,0 +1,81 @@
+﻿@using General
+@using General.Abstractions.Models
+@using PorphumReferenceBook.Logic.Abstractions
+@using PorphumReferenceBook.Logic.Models.Client
+@using PorphumReferenceBook.Logic.Models.Product
+@using PorphumSales.Logic.Abstractions.Models
+@using PorphumSales.Logic.Abstractions.Storage.Repository
+@using PorphumSales.Logic.Models
+@using PorphumSales.Logic.Models.Document
+@using PorphumSales.Logic.Models.Mapper
+@using PorphumWeb.Blazor.Classes
+
+@inject IReferenceBookMapper _referenceBookMapper;
+
+@using TEntity = PorphumSales.Logic.Storage.Models.Document;
+@using DEntity = PorphumSales.Logic.Models.Document.Document;
+
+<EditForm EditContext="_editContext">
+
+    <div class="row">
+        <div class="@AddProductEventArgs.TITTLE_CLASS">
+            <b>Наименование:</b>
+        </div>
+        <div class="@AddProductEventArgs.VALUE_CLASS">
+            <MapProduct Entity="_viewModel.Product" />
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="@AddProductEventArgs.TITTLE_CLASS">
+            <b>Колличество:</b>
+        </div>
+        <div class="@AddProductEventArgs.VALUE_CLASS">
+            <InputNumber id="number" @bind-Value="_viewModel.Quantity" />
+        </div>
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Добавить</button>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public EventCallback<AddProductEventArgs> OnClickCallback { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public long ProductId { get; set; }
+
+    private AddProductEventArgs _viewModel = new();
+
+    private EditContext? _editContext;
+
+    protected override void OnParametersSet()
+    {
+        _viewModel.Product = _referenceBookMapper.MapEntity(
+            new MappableModel<Product, long>(ProductId)
+        );
+    }
+
+    private async Task Submit(EditContext _context)
+    {
+        await OnClickCallback.InvokeAsync(_viewModel);
+    }
+
+    protected override void OnInitialized()
+    {
+        _editContext = new(_viewModel);
+    }
+
+    public class AddProductEventArgs : MouseEventArgs
+    {
+        public static string TITTLE_CLASS = "col-5 col-md-5";
+        public static string VALUE_CLASS = "col-5 col-md-5";
+
+        public IMappableModel<Product, long> Product { get; set; }
+
+        public int Quantity { get; set; }
+    }
+}

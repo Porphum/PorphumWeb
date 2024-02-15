@@ -1,0 +1,181 @@
+﻿@page "/sales/prices"
+@using BlazorBootstrap;
+@using General.Abstractions.Models;
+@using General.Abstractions.Storage.Query;
+@using General;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+@using PorphumReferenceBook.Logic.Abstractions;
+@using PorphumReferenceBook.Logic.Storage.Repository.Query;
+@using PorphumSales.Logic.Abstractions.Storage.Repository;
+
+@using PorphumSales.Logic.Models.Mapper;
+@using PorphumWeb.Blazor.Classes
+@using PorphumWeb.Blazor.Pages.Components
+@using TEntity = PorphumSales.Logic.Storage.Models.ProductPrice;
+@using DEntity = PorphumSales.Logic.Models.Sales.PriceableProduct;
+@using DProduct = PorphumReferenceBook.Logic.Models.Product.Product;
+@using static PorphumWeb.Blazor.Pages.Components.ProductFinder
+
+@inject IPriceRepository repository;
+@inject IReferenceBookMapper _referenceBookMapper;
+@inject ISalesQueryParamFactory paramFactory;
+
+<PageTitle>Цены</PageTitle>
+<Modal @ref="productFind" />
+<br />
+<Button Type="ButtonType.Button" Color="ButtonColor.Dark" @onclick="@(() => toggleItem.ToggleAsync())">@toggleItem.ButtonTittle</Button>
+<Collapse @ref=toggleItem.CollapseItem
+          OnHiding="toggleItem.OnHiddenCallback"
+          OnShown="toggleItem.OnShownCallback">
+<hr/>
+<EditForm EditContext="_editContext">
+     <br />
+    <div class="row">
+            <div class="@ViewModel.TITTLE_CLASS">
+                    <b>Наименование:</b>
+            </div>
+                <div class="@ViewModel.VALUE_CLASS">
+                <ProductDisplay  Entity="@_view.Product" NullCheck=true />
+            </div>
+            <div class="col-3 col-md-3">
+                    <Button Size="Size.Small"
+                            Type="ButtonType.Link"
+                            Color="ButtonColor.Dark"
+                            @onclick="() => PickProductAsync()">
+                        Задать
+                    </Button>
+            </div>
+    </div>
+    <br />
+    <div class="row">
+                <div class="@ViewModel.TITTLE_CLASS">
+            <b>Цена:</b>
+        </div>
+                <div class="@ViewModel.VALUE_CLASS">
+            <CurrencyInput 
+                TValue="decimal" 
+                Locale="ru-RU"
+                id="price" 
+                @bind-Value="_view.Price" />
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="@ViewModel.TITTLE_CLASS">
+            <b>С даты:</b>
+        </div>
+        <div class="@ViewModel.VALUE_CLASS">
+            <DateInput TValue="DateTime" id="from-date" @bind-Value="_view.From" />
+        </div>
+    </div>
+    <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="@(() => Submit(_editContext))"> Добавить </Button>
+</EditForm>
+</Collapse>
+<br/>
+<hr/>
+<Grid @ref="gridItem.Grid"
+      TItem="DEntity"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="GridDataProvider"
+      ItemsPerPageText="some text"
+      PageSizeSelectorItems="new int[] {1}"
+      PaginationItemsTextFormat=""
+      AllowPaging="true"
+      AllowRowClick="false"
+      EmptyText="Нет данных"
+      PageSize="GridClass.PAGE_SIZE"
+      Responsive="true">
+
+    <GridColumn TItem="DEntity" HeaderText="Id">
+        <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@context.Product" />
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="Цена">
+        <MoneyDisplay Money="@context.Price" />
+    </GridColumn>
+    <GridColumn TItem="DEntity" HeaderText="С даты">
+        @context.FromDate
+    </GridColumn>
+</Grid>
+
+@code {
+    private Modal productFind = default!;
+    private GridClass gridItem = new();
+    private ToggleClass toggleItem = new(showTittle: "Добавить цену");
+
+    private DEntity[]? entities;
+
+    private EditContext? _editContext;
+
+    private ViewModel _view = new();
+
+    private async Task PickProductAsync()
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("OnClickCallback", EventCallback.Factory.Create<ProductFindEventArgs>(this, ProductAsync));
+        await productFind.ShowAsync<ProductFinder>(title: "Выбрать клиента:", parameters: parameters);
+    }
+
+    private async Task ProductAsync(ProductFindEventArgs product)
+    {
+        await productFind.HideAsync();
+        _view.Product = product.Entity;
+    }
+
+    private async Task Submit(EditContext _context)
+    {
+        var entity = new DEntity(
+            _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.Product.Key)),
+            new Money(_view.Price),
+            _view.From
+        );
+
+        repository.AddNewPrice(entity);
+        _view = new();
+        await toggleItem.CollapseItem.HideAsync();
+
+        await gridItem.Grid.RefreshDataAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        _editContext = new(_view);
+    }
+
+    public async Task<GridDataProviderResult<DEntity>> GridDataProvider(GridDataProviderRequest<DEntity> request)
+    {
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
+
+        var config = new ProductsPricesParamConfig()
+            {
+                Skip = skip,
+                Limit = limit
+            };
+
+        var query = (paramFactory as IQueryParamsFactory<ProductsPricesParamType, ProductsPricesParamConfig, TEntity>).InitQuery(config);
+
+        return await Task.FromResult(new GridDataProviderResult<DEntity>
+        {
+            Data = repository.GetByQuery(query),
+            TotalCount = repository.GetLimit()
+        });
+    }
+
+    public class ViewModel
+    {
+        public static string TITTLE_CLASS = "col-1 col-md-1";
+        public static string VALUE_CLASS = "col-3 col-md-3";
+
+        public DProduct Product { get; set; }
+        public DateTime From { get; set; } = DateTime.Now;
+        public decimal Price { get; set; } = 0;
+    }
+
+    public class GridClass
+    {
+        public static readonly int PAGE_SIZE = 5;
+
+        public Grid<DEntity> Grid { get; set; } = default!;
+    }
+}

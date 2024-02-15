@@ -1,0 +1,82 @@
+﻿@using General.Abstractions.Storage;
+@using General.Abstractions.Storage.Query;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
+@using PorphumReferenceBook.Logic.Models.Product;
+@using PorphumReferenceBook.Logic.Storage.Repository.Query;
+@using PorphumSales.Logic.Abstractions.Storage.Repository;
+@using PorphumSales.Logic.Models.Sales;
+@using PorphumSales.Logic.Storage.Models;
+
+@inject IStorageRepository repository;
+@inject ISalesQueryParamFactory paramFactory;
+@inject NavigationManager Navigation
+
+@page "/sales/storage"
+
+<PageTitle>Склад</PageTitle>
+
+<h2>Склад</h2>
+<br />
+<Grid @ref="gridItem.Grid"
+      TItem="StorageProduct"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="GridDataProvider"
+      ItemsPerPageText="some text"
+      PageSizeSelectorItems="new int[] {1}"
+      PaginationItemsTextFormat=""
+      AllowPaging="true"
+      EmptyText="Нет данных"
+      PageSize="GridClass.PAGE_SIZE"
+      Responsive="true">
+
+    <GridColumn TItem="StorageProduct" HeaderText="Наименование">
+        <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@context.Product" />
+    </GridColumn>
+    <GridColumn TItem="StorageProduct" HeaderText="Количество">
+        @context.Count
+    </GridColumn>
+    <GridColumn TItem="StorageProduct" HeaderText="Дата изменения">
+        @context.LastUpdate
+    </GridColumn>
+    <GridColumn TItem="StorageProduct" HeaderText="История">
+        <Button Size="Size.Small"
+                Type="ButtonType.Link"
+                Color="ButtonColor.Primary"
+                @onclick="@(()=>Navigation.NavigateTo($"sales/history/{context.Product.MapKey}"))">
+            Посмотреть
+        </Button>
+    </GridColumn>
+</Grid>
+
+
+@code {
+    private GridClass gridItem = new();
+
+    public async Task<GridDataProviderResult<StorageProduct>> GridDataProvider(GridDataProviderRequest<StorageProduct> request)
+    {
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
+
+        var config = new ProductsStoragesParamConfig()
+            {
+                Skip = skip,
+                Limit = limit
+            };
+
+        var query = (paramFactory as IQueryParamsFactory<ProductsStoragesParamType, ProductsStoragesParamConfig, ProductStorage>).InitQuery(config);
+
+        return await Task.FromResult(new GridDataProviderResult<StorageProduct>
+            {
+                Data = repository.GetByQuery(query),
+                TotalCount = (repository as IQueryableRepository<StorageProduct, ProductStorage>).GetLimit()
+            });
+    }
+
+    public class GridClass
+    {
+        public static readonly int PAGE_SIZE = 5;
+
+        public Grid<StorageProduct> Grid { get; set; } = default!;
+    }
+}

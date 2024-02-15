@@ -1,0 +1,22 @@
+﻿@using General.Abstractions.Models;
+@using PorphumReferenceBook.Logic.Models.Product;
+
+@if (Entity.MapState == General.MapState.Success)
+{
+    <ProductDisplay Entity="Entity.MappedEntity" />
+}
+else if (Entity.MapState == General.MapState.MapError)
+{
+    @($"Ошибка загрузки по ключу: {Entity.MapKey}")
+}
+else if (Entity.MapState == General.MapState.Success)
+{
+    @($"Передана незагруженная сущность; Ключ: {Entity.MapKey}")
+}
+
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public IMappableModel<Product, long> Entity { get; set; } = null!;
+}

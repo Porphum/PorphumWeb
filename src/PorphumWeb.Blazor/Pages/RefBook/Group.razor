@@ -3,41 +3,59 @@
 @using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 @using PorphumReferenceBook.Logic.Models.Product;
 
-@inject IProductGroupRepository productGroupRepository;
+@inject IProductGroupRepository repository;
 @inject NavigationManager Navigation
 
 @using DProduct = PorphumReferenceBook.Logic.Models.Product.ProductGroup;
 
 <PageTitle>@Title</PageTitle>
-
+<ConfirmDialog @ref="dialog" />
+<br />
 <div class="row">
-    <h2>
-        <p>
-            Main Info
-        </p>
+    <div class=row>
+        <div class="col-2 col-md-2">
+            <h2>@Title</h2>
+        </div>
         @if (_viewModel.isEdit)
         {
-            <button type="submit" class="btn btn-primary" @onclick="@(() => Delete(_editContext))">Delete</button>
+            <div class="col-3 col-md-3">
+                <Button Type="ButtonType.Submit" Color="ButtonColor.Danger" @onclick="@(() => DeleteAsync(_editContext))"> Удалить </Button>
+            </div>
         }
-    </h2>
+    </div>
     <EditForm EditContext="_editContext">
+        <br />
         <input type="hidden" @bind-value="_viewModel.isEdit" />
         @if (_viewModel.isEdit)
         {
-            <p>
-                Id:<br />
-                <InputNumber id="name" @bind-Value="_viewModel.Key" readonly="readonly" />
-            </p>
+            <div class="row">
+                <div class="@ViewModel.TITTLE_CLASS">
+                    <b>Id</b>
+                </div>
+                <div class="@ViewModel.VALUE_CLASS">
+                    <InputNumber id="id" @bind-Value="_viewModel.Key" readonly="readonly" />
+                </div>
+                
+            </div>
         }
-        <p>
-            Name:<br />
-            <InputText id="name" @bind-Value="_viewModel.Name" />
-        </p>
-        <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Save</button>
+        <br/>
+        <div class="row">
+            <div class="@ViewModel.TITTLE_CLASS">
+                <b>Название</b>
+            </div>
+            <div class="@ViewModel.VALUE_CLASS">
+                <InputText id="name" @bind-Value="_viewModel.Name" />
+            </div>
+        </div>
+        <hr />
+        <br/>
+        <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="@(() => Submit(_editContext))"> Сохранить </Button>
     </EditForm>
 </div>
 
 @code {
+    private ConfirmDialog dialog = default!;
+
     public string Title { get; set; } = "Default tittle";
     [Parameter]
     [EditorRequired]
@@ -48,18 +66,18 @@
 
     private EditContext? _editContext;
     private ViewModel _viewModel = new();
-    
+
     protected override void OnInitialized()
     {
         if (Type == "create")
         {
-            Title = "Add new Group";
+            Title = "Добавить новую группу";
         }
         else if (Type == "edit")
         {
-            Title = "Edit Group";
+            Title = "Группа";
 
-            var product = productGroupRepository.GetByKey(ProductId ?? throw new InvalidOperationException()) ?? throw new InvalidOperationException();
+            var product = repository.GetByKey(ProductId ?? throw new InvalidOperationException()) ?? throw new InvalidOperationException();
 
             _viewModel = new()
                 {
@@ -76,13 +94,23 @@
         _editContext = new(_viewModel);
     }
 
-    private void Delete(EditContext formContext)
+    private async void DeleteAsync(EditContext formContext)
     {
         if (_viewModel.isEdit)
         {
-            var product = productGroupRepository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
+            var entity = repository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
 
-            productGroupRepository.Delete(product);
+            var confirmation = await dialog.ShowAsync(
+                title: "Вы уверены, что вы хотите удалть?",
+                message1: "После удаления нельзя будет вернуться.",
+                message2: "Выполнить?");
+
+            if (!confirmation)
+            {
+                return;
+            }
+            
+            repository.Delete(entity);
 
             Navigation.NavigateTo("refbook/groups");
             return;
@@ -95,14 +123,14 @@
     {
         if (_viewModel.isEdit)
         {
-            var product = productGroupRepository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
+            var product = repository.GetByKey(_viewModel.Key) ?? throw new InvalidOperationException();
 
             var newProduct = new DProduct(
                 product.Key,
                 _viewModel.Name ?? throw new InvalidOperationException()
             );
 
-            productGroupRepository.Update(newProduct);
+            repository.Update(newProduct);
         }
         else
         {
@@ -111,7 +139,7 @@
                 _viewModel.Name ?? throw new InvalidOperationException()
             );
 
-            productGroupRepository.Add(newProduct);
+            repository.Add(newProduct);
         }
 
         Navigation.NavigateTo("refbook/groups");
@@ -119,6 +147,9 @@
 
     public class ViewModel
     {
+        public static string TITTLE_CLASS = "col-1 col-md-1";
+        public static string VALUE_CLASS = "col-5 col-md-5";
+
         public bool isEdit { get; set; } = false;
 
         public int Key { get; set; }

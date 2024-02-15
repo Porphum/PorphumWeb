@@ -1,0 +1,116 @@
+﻿@page "/sales/master"
+@using BlazorBootstrap;
+@using General.Abstractions.Models;
+@using General.Abstractions.Storage.Query;
+@using General;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query;
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
+@using PorphumReferenceBook.Logic.Abstractions;
+@using PorphumReferenceBook.Logic.Models.Client;
+@using PorphumReferenceBook.Logic.Storage.Repository.Query;
+@using PorphumSales.Logic.Abstractions.Storage.Repository;
+
+@using PorphumSales.Logic.Models.Mapper;
+@using PorphumWeb.Blazor.Pages.Components
+@using TEntity = PorphumSales.Logic.Storage.Models.ProductPrice;
+@using DEntity = PorphumSales.Logic.Models.Document.DocumentConfig;
+@using DProduct = PorphumReferenceBook.Logic.Models.Client.Client;
+@using static PorphumWeb.Blazor.Pages.Components.ClientsFinder
+
+@inject IDocumentRepository repository;
+@inject IReferenceBookMapper _referenceBookMapper;
+
+<PageTitle>Master</PageTitle>
+
+<Modal @ref="clientFind" />
+
+<br/>
+<EditForm EditContext="_editContext">
+    <div class="row">
+        @if (MasterClient is not null)
+        {
+            <div class="col-2 col-md-2">
+                <h3><b>Master Клиент</b></h3>
+            </div>
+            <div class="col-5 col-md-5">
+                <PorphumWeb.Blazor.Pages.Components.MapClient Entity="@MasterClient" />
+            </div>
+        }
+        else
+        {
+            <div class="col-2 col-md-2">
+                Master Клиент не задан
+            </div>
+        }
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-5 col-md-5">
+            <Button Size="Size.Small"
+                    Type="ButtonType.Link"
+                    Color="ButtonColor.Dark"
+                    @onclick="() => PickClientAsync()">
+                Задать
+            </Button>
+        </div>
+        
+        
+    </div>
+    <hr />
+    <br />
+    <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="@(() => Submit(_editContext))"> Сохранить </Button>
+</EditForm>
+
+@code {
+    private Modal clientFind = default!;
+
+    private IMappableModel<Client, long>? MasterClient { get; set; }
+
+    private EditContext? _editContext;
+
+    private ViewModel _view = new();
+
+    private async Task PickClientAsync()
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("OnClickCallback", EventCallback.Factory.Create<ClientFindEventArgs>(this, ProductAsync));
+        await clientFind.ShowAsync<ClientsFinder>(title: "Выбрать клиента:", parameters: parameters);
+    }
+    
+    private async Task ProductAsync(ClientFindEventArgs client)
+    {
+        _view.Client = client.Entity;
+        await clientFind.HideAsync();
+
+        MasterClient = _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.Client.Key));
+    }
+
+    private void Submit(EditContext _context)
+    {
+        var entity = new DEntity(
+            0,
+            _referenceBookMapper.MapEntity(new MappableModel<DProduct, long>(_view.Client.Key))
+        );
+
+
+        repository.Config = entity;
+    }
+
+    protected override void OnInitialized()
+    {
+        var config = repository.Config;
+
+        if (config is not null && config.Master.MapState == MapState.Success)
+        {
+            _view.Client = config.Master.MappedEntity;
+            MasterClient = config.Master;
+        }
+
+        _editContext = new(_view);
+    }
+
+    public class ViewModel
+    {
+        public Client Client { get; set; }
+    }
+}
