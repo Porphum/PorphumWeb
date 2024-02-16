@@ -1,0 +1,57 @@
+﻿@using PorphumSales.Logic.Models.Sales
+
+<Card Style="padding:1rem">
+    <CardTitle>
+        @($"На {OnDate.ToString("dd/MM/yyy")}")
+    </CardTitle>
+    <CardBody>
+        <div class="row">
+            @if(Product.Price is null)
+            {
+                <div class=@VALUE_CLASS>
+                    Цена не указана.
+                </div>
+            }
+            else
+            {
+                <div class=@TITTLE_CLASS>
+                    Цена:
+                </div>
+                <div class=@VALUE_CLASS>
+                    <MoneyDisplay Money="Product.Price" />
+                </div>
+            }
+        </div>
+        <div class="row">
+            @if (Product.Quantity is null)
+            {
+                <div class=@VALUE_CLASS>
+                    Нет на складе.
+                </div>
+            }
+            else
+            {
+                <div class=@TITTLE_CLASS>
+                    Количество:
+                </div>
+                <div class=@VALUE_CLASS>
+                    @Product.Quantity
+                </div>
+            }
+        </div>
+    </CardBody>
+</Card>
+
+@code {
+    public static string TITTLE_CLASS = "col-5 col-md-5";
+    public static string VALUE_CLASS = "col-5 col-md-5";
+
+    [Parameter]
+    [EditorRequired]
+    public StateFullProduct Product { get; set; } = default!;
+
+    [Parameter]
+    public DateTime OnDate { get; set; } = DateTime.Now;
+
+    
+}

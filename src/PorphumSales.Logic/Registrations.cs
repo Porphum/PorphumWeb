@@ -23,4 +23,8 @@ public static class Registrations
     public static IServiceCollection AddSalesDocumentLogic(this IServiceCollection services) =>
         services
             .AddScoped<IDocumentStateMachine, DocumentStateMachine>();
+
+    public static IServiceCollection AddSalesProductsLogic(this IServiceCollection services) =>
+        services
+            .AddScoped<IProductStatePicker, ProductStatePicker>();
 }

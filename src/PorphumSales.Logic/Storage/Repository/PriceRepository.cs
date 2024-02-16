@@ -1,6 +1,7 @@
 ﻿using General.Models.Query;
 using Microsoft.EntityFrameworkCore;
 using PorphumReferenceBook.Logic.Abstractions;
+using PorphumReferenceBook.Logic.Models.Product;
 using PorphumSales.Logic.Abstractions.Storage;
 using PorphumSales.Logic.Abstractions.Storage.Repository;
 using PorphumSales.Logic.Models.Extensions;
@@ -57,6 +58,20 @@ public class PriceRepository : BaseQueryRepository<PriceableProduct, ProductPric
         _repositoryContext.SaveChanges();
     }
 
+    public PriceableProduct? GetPrice(Product product, DateTime? onDate)
+    {
+        var date = onDate ?? DateTime.Now;
+        var price = _repositoryContext.ProductsPrices
+            .OrderByDescending(x => x.FromDate)
+            .FirstOrDefault(x => x.ProductId == product.Key && x.FromDate <= date);
+
+        if (price is null)
+        {
+            return null;
+        }
+
+        return ConvertFromStorage(price);
+    }
     protected override PriceableProduct ConvertFromStorage(ProductPrice storage) => storage.ConvertToModel(_referenceBookMapper);
 
     protected override IQueryable<ProductPrice> GetInitQuery() => _repositoryContext.ProductsPrices

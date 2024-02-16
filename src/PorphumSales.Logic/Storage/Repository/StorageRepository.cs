@@ -1,6 +1,7 @@
 ﻿using General.Abstractions.Storage.Query;
 using General.Models.Query;
 using PorphumReferenceBook.Logic.Abstractions;
+using PorphumReferenceBook.Logic.Models.Product;
 using PorphumSales.Logic.Abstractions.Storage;
 using PorphumSales.Logic.Abstractions.Storage.Repository;
 using PorphumSales.Logic.Models.Extensions;
@@ -39,5 +40,17 @@ public class StorageRepository : BaseQueryRepository<StorageProduct, ProductStor
             .Where(x => productsId.ToArray().Contains(x.ProductId!.Value));
 
         return state.ToDictionary(x => x.ProductId!.Value, x => x.Sum!.Value);
+    }
+
+    public StorageProduct? GetProductState(Product product)
+    {
+        var store = _context.ProductsStorages.SingleOrDefault(x => x.ProductId == product.Key);
+
+        if (store is null)
+        {
+            return null;
+        }
+
+        return ConvertFromStorage(store);
     }
 }

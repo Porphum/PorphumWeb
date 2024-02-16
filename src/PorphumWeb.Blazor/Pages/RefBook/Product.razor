@@ -6,13 +6,16 @@
 @inject IProductRepository repository;
 @inject IProductGroupRepository productGroupRepository;
 @inject NavigationManager Navigation
+@inject IProductStatePicker statePicker;
 
 @using DEntity = PorphumReferenceBook.Logic.Models.Product.Product;
+@using PorphumSales.Logic.Abstractions.Models
+@using PorphumSales.Logic.Models.Sales
 @using PorphumWeb.Blazor.Classes
 
 <PageTitle>@Title</PageTitle>
 <ConfirmDialog @ref="dialog" />
-
+    <br />
 <div class=row>
     <div class="col-4 col-md-4">
         <h2>@Title</h2>
@@ -27,6 +30,8 @@
 <div class="row">
     <EditForm EditContext="_editContext">
         <br />
+        <div class="row">
+            <div class="col-7 col-md-7">
         <input type="hidden" @bind-value="_viewModel.isEdit" />
         @if (_viewModel.isEdit)
         {
@@ -66,6 +71,14 @@
                 </InputSelect>
             </div>
         </div>
+            </div>
+            @if (_viewModel.isEdit)
+            {
+                <div class="col-3 col-md-3">
+                    <PorphumWeb.Blazor.Pages.Components.ProductState Product="State" />
+                </div>
+            }
+        </div>
         <hr />
         <br />
         <div class=row>
@@ -104,9 +117,12 @@
     </EditForm>
 </div>
 
-@code {
+    @code {
     private ConfirmDialog dialog = default!;
     private ToggleClass toggleItem = new(showTittle: "Показать");
+    private EditContext? _editContext;
+    private ViewModel _viewModel = new();
+    private IEnumerable<ProductGroup> _groups = Enumerable.Empty<ProductGroup>();
 
     public string Title { get; set; } = "Default tittle";
     [Parameter]
@@ -114,11 +130,10 @@
     public string Type { get; set; } = null!;
 
     [Parameter]
-    public long? ProductId { get; set; } = null!; 
+    public long? ProductId { get; set; } = null!;
 
-    private EditContext? _editContext;
-    private ViewModel _viewModel = new();
-    private IEnumerable<ProductGroup> _groups = Enumerable.Empty<ProductGroup>();
+    public StateFullProduct State { get; set; } = default!;
+
 
     protected override void OnInitialized()
     {
@@ -133,6 +148,8 @@
             Title = "Наименование";
 
             var product = repository.GetByKey(ProductId ?? throw new InvalidOperationException()) ?? throw new InvalidOperationException();
+
+            State = statePicker.PickState(product);
 
             _viewModel = new()
             {

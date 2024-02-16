@@ -14,7 +14,8 @@ public static class Registrations
     public static IServiceCollection AddSalesServices(this IServiceCollection services, IConfiguration configuration) =>
         services
             .AddSalesStorage()
-            .AddSalesDocumentLogic();
+            .AddSalesDocumentLogic()
+            .AddSalesProductsLogic();
 
     public static IServiceCollection AddWebServices(this IServiceCollection services, IConfiguration configuration) => services.AddIdentityStorage();
 }

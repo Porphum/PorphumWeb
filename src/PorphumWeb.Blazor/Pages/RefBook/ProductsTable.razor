@@ -62,7 +62,7 @@
 
     public void RowClick(GridRowEventArgs<DProduct> args)
     {
-        Navigation.NavigateTo($"refbook/products/{args.Item.Key}");
+        Navigation.NavigateTo($"refbook/product/edit/{args.Item.Key}");
     }
 
     protected override async Task OnParametersSetAsync()
