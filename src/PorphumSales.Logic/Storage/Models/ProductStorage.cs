@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace PorphumSales.Logic.Storage.Models;
+﻿namespace PorphumSales.Logic.Storage.Models;
 
 public partial class ProductStorage
 {

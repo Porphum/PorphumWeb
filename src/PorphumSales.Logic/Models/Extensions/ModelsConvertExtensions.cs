@@ -1,21 +1,21 @@
-﻿using PorphumSales.Logic.Models.Mapper;
-using PorphumReferenceBook.Logic.Models.Client;
+﻿using PorphumReferenceBook.Logic.Models.Client;
+using PorphumSales.Logic.Models.Mapper;
 
 namespace PorphumSales.Logic.Models.Extensions;
 
+using General;
+using PorphumReferenceBook.Logic.Abstractions;
+using PorphumReferenceBook.Logic.Models.Product;
 using PorphumSales.Logic.Models.Document;
-using TDocument = Storage.Models.Document;
-using TDocumentsRow = Storage.Models.DocumentsRow;
-using TDocumentConfig = Storage.Models.DocumentConfig;
-using ProductPrice = Storage.Models.ProductPrice;
-using ProductStorage = Storage.Models.ProductStorage;
-using ProductCountHistory = Storage.Models.ProductCountHistory;
+using PorphumSales.Logic.Models.Sales;
 using DocumentStateId = Storage.Models.DocumentStateId;
 using DocumentTypeId = Storage.Models.DocumentTypeId;
-using PorphumReferenceBook.Logic.Models.Product;
-using PorphumReferenceBook.Logic.Abstractions;
-using General;
-using PorphumSales.Logic.Models.Sales;
+using ProductCountHistory = Storage.Models.ProductCountHistory;
+using ProductPrice = Storage.Models.ProductPrice;
+using ProductStorage = Storage.Models.ProductStorage;
+using TDocument = Storage.Models.Document;
+using TDocumentConfig = Storage.Models.DocumentConfig;
+using TDocumentsRow = Storage.Models.DocumentsRow;
 
 public static class ModelsConvertExtensions
 {
@@ -26,7 +26,7 @@ public static class ModelsConvertExtensions
     /// <param name="mapper" xml:lang="ru">Загрузчик для сущностей справочника.</param>
     /// <param name="isFullLoad" xml:lang="ru">Флаг полной загрузки модели.</param>
     /// <returns xml:lang="ru">Доменная модель.</returns>
-    public static Document ConvertToModel(this TDocument storage, IReferenceBookMapper mapper, bool isFullLoad = true) => 
+    public static Document ConvertToModel(this TDocument storage, IReferenceBookMapper mapper, bool isFullLoad = true) =>
         !isFullLoad
             ? new Document(
             storage.Id,
@@ -89,9 +89,9 @@ public static class ModelsConvertExtensions
     public static SaleProduct ConvertToModel(this TDocumentsRow storage, IReferenceBookMapper mapper)
     {
         return new SaleProduct(
-            mapper.MapEntity(new MappableModel<Product, long>(storage.ProductId)), 
-            //new General.Money(storage.Cost),
-            storage.Quantity
+            mapper.MapEntity(new MappableModel<Product, long>(storage.ProductId)),
+            storage.Quantity,
+            new General.Money(storage.Cost)
         );
     }
 
@@ -106,8 +106,8 @@ public static class ModelsConvertExtensions
 
         storage.ProductId = model.Product.MapKey;
         storage.Quantity = model.Quantity;
-        storage.Cost = 1;
-
+        storage.Cost = model.Price.Value;
+        
         return storage;
     }
 
@@ -136,7 +136,7 @@ public static class ModelsConvertExtensions
 
         storage.Id = model.Key;
         storage.MasterId = model.Master.MapKey;
-        
+
         return storage;
     }
 

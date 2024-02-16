@@ -1,5 +1,4 @@
-﻿using Castle.DynamicProxy.Generators;
-using General;
+﻿using General;
 using General.Models.Query;
 using Microsoft.EntityFrameworkCore;
 using PorphumReferenceBook.Logic.Abstractions;
@@ -173,12 +172,14 @@ public class DocumentRepository : BaseQueryRepository<Document, TDocument>, IDoc
         oldDocument.StatusId = storage.StatusId;
         oldDocument.ClientWhoId = storage.ClientWhoId;
         oldDocument.ClientWhoId = storage.ClientWhoId;
-        oldDocument.DocumentsRows = storage.DocumentsRows.Select(x => {
+        oldDocument.DocumentsRows = storage.DocumentsRows.Select(x =>
+        {
             var row = _repositoryContext.DocumentsRows.SingleOrDefault(xx => xx.ProductId == x.ProductId && xx.DocumentId == x.DocumentId);
-            
+
             if (row is not null)
             {
                 row.Quantity = x.Quantity;
+                row.Cost = x.Cost;
                 x = row;
             }
 
@@ -191,8 +192,8 @@ public class DocumentRepository : BaseQueryRepository<Document, TDocument>, IDoc
     }
 
     /// <inheritdoc/>
-    public DocumentConfig? Config 
-    { 
+    public DocumentConfig? Config
+    {
         get
         {
             var storage = _repositoryContext.Configs
@@ -241,5 +242,5 @@ public class DocumentRepository : BaseQueryRepository<Document, TDocument>, IDoc
 
     protected override Document ConvertFromStorage(TDocument storage) => ValidateCurrentState(storage.ConvertToModel(_referenceBookMapper, true));
 
-    protected override IQueryable<TDocument> GetInitQuery() => _repositoryContext.Documents.AsNoTracking().AsQueryable();
+    protected override IQueryable<TDocument> GetInitQuery() => _repositoryContext.Documents.Include(x => x.DocumentsRows).AsNoTracking().AsQueryable();
 }

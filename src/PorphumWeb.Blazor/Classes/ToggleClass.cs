@@ -9,7 +9,7 @@ public class ToggleClass
 
     private readonly string _hideTittle;
     private readonly string _showTittle;
-    
+
     public ToggleClass(string? showTittle = null, string? hideTittle = null)
     {
         _hideTittle = hideTittle ?? HIDE_BUTTON_TITTLE;

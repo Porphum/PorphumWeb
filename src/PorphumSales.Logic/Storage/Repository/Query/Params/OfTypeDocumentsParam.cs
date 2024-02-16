@@ -3,8 +3,8 @@ using PorphumSales.Logic.Models.Document;
 
 namespace PorphumSales.Logic.Storage.Repository.Query.Params;
 
-using TDocument = Models.Document;
 using TDocuemntType = Models.DocumentTypeId;
+using TDocument = Models.Document;
 
 public class OfTypeDocumentsParam : IQueryParam<TDocument>
 {

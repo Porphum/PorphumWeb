@@ -1,6 +1,5 @@
 ﻿using General.Abstractions.Storage.Query;
 using PorphumReferenceBook.Logic.Storage.Models;
-using System.Linq;
 
 namespace PorphumReferenceBook.Logic.Storage.Repository.Query.Params;
 

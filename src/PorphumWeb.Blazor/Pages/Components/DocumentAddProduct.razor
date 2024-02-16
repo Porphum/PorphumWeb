@@ -28,10 +28,21 @@
     <br />
     <div class="row">
         <div class="@AddProductEventArgs.TITTLE_CLASS">
-            <b>Колличество:</b>
+            <b>Количество:</b>
         </div>
         <div class="@AddProductEventArgs.VALUE_CLASS">
-            <InputNumber id="number" @bind-Value="_viewModel.Quantity" />
+            <InputNumber @bind-Value="_viewModel.Quantity" />
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="@AddProductEventArgs.TITTLE_CLASS">
+            <b>Цена:</b>
+        </div>
+        <div class="@AddProductEventArgs.VALUE_CLASS">
+            <CurrencyInput TValue="decimal"
+                           Locale="ru-RU"
+                           @bind-Value="_viewModel.Price" />
         </div>
     </div>
     <br />
@@ -48,6 +59,9 @@
     [EditorRequired]
     public long ProductId { get; set; }
 
+    [Parameter]
+    public Money? Price { get; set; } = null;
+
     private AddProductEventArgs _viewModel = new();
 
     private EditContext? _editContext;
@@ -57,6 +71,11 @@
         _viewModel.Product = _referenceBookMapper.MapEntity(
             new MappableModel<Product, long>(ProductId)
         );
+
+        if (Price.HasValue)
+        {
+            _viewModel.Price = Price.Value.Value;
+        }
     }
 
     private async Task Submit(EditContext _context)
@@ -77,5 +96,7 @@
         public IMappableModel<Product, long> Product { get; set; }
 
         public int Quantity { get; set; }
+
+        public decimal Price { get; set; }
     }
 }

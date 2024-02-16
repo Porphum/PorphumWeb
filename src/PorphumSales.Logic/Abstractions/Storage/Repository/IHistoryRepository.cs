@@ -1,5 +1,4 @@
 ﻿using General.Abstractions.Storage.Query;
-using PorphumReferenceBook.Logic.Models.Product;
 using PorphumSales.Logic.Models.Sales;
 using PorphumSales.Logic.Storage.Models;
 

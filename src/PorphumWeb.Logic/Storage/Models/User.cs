@@ -54,7 +54,7 @@ public class User
     /// Логин пользовтеля.
     /// </summary>
     public string Login { get; set; } = null!;
-    
+
     /// <summary xml:lang="ru">
     /// Пароль пользовтеля.
     /// </summary>

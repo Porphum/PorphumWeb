@@ -6,10 +6,10 @@ namespace PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 /// <summary xml:lang = "ru">
 /// Репозиторий продуктов справочника.
 /// </summary>
-public interface IProductRepository : 
-    IKeyableRepository<Product, long>, 
+public interface IProductRepository :
+    IKeyableRepository<Product, long>,
     IKeyableRepositoryWithModifiableLoad<Product, long>,
     IProductGroupRepository
 {
-    
+
 }

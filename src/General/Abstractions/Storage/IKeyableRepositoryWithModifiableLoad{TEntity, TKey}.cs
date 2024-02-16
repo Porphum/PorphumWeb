@@ -10,9 +10,9 @@ namespace General.Abstractions.Storage;
 /// <typeparam name="TEntity" xml:lang="ru">Тип сущности в репозитории, имплементирующей 
 /// интерфейсы <see cref="IKeyable{TKey}"/> и <see cref="ILoadable"/>.</typeparam>
 /// <typeparam name="TKey" xml:lang="ru">Тип ключа для сущности в репозитории.</typeparam>
-public interface IKeyableRepositoryWithModifiableLoad<TEntity, TKey> : 
-    IRepositoryWithModifiableLoad<TEntity> 
-    where TEntity: ILoadable, IKeyable<TKey>
+public interface IKeyableRepositoryWithModifiableLoad<TEntity, TKey> :
+    IRepositoryWithModifiableLoad<TEntity>
+    where TEntity : ILoadable, IKeyable<TKey>
 {
     /// <summary xml:lang="ru">
     /// Возвращает сущность <typeparamref name="TEntity"/>, загруженную  с указанной 

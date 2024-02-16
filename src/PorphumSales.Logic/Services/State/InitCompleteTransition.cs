@@ -1,9 +1,4 @@
 ﻿using PorphumSales.Logic.Models.Document;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PorphumSales.Logic.Services.State;
 public class InitCompleteTransition : BaseStateTransition

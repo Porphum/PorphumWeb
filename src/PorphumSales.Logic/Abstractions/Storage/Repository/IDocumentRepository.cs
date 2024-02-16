@@ -10,7 +10,7 @@ using TDocument = Logic.Storage.Models.Document;
 /// Интерфейс для репозитория документов.
 /// </summary>
 public interface IDocumentRepository :
-    IKeyableRepository<Document, long>, 
+    IKeyableRepository<Document, long>,
     IKeyableRepositoryWithModifiableLoad<Document, long>,
     IQueryableRepository<Document, TDocument>
 {

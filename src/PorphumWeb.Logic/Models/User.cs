@@ -22,7 +22,7 @@ public sealed class User : IdentityUser, IKeyable<long>
 
         if (string.IsNullOrWhiteSpace(password))
             throw new ArgumentException("User password can't be null or white spaced");
-        
+
         Key = key;
         Login = login;
         Password = password;

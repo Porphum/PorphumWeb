@@ -110,7 +110,7 @@
         <DocumentStateDisplay State="@context.State" Style="" />
     </GridColumn>
     <GridColumn TItem="DEntity" HeaderText="Сумма">
-        <MoneyDisplay Money="@(new Money((decimal)context.Key))" />
+        <MoneyDisplay Money="@context.Fill.Sum" />
     </GridColumn>
 </Grid>
 
@@ -155,6 +155,11 @@
     {
         gridItem.Filter.Client = client.Entity;
         await modal.HideAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await UpdateEntitiesAsync();
     }
 
     protected override void OnInitialized()

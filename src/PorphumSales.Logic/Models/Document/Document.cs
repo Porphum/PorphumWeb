@@ -51,7 +51,7 @@ public class Document : ILoadable, IKeyable<long>
         }
 
         State = state;
-        
+
         IsLoaded = false;
         _fill = null!;
     }
@@ -79,7 +79,7 @@ public class Document : ILoadable, IKeyable<long>
     {
         Key = key;
         Header = header ?? throw new ArgumentNullException(nameof(header));
-        
+
         if (!Enum.IsDefined(typeof(DocumentType), type))
         {
             throw new ArgumentException(

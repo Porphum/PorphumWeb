@@ -1,11 +1,6 @@
 ﻿using General.Abstractions.Storage.Query;
 using Microsoft.EntityFrameworkCore;
 using PorphumReferenceBook.Logic.Storage.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PorphumReferenceBook.Logic.Storage.Repository.Query.Params;
 public sealed class NameLikeClientsParam : IQueryParam<Client>

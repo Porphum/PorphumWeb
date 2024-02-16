@@ -1,0 +1,28 @@
+﻿@if (Diff is null)
+{
+    <Badge Color="BadgeColor.Warning">???</Badge>
+}
+else
+{
+    <Badge Color=@Color>@string.Format("{0:0.00%}", Diff)</Badge>
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public decimal? Diff { get; set; }
+
+    // public string Fommat
+    // {
+    //     get
+    //     {
+            
+    //     }
+    // }
+
+    public BadgeColor Color => Diff == 0
+        ? BadgeColor.Secondary 
+        : Diff > 0
+            ? BadgeColor.Success
+            : BadgeColor.Danger;
+}

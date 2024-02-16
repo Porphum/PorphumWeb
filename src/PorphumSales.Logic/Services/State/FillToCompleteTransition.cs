@@ -6,7 +6,7 @@ namespace PorphumSales.Logic.Services.State;
 public class FillToCompleteTransition : BaseStateTransition
 {
     private readonly IStorageRepository _storageRepository;
-    public FillToCompleteTransition(IStorageRepository storageRepository, bool isSetState) : 
+    public FillToCompleteTransition(IStorageRepository storageRepository, bool isSetState) :
         base(DocumentState.Complete, isSetState)
     {
         _storageRepository = storageRepository;
@@ -32,7 +32,7 @@ public class FillToCompleteTransition : BaseStateTransition
         var state = _storageRepository.GetStorageState(
             document.Fill.Rows
                 .Select(x => x.Product.MapKey)
-                .ToHashSet()    
+                .ToHashSet()
         );
 
         var result = document.Fill.Rows.Aggregate(true, (current, x) => current && state[x.Product.MapKey] >= x.Quantity);

@@ -1,11 +1,6 @@
 ﻿using General;
 using General.Abstractions.Models;
 using PorphumReferenceBook.Logic.Models.Product;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PorphumSales.Logic.Models.Sales;
 public sealed class PriceableProduct

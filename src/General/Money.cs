@@ -15,7 +15,7 @@ public record struct Money
     public Money(decimal value)
     {
         if (value < 0)
-            throw new ArgumentOutOfRangeException(nameof(value),$"{nameof(Money)} {nameof(value)} can be greater than zero.");
+            throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(Money)} {nameof(value)} can be greater than zero.");
 
         Value = value;
     }

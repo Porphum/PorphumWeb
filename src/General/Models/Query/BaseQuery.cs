@@ -7,7 +7,7 @@ public class BaseQuery<TQueryParam, TStorageModel> : IQuery<TQueryParam, TStorag
     private List<TQueryParam> _parameters = new();
 
     public void Append(TQueryParam param) => _parameters.Add(param ?? throw new ArgumentNullException(nameof(param)));
-    
+
     public IQueryable<TStorageModel> ApplyParam(IQueryable<TStorageModel> data)
     {
         foreach (var param in _parameters)

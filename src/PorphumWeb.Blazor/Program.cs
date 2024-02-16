@@ -3,9 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PorphumReferenceBook.Logic.Storage;
 using PorphumSales.Logic.Storage;
 using PorphumWeb.Blazor;
-using PorphumWeb.Logic.Models;
 using PorphumWeb.Logic.Storage;
-using PorphumWeb.Logic.Storage.Repository;
 using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);

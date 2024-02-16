@@ -1,12 +1,12 @@
 ﻿using General.Models.Query;
-using PorphumSales.Logic.Abstractions.Storage;
-using PorphumSales.Logic.Models.Extensions;
-using PorphumSales.Logic.Storage.Models;
-using PorphumReferenceBook.Logic.Abstractions;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using PorphumReferenceBook.Logic.Abstractions;
+using PorphumReferenceBook.Logic.Models.Product;
+using PorphumSales.Logic.Abstractions.Storage;
 using PorphumSales.Logic.Abstractions.Storage.Repository;
+using PorphumSales.Logic.Models.Extensions;
 using PorphumSales.Logic.Models.Sales;
+using PorphumSales.Logic.Storage.Models;
 
 namespace PorphumSales.Logic.Storage.Repository;
 
@@ -36,7 +36,7 @@ public class PriceRepository : BaseQueryRepository<PriceableProduct, ProductPric
         _repositoryContext.SaveChanges();
     }
 
-    public void DeletePrice(PriceableProduct price) 
+    public void DeletePrice(PriceableProduct price)
     {
         ArgumentNullException.ThrowIfNull(price);
 
@@ -48,8 +48,8 @@ public class PriceRepository : BaseQueryRepository<PriceableProduct, ProductPric
         var storage = price.ConvertToStorage();
         var current = _repositoryContext.ProductsPrices
             .SingleOrDefault(x => x.ProductId == storage.ProductId && x.Price == storage.Price && x.FromDate == x.FromDate);
-        
-        if (current is null) 
+
+        if (current is null)
         {
             throw new InvalidOperationException();
         }
@@ -58,6 +58,20 @@ public class PriceRepository : BaseQueryRepository<PriceableProduct, ProductPric
         _repositoryContext.SaveChanges();
     }
 
+    public PriceableProduct? GetPrice(Product product, DateTime? onDate)
+    {
+        var date = onDate ?? DateTime.Now;
+        var price = _repositoryContext.ProductsPrices
+            .OrderByDescending(x => x.FromDate)
+            .FirstOrDefault(x => x.ProductId == product.Key && x.FromDate <= date);
+
+        if (price is null)
+        {
+            return null;
+        }
+
+        return ConvertFromStorage(price);
+    }
     protected override PriceableProduct ConvertFromStorage(ProductPrice storage) => storage.ConvertToModel(_referenceBookMapper);
 
     protected override IQueryable<ProductPrice> GetInitQuery() => _repositoryContext.ProductsPrices

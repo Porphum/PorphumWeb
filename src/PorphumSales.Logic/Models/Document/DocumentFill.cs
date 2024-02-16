@@ -1,7 +1,7 @@
 ﻿using Castle.Core.Internal;
+using General;
 using PorphumReferenceBook.Logic.Models.Product;
 using PorphumSales.Logic.Models.Mapper;
-using System.Collections.Immutable;
 
 namespace PorphumSales.Logic.Models.Document;
 
@@ -32,6 +32,10 @@ public class DocumentFill
     /// </summary>
     public IReadOnlyList<SaleProduct> Rows => _rows;
 
+    public Money Sum => _rows.Count == 0
+        ? new Money(0)
+        : new Money(_rows.Select(x => x.Price.Value * x.Quantity).Sum());
+
     /// <summary xml:lang="ru">
     /// Добавляет продукт в содержание.
     /// </summary>
@@ -43,7 +47,7 @@ public class DocumentFill
     /// <exception cref="ArgumentException" xml:lang="ru">
     /// Если <paramref name="quantity"/> меньше либо равно 0.
     /// </exception>
-    public void AddOrUpdateProduct(Product product, int quantity = 1)
+    public void AddOrUpdateProduct(Product product, int quantity, Money price)
     {
         ArgumentNullException.ThrowIfNull(product, nameof(product));
 
@@ -58,11 +62,11 @@ public class DocumentFill
 
         if (productRow is null)
         {
-            _rows.Add(new SaleProduct(newProduct, quantity));
+            _rows.Add(new SaleProduct(newProduct, quantity, price));
             return;
         }
 
-        var newRow = new SaleProduct(newProduct, quantity);
+        var newRow = new SaleProduct(newProduct, quantity, price);
 
         _rows.RemoveAll(x => x.Product.MapKey == product.Key);
 

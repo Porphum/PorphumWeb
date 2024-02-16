@@ -2,13 +2,11 @@
 
 using PorphumReferenceBook.Logic.Models.Client;
 using PorphumReferenceBook.Logic.Models.Product;
-
+using ClientInfo = Storage.Models.ClientInfo;
+using ProductExtraInfo = Storage.Models.ProductExtraInfo;
+using TClient = Storage.Models.Client;
 using TProduct = Storage.Models.Product;
 using TProductGroup = Storage.Models.ProductGroup;
-using TClient = Storage.Models.Client;
-using ProductExtraInfo = Storage.Models.ProductExtraInfo;
-using ClientInfo = Storage.Models.ClientInfo;
-using General;
 
 
 public static class ModelsConvertExtensions
@@ -21,14 +19,14 @@ public static class ModelsConvertExtensions
     /// <param name="product" xml:lang="ru">Модель хранилища.</param>
     /// <param name="isFullLoad" xml:lang="ru">Флаг полной загрузки модели.</param>
     /// <returns xml:lang="ru">Доменная модель.</returns>
-    public static Product ConvertToModel(this TProduct product, bool isFullLoad = true) => 
-        isFullLoad 
+    public static Product ConvertToModel(this TProduct product, bool isFullLoad = true) =>
+        isFullLoad
             ? new Product(
                 product.Id,
                 product.Name,
                 product.Group.ConvertToModel(),
                 product.Info.ConvertToModel()
-            ) 
+            )
             : new Product(
                 product.Id,
                 product.Name,
@@ -53,9 +51,9 @@ public static class ModelsConvertExtensions
     public static ProductInfo ConvertToModel(this ProductExtraInfo info)
     {
         var model = new ProductInfo(
-            info.Barcode is not null 
+            info.Barcode is not null
                 ? new BarCode(info.Barcode)
-                : null, 
+                : null,
             info.Description);
 
         return model;
@@ -122,7 +120,7 @@ public static class ModelsConvertExtensions
     /// <param name="storage" xml:lang="ru">Модель хранилища.</param>
     /// <param name="isFullLoad" xml:lang="ru">Флаг полной загрузки модели.</param>
     /// <returns xml:lang="ru">Доменная модель.</returns>
-    public static Client ConvertToModel(this TClient storage, bool isFullLoad = true) => 
+    public static Client ConvertToModel(this TClient storage, bool isFullLoad = true) =>
         !isFullLoad
             ? new Client(storage.Id, storage.Name)
             : new Client(storage.Id, storage.Name, storage.Info.ConvertToModel());
@@ -140,7 +138,7 @@ public static class ModelsConvertExtensions
         }
 
         var storage = new TClient();
-        
+
         storage.Name = model.Name;
         storage.Id = model.Key;
         storage.Info = model.IdentityInfo.ConvertToStorage();
@@ -156,7 +154,7 @@ public static class ModelsConvertExtensions
     public static ClientIdentityInfo ConvertToModel(this ClientInfo storage)
     {
         var model = new ClientIdentityInfo(
-            storage.Inn is not null 
+            storage.Inn is not null
                 ? new Clients.Inn(storage.Inn)
                 : null,
             storage.Address is not null

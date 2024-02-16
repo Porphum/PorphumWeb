@@ -5,7 +5,7 @@
 /// </summary>
 /// <typeparam name="TEntity" xml:lang="ru">Тип сущности для загрузки.</typeparam>
 /// <typeparam name="TMapKey" xml:lang="ru">Тип ключа для загрузки.</typeparam>
-public interface IModelMapper<TEntity,TMapKey> where TEntity : class
+public interface IModelMapper<TEntity, TMapKey> where TEntity : class
 {
     /// <summary xml:lang="ru">
     /// Метод для загрузки сущности. Метод принимает на вход и подаёт на выход 

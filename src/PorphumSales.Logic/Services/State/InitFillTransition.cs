@@ -4,8 +4,8 @@ namespace PorphumSales.Logic.Services.State;
 
 public class InitFillTransition : BaseStateTransition
 {
-    public InitFillTransition(bool isSetState) : 
-        base(DocumentState.Fill, isSetState) 
+    public InitFillTransition(bool isSetState) :
+        base(DocumentState.Fill, isSetState)
     {
         var list = new List<PredicateRef<Document>>()
         {

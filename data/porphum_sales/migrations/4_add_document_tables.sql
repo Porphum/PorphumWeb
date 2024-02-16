@@ -50,6 +50,6 @@ CREATE TABLE documents_rows(
 	PRIMARY KEY(product_id, document_id)
 );
 
-CALL sp_update_db_version(2);
+CALL sp_update_db_version(4);
 
 COMMIT;
