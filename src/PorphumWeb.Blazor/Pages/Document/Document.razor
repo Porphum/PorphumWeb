@@ -131,7 +131,7 @@
                 {
                     <tr>
                         <td><PorphumWeb.Blazor.Pages.Components.MapProduct Entity="entity.Product" /></td>
-                        <td><InputNumber id="number" @bind-Value=entity.Quantity/></td>
+                        <td><NumberInput id="number" @bind-Value=entity.Quantity Disabled="!IsEditable"/></td>
                     </tr>
                 }
             </tbody>
@@ -158,6 +158,12 @@
     [Parameter]
     [EditorRequired]
     public long DocumentId { get; set; }
+
+    public bool IsEditable => model.Entity.State switch
+    {
+        PorphumSales.Logic.Models.Document.DocumentState.Complete => false,
+        _ => true
+    };
 
     public ICollection<ButtonDescription> StateButtons => model.Entity.State switch
     {
