@@ -179,6 +179,7 @@ public class DocumentRepository : BaseQueryRepository<Document, TDocument>, IDoc
             if (row is not null)
             {
                 row.Quantity = x.Quantity;
+                row.Cost = x.Cost;
                 x = row;
             }
 
@@ -241,5 +242,5 @@ public class DocumentRepository : BaseQueryRepository<Document, TDocument>, IDoc
 
     protected override Document ConvertFromStorage(TDocument storage) => ValidateCurrentState(storage.ConvertToModel(_referenceBookMapper, true));
 
-    protected override IQueryable<TDocument> GetInitQuery() => _repositoryContext.Documents.AsNoTracking().AsQueryable();
+    protected override IQueryable<TDocument> GetInitQuery() => _repositoryContext.Documents.Include(x => x.DocumentsRows).AsNoTracking().AsQueryable();
 }

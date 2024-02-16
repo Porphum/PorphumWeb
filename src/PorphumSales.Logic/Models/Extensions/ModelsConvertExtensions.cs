@@ -90,8 +90,8 @@ public static class ModelsConvertExtensions
     {
         return new SaleProduct(
             mapper.MapEntity(new MappableModel<Product, long>(storage.ProductId)),
-            //new General.Money(storage.Cost),
-            storage.Quantity
+            storage.Quantity,
+            new General.Money(storage.Cost)
         );
     }
 
@@ -106,8 +106,8 @@ public static class ModelsConvertExtensions
 
         storage.ProductId = model.Product.MapKey;
         storage.Quantity = model.Quantity;
-        storage.Cost = 1;
-
+        storage.Cost = model.Price.Value;
+        
         return storage;
     }
 

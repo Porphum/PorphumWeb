@@ -1,4 +1,5 @@
-﻿using General.Abstractions.Models;
+﻿using General;
+using General.Abstractions.Models;
 using PorphumReferenceBook.Logic.Models.Product;
 
 namespace PorphumSales.Logic.Models;
@@ -20,7 +21,7 @@ public class SaleProduct
     /// <exception cref="ArgumentException" xml:lang="ru">
     /// Если <paramref name="qunatity"/> меньше либо равно 0.
     /// </exception>
-    public SaleProduct(IMappableModel<Product, long> product, int quantity = 1)
+    public SaleProduct(IMappableModel<Product, long> product, int quantity, Money price)
     {
         Product = product ?? throw new ArgumentNullException(nameof(product));
 
@@ -30,6 +31,7 @@ public class SaleProduct
         }
 
         Quantity = quantity;
+        Price = price;
     }
 
     /// <summary xml:lang="ru">
@@ -42,8 +44,8 @@ public class SaleProduct
     /// </summary>
     public int Quantity { get; }
 
-    /*    /// <summary xml:lang="ru">
-        /// Стоимость.
-        /// </summary>
-        public Money Cost { get; }*/
+    /// <summary xml:lang="ru">
+    /// Стоимость.
+    /// </summary>
+    public Money Price { get; }
 }

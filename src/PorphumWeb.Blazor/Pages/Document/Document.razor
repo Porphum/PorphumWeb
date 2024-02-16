@@ -19,6 +19,7 @@
 @inject IDocumentRepository repository;
 @inject ISalesQueryParamFactory paramFactory;
 @inject IDocumentStateMachine _documentSateMachine;
+@inject IProductStatePicker statePicker;
 
 <Modal @ref="modal" />
 <PageTitle>@model.PageTittle</PageTitle>
@@ -64,7 +65,7 @@
 
     </div>
     <div class="@ViewModel.CONTENT_STYLE">
-        <h4><PorphumWeb.Blazor.Pages.Components.MoneyDisplay Money="@(new Money((decimal)model.Entity.Key))" /></h4>
+        <h4><PorphumWeb.Blazor.Pages.Components.MoneyDisplay Money="model.Entity.Fill.Sum" /></h4>
     </div>
 </div>
 <hr />
@@ -124,6 +125,9 @@
                 <tr>
                     <th>Наименование</th>
                     <th>Количество</th>
+                    <th></th>
+                    <th>Цена</th>
+                    <th>Сумма</th>
                 </tr>
             </thead>
             <tbody>
@@ -131,7 +135,18 @@
                 {
                     <tr>
                         <td><PorphumWeb.Blazor.Pages.Components.MapProduct Entity="entity.Product" /></td>
-                        <td><NumberInput id="number" @bind-Value=entity.Quantity Disabled="!IsEditable"/></td>
+                        <td><NumberInput @bind-Value=entity.Quantity Disabled="!IsEditable"/></td>
+                        <td><DocumentProductPriceDiff Diff="entity.Diff"/></td>
+                        <td>
+                            <CurrencyInput
+                                           TValue="decimal"
+                                           Locale="ru-RU"
+                                           Disabled="!IsEditable"
+                                           @bind-Value="entity.Price" />
+                        </td>
+                        <td>
+                            <MoneyDisplay Money="new Money(entity.Price*entity.Quantity)" />
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -218,13 +233,38 @@
             rowsLimit: out rowsLimit
         );
 
+        var type = model.Entity.Type switch
+        {
+            PorphumSales.Logic.Models.Document.DocumentType.Prihod => -1,
+            PorphumSales.Logic.Models.Document.DocumentType.Rashod => 1,
+            _ => 0
+        };
 
         gridItem.Model.Entities = model.Entity.Fill.Rows
         .Select(x => new GridClass.GridItem
             {
                 Product = x.Product,
-                Quantity = x.Quantity
+                Quantity = x.Quantity,
+                Price = x.Price.Value
             })
+        .Select(x =>
+        {
+            if (x.Product.MapState != MapState.Success)
+            {
+                return x;
+            }
+
+            var price = statePicker.PickState(x.Product.MappedEntity);
+
+            if (price.Price is null)
+            {
+                return x;
+            }
+
+            x.Diff = (x.Price - price.Price.Value.Value) * type;
+            x.Diff /= price.Price.Value.Value;
+            return x;
+        })
         .OrderBy(x => x.Product.MapKey)
         .Skip(skipCount)
         .Take(rowsLimit)
@@ -246,7 +286,7 @@
 
         foreach(var product in gridItem.Model.Entities)
         {
-            model.Entity.Fill.AddOrUpdateProduct(product.Product.MappedEntity, product.Quantity);
+            model.Entity.Fill.AddOrUpdateProduct(product.Product.MappedEntity, product.Quantity, new Money(product.Price));
         }
 
         repository.Update(model.Entity);
@@ -284,7 +324,14 @@
     private async Task SetParamsForProduct(ProductFindEventArgs args)
     {
         var parameters = new Dictionary<string, object>();
+
+        var state = statePicker.PickState(args.Entity);
+
         parameters.Add("ProductId", args.Entity.Key);
+        if (state.Price is not null)
+        {
+            parameters.Add("Price", state.Price);
+        }
         parameters.Add("OnClickCallback", EventCallback.Factory.Create<AddProductEventArgs>(this, AddProductToDoc));
         await modal.ShowAsync<DocumentAddProduct>(title: "Задайте параметры:", parameters: parameters);
     }
@@ -292,7 +339,7 @@
     private async Task AddProductToDoc(AddProductEventArgs args)
     {
         await modal.HideAsync();
-        model.Entity.Fill.AddOrUpdateProduct(args.Product.MappedEntity, args.Quantity);
+        model.Entity.Fill.AddOrUpdateProduct(args.Product.MappedEntity, args.Quantity, new Money(args.Price));
         repository.Update(model.Entity);
 
         LoadEntity();
@@ -364,6 +411,9 @@
 
             public int Quantity { get; set; }
 
+            public decimal Price { get; set; }
+
+            public decimal? Diff { get; set; } = null!;
         }
     }
 
