@@ -34,7 +34,7 @@ END
 $trg$
 LANGUAGE plpgsql;
 
-CREATE TRIGGER OR REPLACE trg_add_to_storage_when_complete AFTER UPDATE ON documents
+CREATE OR REPLACE TRIGGER trg_add_to_storage_when_complete AFTER UPDATE ON documents
     FOR EACH ROW
     EXECUTE PROCEDURE trg_func_add_to_storage_when_complete();
 
