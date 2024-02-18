@@ -18,14 +18,6 @@ jobs:
     outputs:
       project_dir: ${{ steps.filter.outputs.project_dir }}
     steps:
-    - name: executing remote ssh commands using ssh key
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.KEY }}
-        port: ${{ secrets.PORT }}
-        script: ls -la
     - uses: actions/checkout@v2
     - uses: dorny/paths-filter@v2
       id: filter
@@ -105,5 +97,18 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd apps/PorphumWeb/
+            sudo docker-compose -f deploy/docker/compose.yaml down --volume
+            sudo docker-compose -f deploy/docker/compose.yaml pull
+            sudo docker-compose -f deploy/docker/compose.yaml up -d
+            
 
 
