@@ -1,3 +1,4 @@
+\c porphum_sales
 BEGIN;
 
 CREATE OR REPLACE FUNCTION trg_func_add_to_storage_when_complete()
