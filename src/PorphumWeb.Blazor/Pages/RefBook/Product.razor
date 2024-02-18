@@ -12,9 +12,11 @@
 @using PorphumSales.Logic.Abstractions.Models
 @using PorphumSales.Logic.Models.Sales
 @using PorphumWeb.Blazor.Classes
+@using PorphumWeb.Blazor.Pages.Components
 
 <PageTitle>@Title</PageTitle>
 <ConfirmDialog @ref="dialog" />
+    <Offcanvas @ref="offcanvas" Placement="Placement.Start" />
     <br />
 <div class=row>
     <div class="col-4 col-md-4">
@@ -55,22 +57,17 @@
             </div>
         </div>
         <br />
-        <div class="row">
-            <div class="@ViewModel.TITTLE_CLASS">
-                <b>Группа</b>
-            </div>
-            <div class="@ViewModel.VALUE_CLASS">
-                <InputSelect @bind-Value="_viewModel.GroupId" id="group">
-                    @if (_groups.Any())
-                    {
-                        @foreach (var group in _groups)
-                        {
-                            <option value="@group.Key">@group.Name</option>
-                        }
-                    }
-                </InputSelect>
-            </div>
-        </div>
+                <div class="row">
+                    <div class="@ViewModel.TITTLE_CLASS">
+                        <b>Группа</b>
+                    </div>
+                    <div class="@ViewModel.VALUE_CLASS">
+                        @_viewModel.GroupId
+                    </div>
+                    <div class="@ViewModel.VALUE_CLASS">
+                        <b><Button Type="ButtonType.Link" Color="ButtonColor.Primary" @onclick="ShowOfCanvas"> Выбрать </Button></b>
+                    </div>
+                </div>
             </div>
             @if (_viewModel.isEdit)
             {
@@ -118,6 +115,7 @@
 </div>
 
     @code {
+    private Offcanvas offcanvas = default!;
     private ConfirmDialog dialog = default!;
     private ToggleClass toggleItem = new(showTittle: "Показать");
     private EditContext? _editContext;
@@ -197,6 +195,21 @@
 
         throw new InvalidOperationException();
     }
+
+    private async Task ShowOfCanvas()
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("SelectGroup", EventCallback.Factory.Create<ProductGroup>(this, GroupSelect));
+        await offcanvas.ShowAsync<MultiGroupPick>(title: "Выберите группу", parameters: parameters);
+    }
+
+    private async Task GroupSelect(ProductGroup group)
+    {
+        await offcanvas.HideAsync();
+        _viewModel.GroupId = group.Key;
+
+    }
+
 
     private void Submit(EditContext formContext)
     {

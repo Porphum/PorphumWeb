@@ -5,7 +5,8 @@
     <Sidebar @ref="sidebar"
              IconName="IconName.Gem"
              Title="PorphumWeb v.0.0.0"
-             DataProvider="SidebarDataProvider"/>
+             DataProvider="SidebarDataProvider"
+             />
 
     <main>
         <div class="bb-top-row px-4 d-flex justify-content-between">
@@ -26,10 +27,13 @@
 
     private async Task<SidebarDataProviderResult> SidebarDataProvider(SidebarDataProviderRequest request)
     {
-        
-        if (navItems is null)
-            navItems = GetNavItems();
 
+        if (navItems is null)
+        {
+            // sidebar.ToggleSidebar();
+            navItems = GetNavItems();
+        }
+        
         return await Task.FromResult(request.ApplyTo(navItems));
     }
 

@@ -2,11 +2,14 @@
 @using PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 @using PorphumReferenceBook.Logic.Models.Product;
 @using PorphumWeb.Blazor.Classes
+@using PorphumWeb.Blazor.Pages.Components
 
 @inject IProductGroupRepository productGroupRepository;
 @inject NavigationManager Navigation
 
 <PageTitle>Наименования</PageTitle>
+<Offcanvas @ref="offcanvas" Placement="Placement.Start" />
+
 <br/>
 <div class="row">
     <Button Class="col-md-1"
@@ -38,23 +41,17 @@
                 </div>
             </div>
         <br />
-            <div class="row">
-                <div class="@FilterClass.TITTLE_CLASS">
-                    Группа:
-                </div>
-                <div class="@FilterClass.VALUE_CLASS">
-                    <InputSelect @bind-Value="_filter.GroupId" id="search-group">
-                        <option value="0">None</option>
-                        @if (_groups.Any())
-                        {
-                            @foreach (var group in _groups)
-                            {
-                                <option value="@group.Key">@group.Name</option>
-                            }
-                        }
-                    </InputSelect>
-                </div>                
+        <div class="row">
+            <div class="@FilterClass.TITTLE_CLASS">
+                <b>Группа</b>
             </div>
+            <div class="@FilterClass.VALUE_CLASS">
+                @_filter.GroupId
+            </div>
+            <div class="@FilterClass.VALUE_CLASS">
+                <b><Button Type="ButtonType.Link" Color="ButtonColor.Primary" @onclick="ShowOfCanvas"> Выбрать </Button></b>
+            </div>
+        </div>
         </EditForm>
 </Collapse>
 <hr />
@@ -66,7 +63,7 @@
 
 @code {
     private ToggleClass toggleItem = new();
-
+    private Offcanvas offcanvas = default!;
     private FilterClass _filter = new();
     private EditContext? _editContext;
 
@@ -81,6 +78,20 @@
         _groups = productGroupRepository.GetEntities();
 
         _editContext = new(_filter);
+    }
+
+    private async Task ShowOfCanvas()
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("SelectGroup", EventCallback.Factory.Create<ProductGroup>(this, GroupSelect));
+        await offcanvas.ShowAsync<MultiGroupPick>(title: "Выберите группу", parameters: parameters);
+    }
+
+    private async Task GroupSelect(ProductGroup group)
+    {
+        await offcanvas.HideAsync();
+        _filter.GroupId = group.Key;
+
     }
 
     public class FilterClass

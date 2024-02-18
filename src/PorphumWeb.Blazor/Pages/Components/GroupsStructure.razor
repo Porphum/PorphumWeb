@@ -13,20 +13,15 @@
         </div>
 
         <div class="@StructuredGroup.CONTENT_CLASS">
-            <a @onclick=@(()=>TriggerClick(group))>@group.Group.Name</a>
+            <a class="link-primary" @onclick=@(()=>TriggerClick(group))>@group.Group.Name</a>
         </div>
 
     </div>
     @if (group.IsShow)
     {
 
-        <div class="row">
-            <div class="@StructuredGroup.BUTTON_CLASS">
-        
-            </div>
-            <div class="@StructuredGroup.CONTENT_CLASS">
-                <GroupsStructure Key="@group.Group.Key" Load="Load" OnClickCallback="OnClickCallback" />
-            </div>
+        <div class="row" style="border-left-style: solid; margin:1rem; border-width: 1px;">
+            <GroupsStructure Key="@group.Group.Key" Load="Load" OnClickCallback="OnClickCallback" />
         </div>
     }
 }

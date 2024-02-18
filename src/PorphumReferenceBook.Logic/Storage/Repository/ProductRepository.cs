@@ -242,6 +242,7 @@ public sealed class ProductRepository : IProductRepository
         var storage = entity.ConvertToStorage();
 
         current.Name = storage.Name;
+        current.ParentId = storage.ParentId;
 
         _repositoryContext.ProductGroups.Update(current);
 
