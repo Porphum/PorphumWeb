@@ -8,6 +8,7 @@
 @using PorphumSales.Logic.Models
 @using PorphumSales.Logic.Models.Document
 @using PorphumSales.Logic.Models.Mapper
+@using PorphumSales.Logic.Models.Sales
 @using PorphumWeb.Blazor.Classes
 
 @inject IReferenceBookMapper _referenceBookMapper;
@@ -37,6 +38,15 @@
     <br />
     <div class="row">
         <div class="@AddProductEventArgs.TITTLE_CLASS">
+            <b>Цена по прайс листу:</b>
+        </div>
+        <div class="@AddProductEventArgs.VALUE_CLASS">
+            <MoneyDisplay Money="State.Price" NullMessage="Цена не задана"/>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="@AddProductEventArgs.TITTLE_CLASS">
             <b>Цена:</b>
         </div>
         <div class="@AddProductEventArgs.VALUE_CLASS">
@@ -46,7 +56,13 @@
         </div>
     </div>
     <br />
-    <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">Добавить</button>
+    <button type="submit" class="btn btn-primary" @onclick="@(() => Submit(_editContext))">
+        @(
+            Row is null
+            ? "Добавить"
+            : "Сохранить"
+        )
+    </button>
 </EditForm>
 
 
@@ -60,7 +76,11 @@
     public long ProductId { get; set; }
 
     [Parameter]
-    public Money? Price { get; set; } = null;
+    [EditorRequired]
+    public StateFullProduct State { get; set; } = default!;
+
+    [Parameter]
+    public AddProductEventArgs? Row { get; set; } 
 
     private AddProductEventArgs _viewModel = new();
 
@@ -72,9 +92,15 @@
             new MappableModel<Product, long>(ProductId)
         );
 
-        if (Price.HasValue)
+        if (State.Price is not null)
         {
-            _viewModel.Price = Price.Value.Value;
+            _viewModel.Price = State.Price.Value.Value;
+        }
+
+        if (Row is not null)
+        {
+            _viewModel.Price = Row.Price;
+            _viewModel.Quantity = Row.Quantity;
         }
     }
 

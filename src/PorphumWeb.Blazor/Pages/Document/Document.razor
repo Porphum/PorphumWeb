@@ -70,99 +70,63 @@
 </div>
 <hr />
 <br/>
-
-<EditForm EditContext="gridItem.EditContext">
-    <div class="row">
-        @foreach (var button in StateButtons)
+<div class="row">
+    @foreach (var button in StateButtons)
+    {
+        if (button.OnClick is null)
         {
-            if (button.OnClick is null)
-            {
-                <Button Class=@button.Class
-                        Style=@button.Style
-                        Type=@button.Type
-                        Color=@button.Color
-                        @onclick="@(button.OnClickAsync)">
-                    @button.Tittle
-                </Button>
-            }
-            else
-            {
-                <Button Class=@button.Class
-                        Style=@button.Style
-                        Type=@button.Type
-                        Color=@button.Color
-                        @onclick="@(button.OnClick)">
-                    @button.Tittle
-                </Button>
-            }
-
+            <Button Class=@button.Class
+                    Style=@button.Style
+                    Type=@button.Type
+                    Color=@button.Color
+                    @onclick="@(button.OnClickAsync)">
+                @button.Tittle
+            </Button>
         }
-    </div>
-    <br />
-@* <Grid @ref="grid"
-      TItem="GridItem"
+        else
+        {
+            <Button Class=@button.Class
+                    Style=@button.Style
+                    Type=@button.Type
+                    Color=@button.Color
+                    @onclick="@(button.OnClick)">
+                @button.Tittle
+            </Button>
+        }
+
+    }
+</div>
+<br />
+<Grid @ref="gridItem.Grid"
+      TItem="GridClass.GridItem"
       Class="table table-hover table-bordered table-striped"
-      DataProvider="model.EmployeesDataProvider"
+      DataProvider="GridDataProvider"
+      OnRowDoubleClick="RowClick"
       ItemsPerPageText="some text"
       PageSizeSelectorItems="new int[] {1}"
       PaginationItemsTextFormat=""
       AllowPaging="true"
-      PageSize="5"
+      AllowRowClick="true"
+      EmptyText="Нет данных"
+      PageSize="GridClass.PAGE_SIZE"
       Responsive="true">
 
-    <GridColumn TItem="GridItem" HeaderText="Наименование">
-        <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="@context.Product" />
+    <GridColumn TItem="GridClass.GridItem" HeaderText="Наименование">
+        <PorphumWeb.Blazor.Pages.Components.MapProduct Entity="context.Entity.Product" />
     </GridColumn>
-    <GridColumn TItem="GridItem" HeaderText="Колличество">
-        <InputNumber id="number" @bind-Value=@context.Quantity />
+    <GridColumn TItem="GridClass.GridItem" HeaderText="Количество">
+        @context.Entity.Quantity
     </GridColumn>
-</Grid> *@
-
-    @if (gridItem.Model.Entities is not null)
-    {
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Наименование</th>
-                    <th>Количество</th>
-                    <th></th>
-                    <th>Цена</th>
-                    <th>Сумма</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var entity in gridItem.Model.Entities)
-                {
-                    <tr>
-                        <td><PorphumWeb.Blazor.Pages.Components.MapProduct Entity="entity.Product" /></td>
-                        <td><NumberInput @bind-Value=entity.Quantity Disabled="!IsEditable"/></td>
-                        <td><DocumentProductPriceDiff Diff="entity.Diff"/></td>
-                        <td>
-                            <CurrencyInput
-                                           TValue="decimal"
-                                           Locale="ru-RU"
-                                           Disabled="!IsEditable"
-                                           @bind-Value="entity.Price" />
-                        </td>
-                        <td>
-                            <MoneyDisplay Money="new Money(entity.Price*entity.Quantity)" />
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        <Pagination ActivePageNumber="@gridItem.CurrentPage"
-                    TotalPages="@gridItem.PageLimit"
-                    Alignment="Alignment.Center"
-                    FirstLinkIcon="IconName.ChevronDoubleLeft"
-                    PreviousLinkIcon="IconName.ChevronLeft"
-                    NextLinkIcon="IconName.ChevronRight"
-                    LastLinkIcon="IconName.ChevronDoubleRight"
-                    PageChanged="OnPageChangedAsync" />
-    }
-
-</EditForm>
-
+    <GridColumn TItem="GridClass.GridItem" HeaderText="">
+        <DocumentProductPriceDiff Diff="context.Diff" />
+    </GridColumn>
+    <GridColumn TItem="GridClass.GridItem" HeaderText="Цена">
+        <MoneyDisplay Money="context.Entity.Price" />
+    </GridColumn>
+    <GridColumn TItem="GridClass.GridItem" HeaderText="Сумма">
+        <MoneyDisplay Money="new Money(context.Entity.Price.Value*context.Entity.Quantity)" />
+    </GridColumn>
+</Grid>
 
 
 @code {
@@ -193,111 +157,43 @@
             },
             new ButtonDescription
             {
-                Type=ButtonType.Submit,
-                Color=ButtonColor.Primary,
-                Tittle="Сохранить",
-                OnClick=Submit
-            },
-            new ButtonDescription
-            {
                 Type=ButtonType.Button,
                 Color=ButtonColor.Warning,
                 Style="",
                 Tittle="Провести",
-                OnClick=ChangeStateAsync
-            },
+                OnClickAsync=ChangeStateAsync
+            }
         },
         _ => Array.Empty<ButtonDescription>()
     };
 
-    protected override void OnInitialized()
+    protected override async Task OnParametersSetAsync()
     {
-        gridItem.EditContext = new(gridItem.Model);
+        await LoadEntity();
     }
 
-    protected override void OnParametersSet()
-    {
-        LoadEntity();
-    }
-
-    private void LoadEntity()
+    private async Task LoadEntity()
     {
         var document = repository.GetByKey(DocumentId);
         model.Entity = document;
-
-        int skipCount, rowsLimit;
-
-        gridItem.UpdateDataForPagination(
-            count: model.Entity.Fill.Rows.Count,
-            skipCount: out skipCount,
-            rowsLimit: out rowsLimit
-        );
-
-        var type = model.Entity.Type switch
+        if (gridItem is null || gridItem.Grid is null)
         {
-            PorphumSales.Logic.Models.Document.DocumentType.Prihod => -1,
-            PorphumSales.Logic.Models.Document.DocumentType.Rashod => 1,
-            _ => 0
-        };
-
-        gridItem.Model.Entities = model.Entity.Fill.Rows
-        .Select(x => new GridClass.GridItem
-            {
-                Product = x.Product,
-                Quantity = x.Quantity,
-                Price = x.Price.Value
-            })
-        .Select(x =>
-        {
-            if (x.Product.MapState != MapState.Success)
-            {
-                return x;
-            }
-
-            var price = statePicker.PickState(x.Product.MappedEntity);
-
-            if (price.Price is null)
-            {
-                return x;
-            }
-
-            x.Diff = (x.Price - price.Price.Value.Value) * type;
-            x.Diff /= price.Price.Value.Value;
-            return x;
-        })
-        .OrderBy(x => x.Product.MapKey)
-        .Skip(skipCount)
-        .Take(rowsLimit)
-        .ToArray();
-
-    }
-
-    private async Task OnPageChangedAsync(int newPageNumber)
-    {
-        await Task.Run(() => { gridItem.CurrentPage = newPageNumber; });
-
-        LoadEntity();
-    }
-
-    private void Submit()
-    {
-        var document = repository.GetByKey(DocumentId);
-        model.Entity = document;
-
-        foreach(var product in gridItem.Model.Entities)
-        {
-            model.Entity.Fill.AddOrUpdateProduct(product.Product.MappedEntity, product.Quantity, new Money(product.Price));
+            await Task.CompletedTask;
+            return;
         }
 
-        repository.Update(model.Entity);
+        await gridItem.Grid.RefreshDataAsync();
+    }
 
-        LoadEntity();
+    private async Task Submit()
+    {
+        await LoadEntity();
 
     }
 
-    private void ChangeStateAsync()
+    private async Task ChangeStateAsync()
     {
-        LoadEntity();
+        await LoadEntity();
         var document = model.Entity;
         var result = _documentSateMachine.GoToState(ref document, PorphumSales.Logic.Models.Document.DocumentState.Complete);
 
@@ -308,7 +204,7 @@
 
         repository.Update(document);
 
-        LoadEntity();
+        await LoadEntity();
     }
 
     private async Task AddNewAsync()
@@ -328,21 +224,85 @@
         var state = statePicker.PickState(args.Entity);
 
         parameters.Add("ProductId", args.Entity.Key);
-        if (state.Price is not null)
-        {
-            parameters.Add("Price", state.Price);
-        }
+        parameters.Add("State", state);
         parameters.Add("OnClickCallback", EventCallback.Factory.Create<AddProductEventArgs>(this, AddProductToDoc));
         await modal.ShowAsync<DocumentAddProduct>(title: "Задайте параметры:", parameters: parameters);
     }
 
-    private async Task AddProductToDoc(AddProductEventArgs args)
+    public async Task RowClick(GridRowEventArgs<GridClass.GridItem> args)
+    {
+        var position = new AddProductEventArgs
+            {
+                Price = args.Item.Entity.Price.Value,
+                Quantity = args.Item.Entity.Quantity,
+                Product = args.Item.Entity.Product
+            };
+
+        var parameters = new Dictionary<string, object>();
+
+        var state = statePicker.PickState(position.Product.MappedEntity);
+
+        parameters.Add("ProductId", position.Product.MapKey);
+        parameters.Add("State", state);
+        parameters.Add("Row", position);
+        parameters.Add("OnClickCallback", EventCallback.Factory.Create<AddProductEventArgs>(this, AddProductToDoc));
+        await modal.ShowAsync<DocumentAddProduct>(title: "Обновите параметры:", parameters: parameters);
+    }
+
+    public async Task<GridDataProviderResult<GridClass.GridItem>> GridDataProvider(GridDataProviderRequest<GridClass.GridItem> request)
+    {
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
+
+        var type = model.Entity.Type switch
+        {
+            PorphumSales.Logic.Models.Document.DocumentType.Prihod => -1,
+            PorphumSales.Logic.Models.Document.DocumentType.Rashod => 1,
+            _ => 0
+        };
+
+        var data = model.Entity.Fill.Rows
+        .Select(x => new GridClass.GridItem
+            {
+                Entity = x
+            })
+        .Select(x =>
+        {
+            if (x.Entity.Product.MapState != MapState.Success)
+            {
+                return x;
+            }
+
+            var price = statePicker.PickState(x.Entity.Product.MappedEntity);
+
+            if (price.Price is null)
+            {
+                return x;
+            }
+
+            x.Diff = (x.Entity.Price.Value - price.Price.Value.Value) * type;
+            x.Diff /= price.Price.Value.Value;
+            return x;
+        })
+        .OrderBy(x => x.Entity.Product.MapKey)
+        .Skip(skip)
+        .Take(limit)
+        .ToArray();
+
+        return await Task.FromResult(new GridDataProviderResult<GridClass.GridItem>
+            {
+                Data = data,
+                TotalCount = model.Entity.Fill.Rows.Count
+            });
+    }
+
+    public async Task AddProductToDoc(AddProductEventArgs args)
     {
         await modal.HideAsync();
         model.Entity.Fill.AddOrUpdateProduct(args.Product.MappedEntity, args.Quantity, new Money(args.Price));
         repository.Update(model.Entity);
 
-        LoadEntity();
+        await LoadEntity();
     }
 
     public class ViewModel
@@ -371,47 +331,18 @@
         };
 
 
-
-        // public async Task<GridDataProviderResult<GridItem>> EmployeesDataProvider(GridDataProviderRequest<GridItem> request)
-        // {
-        //     return await Task.FromResult(request.ApplyTo(Entity.Fill.Rows.Select(x => new GridItem
-        //     {
-        //         Product = x.Product,
-        //         Quantity = x.Quantity
-        //     })));
-        // }
     }
 
     public class GridClass
     {
         public static readonly int PAGE_SIZE = 5;
-        public int CurrentPage { get; set; } = 1;
 
-        public int PageLimit { get; set; } = 1;
+        public Grid<GridItem> Grid { get; set; } = default!;
 
-        public EditContext? EditContext { get; set; }
-
-        public GridModel Model { get; set; } = new();
-
-        public void UpdateDataForPagination(int count, out int skipCount, out int rowsLimit)
-        {
-            PageLimit = (count + PAGE_SIZE - 1) / PAGE_SIZE;
-            skipCount = (CurrentPage - 1) * PAGE_SIZE;
-            rowsLimit = PAGE_SIZE;
-        }
-
-        public class GridModel
-        {
-            public GridItem[]? Entities { get; set; }
-        }
 
         public class GridItem
         {
-            public IMappableModel<Product, long> Product { get; set; }
-
-            public int Quantity { get; set; }
-
-            public decimal Price { get; set; }
+            public SaleProduct Entity { get; set; } = default!;
 
             public decimal? Diff { get; set; } = null!;
         }
