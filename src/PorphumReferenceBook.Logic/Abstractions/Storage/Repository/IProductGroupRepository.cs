@@ -8,5 +8,5 @@ namespace PorphumReferenceBook.Logic.Abstractions.Storage.Repository;
 /// </summary>
 public interface IProductGroupRepository : IRepository<ProductGroup>, IKeyableRepository<ProductGroup, int>
 {
-
+    public IReadOnlyCollection<ProductGroup> GetSubGroups(int? parentGroup);
 }

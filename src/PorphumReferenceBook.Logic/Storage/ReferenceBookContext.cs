@@ -106,7 +106,7 @@ public sealed class ReferenceBookContext : DbContext
                 .HasMaxLength(80)
                 .HasColumnName("name");
 
-            //entity.Property(e => e.ParentId).HasColumnName("parent_id");
+            entity.Property(e => e.ParentId).HasColumnName("parent_id");
         });
 
         modelBuilder.Entity<ProductExtraInfo>(entity =>

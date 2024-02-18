@@ -6,88 +6,53 @@
 @using PorphumReferenceBook.Logic.Storage.Repository.Query;
 
 @using PorphumWeb.Blazor.Classes
+@using PorphumWeb.Blazor.Pages.Components
 @using TEntity = PorphumReferenceBook.Logic.Storage.Models.ProductGroup;
 @using DEntity = PorphumReferenceBook.Logic.Models.Product.ProductGroup;
 
-@inject IProductsGroupsQueryRepository productRepository;
+@inject IProductsGroupsQueryRepository queryRepository;
+@inject IProductGroupRepository repository;
 @inject IRefBookQueryParamFactory paramFactory;
 @inject NavigationManager Navigation
 
 @page "/refbook/groups"
 
 <PageTitle>Группы</PageTitle>
+
+<Offcanvas @ref="offcanvas" Placement="Placement.Start"/>
+
 <br />
 <div class="row">
-    <Button 
-        Class="col-md-1"
-        Style="margin-right:1rem;"
-        Type="ButtonType.Link"
-        Color="ButtonColor.Dark"
-            @onclick="@(()=>toggleItem.ToggleAsync())">
-        @toggleItem.ButtonTittle
+    <Button Class="col-md-1"
+            Style="margin-right:1rem;"
+            Type="ButtonType.Link"
+            Color="ButtonColor.Dark"
+            @onclick="ShowOfCanvas">
+        Выбрать
     </Button>
-    <Button
-        Class="col-md-1"
-        Type="ButtonType.Link"
-        Color="ButtonColor.Primary"
+    <Button Class="col-md-1"
+            Type="ButtonType.Link"
+            Color="ButtonColor.Primary"
             @onclick="@(()=>Navigation.NavigateTo("refbook/group/create"))">
         Создать
     </Button>
 </div>
-<Collapse 
-    @ref=toggleItem.CollapseItem
-    OnHiding="toggleItem.OnHiddenCallback"
-    OnShown="toggleItem.OnShownCallback">
-    <br />
-        <EditForm EditContext="gridItem.EditContext" OnSubmit="UpdateEntitiesAsync">
-            <div class="row">
-                <div class="@GridClass.FilterClass.TITTLE_CLASS">
-                    Название:
-                </div>
-                <div class="@GridClass.FilterClass.VALUE_CLASS">
-                    <InputText id="search-string" @bind-Value="gridItem.Filter.SearchString" />
-                </div>
-            </div>
-        <br />
-            <Button Type="ButtonType.Submit" Color="ButtonColor.Dark"> Поиск </Button>
-        </EditForm>
-    
-</Collapse>
-<hr/>
+<hr />
 <br />
-<Grid @ref="gridItem.Grid"
-      TItem="DEntity"
-      Class="table table-hover table-bordered table-striped"
-      DataProvider="GridDataProvider"
-      OnRowDoubleClick="RowClick"
-      ItemsPerPageText="some text"
-      PageSizeSelectorItems="new int[] {1}"
-      PaginationItemsTextFormat=""
-      AllowPaging="true"
-      AllowRowClick="true"
-      EmptyText="Нет данных"
-      PageSize="GridClass.PAGE_SIZE"
-      Responsive="true">
+@if (Group is null)
+{
+    @("Группа не выбрана")
+}
+else
+{
+    <Group Type="edit" ProductId="@Group.Key" />
+}
 
-    <GridColumn TItem="DEntity" HeaderText="Id">
-        @context.Key
-    </GridColumn>
-    <GridColumn TItem="DEntity" HeaderText="Название">
-        @context.Name
-    </GridColumn>
-    <GridColumn TItem="DEntity" HeaderText="Наименования">
-        <Button Size="Size.Small"
-                Type="ButtonType.Link"
-                Color="ButtonColor.Secondary"
-                @onclick="@(()=>Navigation.NavigateTo($"refbook/products/{context.Key}"))">
-            Посмотреть
-        </Button>
-    </GridColumn>
-</Grid>
 
 @code {
 
-
+    public ProductGroup? Group { get; set; }
+    private Offcanvas offcanvas = default!;
     private ToggleClass toggleItem = new();
 
     private GridClass gridItem = new();
@@ -95,12 +60,6 @@
     protected override void OnInitialized()
     {
         gridItem.EditContext = new(gridItem.Filter);
-    }
-
-    public void RowClick(GridRowEventArgs<DEntity> args)
-    {
-        
-        Navigation.NavigateTo($"refbook/group/edit/{args.Item.Key}");
     }
 
     public async Task UpdateEntitiesAsync()
@@ -122,7 +81,23 @@
 
         var query = (paramFactory as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, TEntity>).InitQuery(config);
 
-        return await Task.FromResult(request.ApplyTo(productRepository.GetByQuery(query)));
+        return await Task.FromResult(request.ApplyTo(queryRepository.GetByQuery(query)));
+    }
+
+    private async Task ShowOfCanvas()
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("SelectGroup", EventCallback.Factory.Create<ProductGroup>(this, GroupSelect));
+        await offcanvas.ShowAsync<MultiGroupPick>(title: "Выберите группу", parameters: parameters);
+    }
+
+    private async Task GroupSelect(ProductGroup group)
+    {
+        await offcanvas.HideAsync();
+        Group = null;
+        StateHasChanged();
+        Group = group;
+        
     }
 
     public class GridClass
@@ -130,6 +105,7 @@
         public static readonly int PAGE_SIZE = 5;
 
         public Grid<DEntity> Grid { get; set; } = default!;
+        public List<DEntity> Main { get; set; } = default!;
 
         public EditContext? EditContext { get; set; }
 

@@ -15,7 +15,7 @@ public class ProductGroup
     /// </summary>
     public string Name { get; set; } = null!;
 
-    //    public int? ParentId { get; set; }
+    public int? ParentId { get; set; }
 
     /// <summary xml:lang="ru">
     /// Продукты с такой же группой.

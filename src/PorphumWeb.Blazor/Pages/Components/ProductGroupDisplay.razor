@@ -1,0 +1,19 @@
+﻿@using PorphumReferenceBook.Logic.Models.Product
+
+@if (Group is null)
+{
+    @(NullMessage)
+}
+else
+{
+    @($"{Group.Key} - {Group.Name}")
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProductGroup? Group { get; set; }
+
+    [Parameter]
+    public string NullMessage { get; set; } = "Не задана";
+}

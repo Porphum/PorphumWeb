@@ -20,12 +20,14 @@ public sealed class ProductGroup : IKeyable<int>
     /// </summary>
     /// <param name="key" xml:lang="ru">Идентификатор группы.</param>
     /// <param name="name" xml:lang="ru">Название группы.</param>
+    /// <param name="parentKey" xml:lang="ru">Название группы.</param>
     /// <exception cref="ArgumentException" xml:lang="ru">
     /// Если <paramref name="name"/> - не соответствует формату.
     /// </exception>
-    public ProductGroup(int key, string name)
+    public ProductGroup(int key, string name, int? parentKey = null)
     {
         Key = key;
+        ParentKey = parentKey;
         if (string.IsNullOrWhiteSpace(name) || !Regex.IsMatch(name, GROUP_NAME_PATTERN))
         {
             throw new ArgumentException(
@@ -45,4 +47,6 @@ public sealed class ProductGroup : IKeyable<int>
     /// Название группы.
     /// </summary>
     public string Name { get; }
+
+    public int? ParentKey { get; } = null;
 }

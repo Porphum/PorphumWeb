@@ -7,9 +7,11 @@
 @inject NavigationManager Navigation
 
 @using DProduct = PorphumReferenceBook.Logic.Models.Product.ProductGroup;
+@using PorphumWeb.Blazor.Pages.Components
 
 <PageTitle>@Title</PageTitle>
 <ConfirmDialog @ref="dialog" />
+<Offcanvas @ref="offcanvas" Placement="Placement.Start" />
 <br />
 <div class="row">
     <div class=row>
@@ -47,6 +49,18 @@
                 <InputText id="name" @bind-Value="_viewModel.Name" />
             </div>
         </div>
+        <br />
+        <div class="row">
+            <div class="@ViewModel.TITTLE_CLASS">
+                <b>Основная группа</b>
+            </div>
+            <div class="@ViewModel.VALUE_CLASS">
+                <PorphumWeb.Blazor.Pages.Components.ProductGroupDisplay Group="_viewModel.ParentGroup" NullMessage="Группа не задана" />
+            </div>
+            <div class="@ViewModel.VALUE_CLASS">
+                <b><Button Type="ButtonType.Link" Color="ButtonColor.Primary" @onclick="ShowOfCanvas"> Выбрать </Button></b>
+            </div>
+        </div>
         <hr />
         <br/>
         <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" @onclick="@(() => Submit(_editContext))"> Сохранить </Button>
@@ -55,6 +69,7 @@
 
 @code {
     private ConfirmDialog dialog = default!;
+    private Offcanvas offcanvas = default!;
 
     public string Title { get; set; } = "Default tittle";
     [Parameter]
@@ -85,6 +100,11 @@
                     Key = product.Key,
                     Name = product.Name
                 };
+
+            if (product.ParentKey is not null)
+            {
+                _viewModel.ParentGroup = repository.GetByKey(product.ParentKey.Value);
+            }
         }
         else
         {
@@ -92,6 +112,22 @@
         }
 
         _editContext = new(_viewModel);
+    }
+
+    private async Task ShowOfCanvas()
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("SelectGroup", EventCallback.Factory.Create<ProductGroup>(this, GroupSelect));
+        await offcanvas.ShowAsync<MultiGroupPick>(title: "Выберите группу", parameters: parameters);
+    }
+
+    private async Task GroupSelect(ProductGroup group)
+    {
+        await offcanvas.HideAsync();
+        _viewModel.ParentGroup = null;
+        StateHasChanged();
+        _viewModel.ParentGroup = group;
+
     }
 
     private async void DeleteAsync(EditContext formContext)
@@ -109,10 +145,10 @@
             {
                 return;
             }
-            
+
             repository.Delete(entity);
 
-            Navigation.NavigateTo("refbook/groups");
+            Navigation.NavigateTo("refbook/groups", true);
             return;
         }
 
@@ -127,7 +163,10 @@
 
             var newProduct = new DProduct(
                 product.Key,
-                _viewModel.Name ?? throw new InvalidOperationException()
+                _viewModel.Name ?? throw new InvalidOperationException(),
+                _viewModel.ParentGroup is null
+                ? null
+                : _viewModel.ParentGroup.Key
             );
 
             repository.Update(newProduct);
@@ -142,7 +181,7 @@
             repository.Add(newProduct);
         }
 
-        Navigation.NavigateTo("refbook/groups");
+        Navigation.NavigateTo("refbook/groups", true);
     }
 
     public class ViewModel
@@ -155,5 +194,7 @@
         public int Key { get; set; }
 
         public string? Name { get; set; }
+
+        public ProductGroup? ParentGroup { get; set; }
     }
 }

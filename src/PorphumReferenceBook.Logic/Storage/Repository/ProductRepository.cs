@@ -242,9 +242,17 @@ public sealed class ProductRepository : IProductRepository
         var storage = entity.ConvertToStorage();
 
         current.Name = storage.Name;
+        current.ParentId = storage.ParentId;
 
         _repositoryContext.ProductGroups.Update(current);
 
         Save();
     }
+
+    public IReadOnlyCollection<ProductGroup> GetSubGroups(int? parentGroup) => _repositoryContext.ProductGroups
+            .AsNoTracking()
+            .Where(x => x.ParentId == parentGroup)
+            .ToList()
+            .Select(x => x.ConvertToModel())
+            .ToList();
 }

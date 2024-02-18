@@ -1,0 +1,133 @@
+﻿@using General.Abstractions.Storage.Query
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository
+@using PorphumReferenceBook.Logic.Abstractions.Storage.Repository.Query
+@using PorphumReferenceBook.Logic.Models.Product
+
+@using DEntity = PorphumReferenceBook.Logic.Models.Product.ProductGroup;
+@using TEntity = PorphumReferenceBook.Logic.Storage.Models.ProductGroup;
+@using PorphumReferenceBook.Logic.Storage.Repository.Query
+
+@inject IProductsGroupsQueryRepository queryRepository;
+@inject IProductGroupRepository repository;
+@inject IRefBookQueryParamFactory paramFactory;
+
+<Accordion>
+    <AccordionItem Title="По названию">
+        <Content>
+            <EditForm EditContext="gridItem.EditContext" OnSubmit="UpdateEntitiesAsync">
+                <div class="row">
+                    <div class="@GridClass.FilterClass.TITTLE_CLASS">
+                        Название:
+                    </div>
+                    <div class="@GridClass.FilterClass.VALUE_CLASS">
+                        <InputText id="search-string" @bind-Value="gridItem.Filter.SearchString" />
+                    </div>
+                </div>
+                <br />
+                <Button Type="ButtonType.Submit" Color="ButtonColor.Dark"> Поиск </Button>
+            </EditForm>
+            <br />
+            <Grid @ref="gridItem.Grid"
+                  TItem="DEntity"
+                  Class="table table-hover table-bordered table-striped"
+                  DataProvider="GridDataProvider"
+                  OnRowDoubleClick="RowClick"
+                  ItemsPerPageText="some text"
+                  PageSizeSelectorItems="new int[] {1}"
+                  PaginationItemsTextFormat=""
+                  AllowPaging="true"
+                  AllowRowClick="true"
+                  EmptyText="Нет данных"
+                  PageSize="GridClass.PAGE_SIZE"
+                  Responsive="true">
+
+                <GridColumn TItem="DEntity" HeaderText="Группа">
+                    <ProductGroupDisplay Group="context" />
+                </GridColumn>
+            </Grid>
+        </Content>
+    </AccordionItem>
+    <AccordionItem Title="По структуре" IsActive="true">
+        <Content>
+            <GroupsStructure Load="LoadGroups" OnClickCallback="EventCallback.Factory.Create<ProductGroup>(this, SelectGroup)" />
+        </Content>
+    </AccordionItem>
+</Accordion>
+
+@code {
+    private GridClass gridItem = new();
+
+    [Parameter]
+    [EditorRequired]
+    public EventCallback<ProductGroup> SelectGroup { get; set; }
+
+    protected override void OnInitialized()
+    {
+        gridItem.EditContext = new(gridItem.Filter);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await UpdateEntitiesAsync();
+    }
+
+    public List<DEntity> LoadGroups(int? key)
+    {
+        var data = repository.GetSubGroups(key);
+
+        return data.ToList();
+    }
+
+    public async Task RowClick(GridRowEventArgs<DEntity> args)
+    {
+        await SelectGroup.InvokeAsync(args.Item);
+    }
+
+    public async Task UpdateEntitiesAsync()
+    {
+        if (gridItem.Grid is null)
+        {
+            return;
+        }
+        await gridItem.Grid.RefreshDataAsync();
+    }
+
+    public async Task<GridDataProviderResult<DEntity>> GridDataProvider(GridDataProviderRequest<DEntity> request)
+    {
+        var skip = (request.PageNumber - 1) * request.PageSize;
+        var limit = request.PageSize;
+
+        var config = new ProductsGroupsParamConfig()
+            {
+                NameLike = gridItem.Filter.SearchString,
+                Skip = skip,
+                Limit = limit
+            };
+
+        var query = (paramFactory as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, TEntity>).InitQuery(config);
+
+        return await Task.FromResult(request.ApplyTo(queryRepository.GetByQuery(query)));
+    }
+
+    public class GridClass
+    {
+        public static readonly int PAGE_SIZE = 5;
+
+        public Grid<DEntity> Grid { get; set; } = default!;
+        public List<DEntity> Main { get; set; } = default!;
+
+        public EditContext? EditContext { get; set; }
+
+        public FilterClass Filter { get; set; } = new();
+
+        public class FilterClass
+        {
+            public static string TITTLE_CLASS = "col-5 col-md-5";
+            public static string VALUE_CLASS = "col-5 col-md-5";
+
+            public string? SearchString { get; set; } = null!;
+
+            public int? GroupId { get; set; } = null!;
+        }
+    }
+}
