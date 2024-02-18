@@ -247,4 +247,11 @@ public sealed class ProductRepository : IProductRepository
 
         Save();
     }
+
+    public IReadOnlyCollection<ProductGroup> GetSubGroups(int? parentGroup) => _repositoryContext.ProductGroups
+            .AsNoTracking()
+            .Where(x => x.ParentId == parentGroup)
+            .ToList()
+            .Select(x => x.ConvertToModel())
+            .ToList();
 }

@@ -6,17 +6,19 @@
 @using PorphumReferenceBook.Logic.Storage.Repository.Query;
 
 @using PorphumWeb.Blazor.Classes
+@using PorphumWeb.Blazor.Pages.Components
 @using TEntity = PorphumReferenceBook.Logic.Storage.Models.ProductGroup;
 @using DEntity = PorphumReferenceBook.Logic.Models.Product.ProductGroup;
 
-@inject IProductsGroupsQueryRepository productRepository;
+@inject IProductsGroupsQueryRepository queryRepository;
+@inject IProductGroupRepository repository;
 @inject IRefBookQueryParamFactory paramFactory;
 @inject NavigationManager Navigation
 
 @page "/refbook/groups"
 
 <PageTitle>Группы</PageTitle>
-<br />
+@* <br />
 <div class="row">
     <Button 
         Class="col-md-1"
@@ -84,9 +86,29 @@
         </Button>
     </GridColumn>
 </Grid>
+<br/>
+<br />
+<GroupsStructure Load="LoadGroups" /> *@
+<div class="row" style="height:100%">
+    <div class="col-3 col-3-md" style="border-right-style: solid;">
+        <GroupsStructure Load="LoadGroups" OnClickCallback="EventCallback.Factory.Create<ProductGroup>(this, SelectGroup)" />
+</div>
+<div class="col-7 col-7-md">
+    @if(Group is null)
+    {
+        @("NULL")
+    }
+    else
+    {
+        @Group.Name
+    }
+</div>
+</div>
+
 
 @code {
 
+    public ProductGroup? Group { get; set; }
 
     private ToggleClass toggleItem = new();
 
@@ -97,9 +119,21 @@
         gridItem.EditContext = new(gridItem.Filter);
     }
 
+    public List<DEntity> LoadGroups(int? key)
+    {
+        var data = repository.GetSubGroups(key);
+
+        return data.ToList();
+    }
+
+    public void SelectGroup(ProductGroup group)
+    {
+        Group = repository.GetByKey(group.Key);
+        //StateHasChanged();
+    }
+
     public void RowClick(GridRowEventArgs<DEntity> args)
     {
-        
         Navigation.NavigateTo($"refbook/group/edit/{args.Item.Key}");
     }
 
@@ -122,7 +156,7 @@
 
         var query = (paramFactory as IQueryParamsFactory<ProductsGroupsParamType, ProductsGroupsParamConfig, TEntity>).InitQuery(config);
 
-        return await Task.FromResult(request.ApplyTo(productRepository.GetByQuery(query)));
+        return await Task.FromResult(request.ApplyTo(queryRepository.GetByQuery(query)));
     }
 
     public class GridClass
@@ -130,6 +164,7 @@
         public static readonly int PAGE_SIZE = 5;
 
         public Grid<DEntity> Grid { get; set; } = default!;
+        public List<DEntity> Main { get; set; } = default!;
 
         public EditContext? EditContext { get; set; }
 

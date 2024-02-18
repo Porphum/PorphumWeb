@@ -1,0 +1,92 @@
+﻿@using PorphumReferenceBook.Logic.Models.Product
+
+@foreach (var group in Items)
+{
+    <div class="row">
+        <div class="@StructuredGroup.BUTTON_CLASS">
+            <Button 
+                Type="ButtonType.Link"
+                Color=@(group.IsShow ? ButtonColor.Secondary : ButtonColor.Dark)
+                @onclick=@(()=>OnShowingAsync(group))>
+                @(group.IsShow ? "-" : "+")
+            </Button>
+        </div>
+
+        <div class="@StructuredGroup.CONTENT_CLASS">
+            <a @onclick=@(()=>TriggerClick(group))>@group.Group.Name</a>
+        </div>
+
+    </div>
+    @if (group.IsShow)
+    {
+
+        <div class="row">
+            <div class="@StructuredGroup.BUTTON_CLASS">
+        
+            </div>
+            <div class="@StructuredGroup.CONTENT_CLASS">
+                <GroupsStructure Key="@group.Group.Key" Load="Load" OnClickCallback="OnClickCallback" />
+            </div>
+        </div>
+    }
+}
+@code {
+    [Parameter]
+    [EditorRequired]
+    public Func<int?, List<ProductGroup>> Load { get; set; }
+
+    [Parameter]
+    public EventCallback<ProductGroup>? OnClickCallback { get; set; }
+
+    [Parameter]
+    public int? Key { get; set; } = null;
+
+    public List<StructuredGroup> Items { get; set; }
+
+    public Accordion Accordion { get; set; } = default!;
+
+    protected override void OnParametersSet()
+    {
+        if (Items is not null && Items.Any(x => x.IsShow))
+        {
+            return;
+        }
+        Items = Load.Invoke(Key).Select(x => new StructuredGroup
+        {
+            Group = x
+        }).ToList();
+    }
+
+    private void OnShowingAsync(StructuredGroup group)
+    {
+
+        if (group.IsShow)
+        {
+            group.IsShow = false;
+            return;
+        }
+
+        group.IsShow = true;
+    }
+
+    public async Task TriggerClick(StructuredGroup group)
+    {
+        if (OnClickCallback is null)
+        {
+            return;
+        }
+
+        await OnClickCallback.Value.InvokeAsync(group.Group);
+    }
+
+    public class StructuredGroup
+    {
+        public static string BUTTON_CLASS = "col-3 col-3-md";
+        public static string CONTENT_CLASS = "col-7 col-7-md";
+
+        public ProductGroup Group { get; set; }
+
+        public bool IsShow { get; set; } = false;
+    }
+}
+

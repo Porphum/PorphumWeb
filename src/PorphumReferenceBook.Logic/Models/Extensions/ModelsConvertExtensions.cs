@@ -40,7 +40,7 @@ public static class ModelsConvertExtensions
     /// <returns xml:lang="ru">Доменная модель.</returns>
     public static ProductGroup ConvertToModel(this TProductGroup group)
     {
-        return new ProductGroup(group.Id, group.Name);
+        return new ProductGroup(group.Id, group.Name, group.ParentId);
     }
 
     /// <summary xml:lang="ru">
@@ -90,6 +90,7 @@ public static class ModelsConvertExtensions
 
         storage.Name = group.Name;
         storage.Id = group.Key;
+        storage.ParentId = group.ParentKey;
 
         return storage;
     }
