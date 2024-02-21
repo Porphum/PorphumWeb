@@ -1,5 +1,4 @@
 ﻿using General;
-using General.Abstractions.Models;
 using PorphumReferenceBook.Logic.Models.Product;
 
 
@@ -16,7 +15,7 @@ public sealed class StateFullProduct
         Product = product ?? throw new ArgumentNullException(nameof(product));
     }
 
-    public Product Product { get; } 
+    public Product Product { get; }
 
     public int? Quantity => _storageProduct is null
         ? null

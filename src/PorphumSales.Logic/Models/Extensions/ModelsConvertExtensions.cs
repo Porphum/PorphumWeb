@@ -107,7 +107,7 @@ public static class ModelsConvertExtensions
         storage.ProductId = model.Product.MapKey;
         storage.Quantity = model.Quantity;
         storage.Cost = model.Price.Value;
-        
+
         return storage;
     }
 
